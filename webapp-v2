@@ -1257,7 +1257,7 @@ contentItem.onclick = (e) => {
             }
         }
     }
-}
+
 
         // 6. Display content with improved handling
         function displayContent(content, projectInfo) {
@@ -2175,9 +2175,8 @@ function setupKeyboardNavigation() {
       }
     }
   }
+}
 };
     </script>
 </body>
 </html>
-
-CAN YOU PLEASE TELL ME WHERE IS THE SYNTAX ERROR?
