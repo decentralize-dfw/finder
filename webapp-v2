@@ -1,0 +1,2183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            background: transparent;
+        }
+
+        .folder-column {
+            width: 280px;
+            border-right: 1px solid #f0f0f0;
+            overflow-y: auto;
+            padding-top: 20px;
+        }
+
+        /* Scrollbar styling */
+        .folder-column::-webkit-scrollbar,
+        .content-area::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .folder-column::-webkit-scrollbar-track,
+        .content-area::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 3px;
+        }
+
+        .folder-column::-webkit-scrollbar-thumb,
+        .content-area::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.05);
+            transition: background 0.2s ease;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        .folder-item {
+            padding: 8px 24px;
+            cursor: pointer;
+            font-family: helvetica, arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.3px;
+            color: #333;
+        }
+
+        .folder-item:hover {
+            background: rgba(249, 249, 249, 0.5);
+            color: #000;
+        }
+
+        .subfolder {
+            display: none;
+            border-left: 1px solid #f0f0f0;
+            margin: 4px 0 4px 16px;
+        }
+
+        .folder-item.expanded + .subfolder {
+            display: block;
+        }
+
+        .arrow {
+            display: inline-block;
+            width: 12px;
+            margin-right: 8px;
+            opacity: 0.5;
+            font-size: 8px;
+        }
+
+        .folder-item.expanded .arrow {
+            transform: rotate(90deg);
+            opacity: 0.8;
+        }
+
+        .media-container {
+            width: 100%;
+            height: 420px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 32px;
+            position: relative;
+            border: 1px solid #f0f0f0;
+            background: transparent;
+            aspect-ratio: 16/9;
+        }
+
+        .model-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: transparent;
+        }
+
+        .model-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 100;
+            display: flex;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .project-preview {
+    width: 100%;
+    min-height: 420px;
+    position: relative;
+    margin-bottom: 32px;
+    border: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    padding: 0;
+}
+
+.project-preview .image-container {
+    width: 100%;
+    height: 320px;
+    padding: 20px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background: transparent;
+}
+
+.project-preview img {
+    max-width: calc(100% - 40px);
+    height: auto;
+    max-height: 280px;
+    object-fit: contain;
+    object-position: left;
+    background: transparent !important;
+}
+
+.project-briefing {
+    position: relative;
+    padding: 24px;
+    margin-top: auto;
+    border-top: 1px solid #f0f0f0;
+    background: transparent;
+    font-family: helvetica, arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.project-preview .project-briefing h2 {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.project-preview .project-briefing p {
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.project-briefing {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 24px;
+    background: transparent;
+    font-family: helvetica, arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+
+.project-briefing h2 {
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
+}
+
+.project-briefing p {
+    margin: 0;
+    font-size: 9px;
+    font-weight: 500;
+    font-style: italic;
+    letter-spacing: -0.25px;
+    color: rgba(0, 0, 0, 0.8);
+}
+
+.project-preview {
+    width: 100%;
+    height: 420px;
+    position: relative;
+    margin-bottom: 24px;
+    border: 1px solid #f0f0f0;
+    overflow: hidden;
+    background: #fafafa;
+}
+
+.project-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.content-description {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-family: helvetica, arial, sans-serif;
+    font-size: 11px;
+    font-style: italic;
+    letter-spacing: -0.5px;
+    color: rgba(0, 0, 0, 0.6);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px;
+    border-radius: 4px;
+    max-width: 300px;
+    z-index: 10;
+}
+
+.content-info {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.content-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+}
+
+.view-toggle {
+    padding: 6px 12px;
+    font-family: helvetica, arial, sans-serif;
+    font-size: 11px;
+    background: white;
+    border: 1px solid #f0f0f0;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    border-radius: 3px;
+    color: #333;
+}
+
+.content-container {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #f0f0f0;
+    overflow: hidden;
+}
+
+.content-container.video-vertical {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+}
+
+.content-container.image-scroll {
+    overflow-y: auto;
+}
+
+.html-viewer,
+.link-viewer {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: white;
+}
+
+        .loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            font-family: "Terminal", "Lucida Console", Monaco, monospace;
+            font-size: 14px;
+            color: #333;
+            gap: 10px;
+            letter-spacing: 1px;
+        }
+
+        .custom-video-player {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px;
+        }
+
+        .video-progress {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-filled {
+            width: 0;
+            height: 100%;
+            background: #333;
+            transition: width 0.1s linear;
+        }
+
+        .link-content {
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 16/9;
+            border: none;
+        }
+
+        .preview-page {
+    padding: 20px;
+    width: 100%;
+    font-family: helvetica, arial, sans-serif;
+}
+
+.info-container {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    padding: 24px 0;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 24px;
+}
+
+.info-label {
+    font-family: helvetica, arial, sans-serif;
+    font-size: 11px;
+    color: #888;
+    min-width: 100px;
+}
+
+.info-content {
+    font-family: helvetica, arial, sans-serif;
+    font-size: 11px;
+    color: #333;
+}
+
+.info-content a {
+    color: #333;
+    text-decoration: none;
+    border-bottom: 1px solid #eee;
+}
+
+.info-content a:hover {
+    border-bottom-color: #333;
+}
+
+.description-text {
+    font-family: helvetica, arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.6;
+    margin-top: 24px;
+    color: #333;
+}
+
+.secondary-text {
+    font-family: helvetica, arial, sans-serif;
+    font-size: 11px;
+    font-style: italic;
+    color: #666;
+    margin-top: 16px;
+    line-height: 1.6;
+    letter-spacing: -0.25px;
+}
+.video-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16/9;
+}
+
+.video-container iframe,
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.custom-video-player {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+}
+
+.custom-video-player video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.custom-video-player .video-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 15px;
+    opacity: 1 !important;
+    background: linear-gradient(transparent, rgba(255,255,255,0.95));
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.custom-video-player .video-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(0,0,0,0.1);
+    margin-bottom: 8px;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.custom-video-player .progress-filled {
+    height: 100%;
+    background: #333;
+    width: 0;
+    border-radius: 2px;
+}
+
+.custom-video-player .video-controls-bottom {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.custom-video-player .play-pause {
+    background: none;
+    border: none;
+    color: #333;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.custom-video-player .time-display {
+    font-family: monospace;
+    font-size: 12px;
+    color: #333;
+}
+
+.video-controls-bottom {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.play-pause {
+    background: none;
+    border: none;
+    color: #333;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    padding: 0;
+}
+
+.time-display {
+    font-family: monospace;
+    font-size: 12px;
+    color: #333;
+}
+
+.video-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+
+.progress-filled {
+    height: 100%;
+    background: #333;
+    width: 0;
+    transition: width 0.1s linear;
+}
+.video-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-video-player {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-video-player video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.video-vertical .custom-video-player {
+    width: auto;
+    height: 100%;
+}
+
+.video-vertical video {
+    height: 100%;
+    width: auto;
+}
+
+.youtube-container {
+    aspect-ratio: 16/9;
+    width: 100%;
+}
+
+.youtube-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.content-icon {
+    display: inline-block;
+    width: 20px;
+    text-align: center;
+    margin-right: 8px;
+}
+
+.content-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 24px;
+    transition: background-color 0.2s;
+}
+
+.content-item:hover {
+    background: rgba(249, 249, 249, 0.8);
+}
+
+.content-item.active {
+    background: rgba(240, 240, 240, 0.9);
+    font-weight: 500;
+}
+
+.content-preview {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 320px;
+    max-height: 320px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+    z-index: 1000;
+}
+
+.content-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.video-thumbnail,
+.model-thumbnail {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.play-icon,
+.model-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 32px;
+    opacity: 0.8;
+}
+
+.navigation-controls {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    background: white;
+}
+
+.breadcrumb {
+    font-family: helvetica, arial, sans-serif;
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.breadcrumb-item {
+    cursor: pointer;
+}
+
+.breadcrumb-item:hover {
+    color: #333;
+}
+
+.separator {
+    margin: 0 4px;
+    color: #ccc;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.nav-btn {
+    padding: 4px 8px;
+    font-family: helvetica, arial, sans-serif;
+    font-size: 11px;
+    background: white;
+    border: 1px solid #f0f0f0;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.nav-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.nav-btn:not(:disabled):hover {
+    opacity: 1;
+    background: #f9f9f9;
+}
+
+.image-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    cursor: zoom-in;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.magnifier-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 16px;
+    height: 16px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    background-color: rgba(255,255,255,0.8);
+    padding: 4px;
+    border-radius: 50%;
+    z-index: 10;
+}
+
+.image-container:hover .magnifier-icon {
+    opacity: 0.6;
+}
+
+.image-container.zoomed {
+    cursor: zoom-out;
+}
+
+.image-container.zoomed img {
+    transform: scale(3);
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="folder-column" id="folderStructure"></div>
+        <div class="content-area" id="contentArea"></div>
+    </div>
+
+    <script>
+        // Global variables for 3D model handling
+        let currentModel = null;
+        let currentScene = null;
+        let currentCamera = null;
+        let currentRenderer = null;
+        let currentOrbitControls = null;
+        let currentAnimationFrame = null;
+        let mixer = null;
+
+        // 1. Initialize 3D model
+        function initModel(container, url) {
+            // Reset existing model if any
+            if (currentAnimationFrame) {
+                cancelAnimationFrame(currentAnimationFrame);
+            }
+            
+            if (currentRenderer) {
+                currentRenderer.dispose();
+                container.innerHTML = '';
+            }
+
+            // Create loading screen
+            const loadingScreen = document.createElement('div');
+            loadingScreen.className = 'loading-screen';
+            loadingScreen.textContent = 'FORGING...';
+            container.appendChild(loadingScreen);
+
+            // Setup scene
+            const scene = new THREE.Scene();
+            scene.background = null;
+
+            // Setup camera
+            const aspect = container.clientWidth / container.clientHeight;
+            const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
+            camera.position.set(1, 1, 1);
+            camera.lookAt(0, 0, 0);
+
+            // Setup renderer
+            const renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                alpha: true 
+            });
+            renderer.setClearColor(0x000000, 0);
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            // Setup controls
+            const orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+            orbitControls.enablePan = true;
+            orbitControls.enableZoom = true;
+            orbitControls.enableDamping = true;
+            orbitControls.dampingFactor = 0.05;
+            orbitControls.minZoom = 0.0005;
+            orbitControls.maxZoom = 96;
+            orbitControls.panSpeed = 0.5;
+            orbitControls.zoomSpeed = 1.5;
+
+            // Setup lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+            scene.add(ambientLight);
+            
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
+            hemiLight.position.set(0, 20, 0);
+            scene.add(hemiLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(-2, 2, 2);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+
+            // Load model
+            const manager = new THREE.LoadingManager();
+            const dracoLoader = new THREE.DRACOLoader(manager);
+            dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+            dracoLoader.setDecoderConfig({ type: 'js' });
+            dracoLoader.preload();
+
+            const loader = new THREE.GLTFLoader(manager);
+            loader.setDRACOLoader(dracoLoader);
+
+            loader.load(
+                url,
+                (gltf) => {
+                    try {
+                        const model = gltf.scene;
+                        scene.add(model);
+
+                        // Handle model sizing and camera positioning
+                        const box = new THREE.Box3().setFromObject(model);
+                        const size = box.getSize(new THREE.Vector3());
+                        const center = box.getCenter(new THREE.Vector3());
+
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        const fov = maxDim * 2;
+                        const cameraZ = maxDim * 3;
+
+                        camera.left = -fov * aspect;
+                        camera.right = fov * aspect;
+                        camera.top = fov;
+                        camera.bottom = -fov;
+                        camera.position.set(cameraZ, cameraZ, cameraZ);
+                        camera.lookAt(center);
+                        camera.updateProjectionMatrix();
+
+                        // Setup material controls
+                        const controlsUI = document.createElement('div');
+                        controlsUI.className = 'model-controls';
+                        
+                        const wireframeBtn = document.createElement('button');
+                        wireframeBtn.className = 'view-toggle';
+                        wireframeBtn.textContent = 'Wireframe';
+                        wireframeBtn.onclick = () => {
+                            model.traverse((child) => {
+                                if (child.isMesh) {
+                                    child.material.wireframe = true;
+                                }
+                            });
+                        };
+
+                        const materialBtn = document.createElement('button');
+                        materialBtn.className = 'view-toggle';
+                        materialBtn.textContent = 'Material';
+                        materialBtn.onclick = () => {
+                            model.traverse((child) => {
+                                if (child.isMesh) {
+                                    child.material.wireframe = false;
+                                }
+                            });
+                        };
+
+                        controlsUI.appendChild(wireframeBtn);
+                        controlsUI.appendChild(materialBtn);
+                        container.appendChild(controlsUI);
+
+                        // Handle animations
+                        if (gltf.animations && gltf.animations.length) {
+                            mixer = new THREE.AnimationMixer(model);
+                            gltf.animations.forEach((clip) => {
+                                const action = mixer.clipAction(clip);
+                                action.play();
+                            });
+                        }
+
+                        // Cleanup and store references
+                        container.removeChild(loadingScreen);
+                        currentModel = model;
+                        currentScene = scene;
+                        currentCamera = camera;
+                        currentRenderer = renderer;
+                        currentOrbitControls = orbitControls;
+
+                        // Animation loop
+                        function animate() {
+                            currentAnimationFrame = requestAnimationFrame(animate);
+                            if (mixer) mixer.update(0.016);
+                            orbitControls.update();
+                            renderer.render(scene, camera);
+                        }
+                        animate();
+
+                    } catch (error) {
+                        console.error('Error setting up model:', error);
+                        loadingScreen.textContent = 'FORGE FAILED. TRY AGAIN.';
+                        addRetryButton(loadingScreen, container, url);
+                    }
+                },
+                (xhr) => {
+                    const percent = xhr.loaded / (xhr.total || xhr.loaded) * 100;
+                    loadingScreen.textContent = `FORGING... ${percent.toFixed(0)}%`;
+                },
+                (error) => {
+                    console.error('Error loading model:', error);
+                    loadingScreen.textContent = 'FORGE FAILED. TRY AGAIN.';
+                    addRetryButton(loadingScreen, container, url);
+                }
+            );
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                if (camera && renderer) {
+                    const aspect = container.clientWidth / container.clientHeight;
+                    camera.left = -2 * aspect;
+                    camera.right = 2 * aspect;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                }
+            });
+        }
+
+        // 2. Add retry button for failed model loads
+        function addRetryButton(loadingScreen, container, url) {
+            const retryBtn = document.createElement('button');
+            retryBtn.className = 'retry-button';
+            retryBtn.textContent = 'RETRY FORGE';
+            retryBtn.onclick = () => initModel(container, url);
+            loadingScreen.appendChild(retryBtn);
+        }
+
+        // 3. Show preview page before displaying content
+       function showPreviewPage(content, projectInfo) {
+    const contentArea = document.getElementById('contentArea');
+    
+    if (content.type === 'preview') {
+        // Show project info page
+        contentArea.innerHTML = `
+            <div class="preview-page">
+                <div class="info-container">
+                    <div class="info-label">Name</div>
+                    <div class="info-content">${projectInfo.name}</div>
+                    
+                    <div class="info-label">Type</div>
+                    <div class="info-content">${projectInfo.type}</div>
+                    
+                    <div class="info-label">Visit link</div>
+                    <div class="info-content">
+                        <a href="${projectInfo.visitLink}" target="_blank">Visit Project →</a>
+                    </div>
+                    
+                    ${projectInfo.marketLink ? `
+                        <div class="info-label">Market link</div>
+                        <div class="info-content">
+                            <a href="${projectInfo.marketLink}" target="_blank">View in Market →</a>
+                        </div>
+                    ` : ''}
+                    
+                    ${projectInfo.chain ? `
+                        <div class="info-label">Chain</div>
+                        <div class="info-content">${projectInfo.chain}</div>
+                    ` : ''}
+                    
+                    ${projectInfo.price ? `
+                        <div class="info-label">Price</div>
+                        <div class="info-content">${projectInfo.price}</div>
+                    ` : ''}
+                </div>
+                
+                <div class="description-text">${projectInfo.text}</div>
+                ${projectInfo.description2 ? `
+                    <div class="secondary-text">${projectInfo.description2}</div>
+                ` : ''}
+            </div>
+        `;
+    } else {
+        // Show content directly
+        displayContent(content, projectInfo);
+    }
+}
+
+        // 4. Reset content area
+        function resetContent() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '';
+            
+            if (currentAnimationFrame) {
+                cancelAnimationFrame(currentAnimationFrame);
+                currentAnimationFrame = null;
+            }
+            
+            if (currentRenderer) {
+                currentRenderer.dispose();
+                currentRenderer = null;
+            }
+            
+            if (currentOrbitControls) {
+                currentOrbitControls.dispose();
+                currentOrbitControls = null;
+            }
+
+            currentModel = null;
+            currentScene = null;
+            currentCamera = null;
+            mixer = null;
+        }
+
+
+
+// Function to show quick preview of content
+function showContentPreview(content, projectInfo) {
+    const contentArea = document.getElementById('contentArea');
+    
+    // Don't show preview if content is already being displayed
+    if (contentArea.querySelector('.media-container[data-content-key="' + content.displayName + '"]')) {
+        return;
+    }
+    
+    let previewHtml = '';
+    switch(content.type) {
+        case 'image':
+            previewHtml = `
+                <div class="content-preview">
+                    <img src="${content.media}" alt="${content.displayName}">
+                </div>`;
+            break;
+        case 'video':
+            previewHtml = `
+                <div class="content-preview">
+                    <div class="video-thumbnail">
+                        <div class="play-icon">▶️</div>
+                        <img src="${content.previewImage || '/api/placeholder/400/320'}" alt="${content.displayName}">
+                    </div>
+                </div>`;
+            break;
+        case 'model':
+            previewHtml = `
+                <div class="content-preview">
+                    <div class="model-thumbnail">
+                        <div class="model-icon">🔷</div>
+                        <img src="${content.previewImage || '/api/placeholder/400/320'}" alt="${content.displayName}">
+                    </div>
+                </div>`;
+            break;
+    }
+    
+    if (previewHtml) {
+        contentArea.innerHTML = previewHtml;
+    }
+}
+
+        // 5. Create folder structure with improved navigation
+        function createFolderStructure(obj, parentElement, level = 0, path = []) {
+    // Helper function to close folders at a specific level
+    const closeAllFoldersAtLevel = (exceptElement, currentLevel) => {
+        const selector = `.folder-item${
+            currentLevel === 0 ? '.main-category' : 
+            currentLevel === 1 ? '.sub-category' : 
+            '.sub-sub-category'
+        }`;
+        
+        document.querySelectorAll(selector).forEach(item => {
+            if (item !== exceptElement && item.classList.contains('expanded')) {
+                // Close the clicked item
+                item.classList.remove('expanded');
+                
+                // Also close all child items
+                const childFolders = item.nextElementSibling.querySelectorAll('.folder-item.expanded');
+                childFolders.forEach(child => child.classList.remove('expanded'));
+                
+                // Clear content if closing a project or higher level
+                if (currentLevel >= 1) {
+                    resetContent();
+                }
+            }
+        });
+    };
+
+    // Helper function to load project preview
+    const loadProjectPreview = (projectData) => {
+    const contentArea = document.getElementById('contentArea');
+    contentArea.innerHTML = `
+        <div class="project-preview">
+            <div class="image-wrapper">
+                ${projectData.previewImage ? `
+                    <img src="${projectData.previewImage}" 
+                         alt="${projectData.name}"
+                         style="background: transparent;">
+                ` : ''}
+            </div>
+            <div class="project-briefing">
+                <h2>${projectData.name}</h2>
+                <p>${projectData.briefing || projectData.text}</p>
+            </div>
+        </div>
+    `;
+};
+
+    for (let key in obj) {
+        if (key === 'project' || key === 'content') continue;
+        
+        const item = document.createElement('div');
+        const currentPath = [...path, key];
+        
+        if (typeof obj[key] === 'object' && !obj[key].type) {
+            // Set up folder item
+            item.className = `folder-item ${
+                level === 0 ? 'main-category' : 
+                level === 1 ? 'sub-category' : 
+                'sub-sub-category'
+            }`;
+            item.innerHTML = `<span class="arrow">▶</span>${key}`;
+            item.setAttribute('data-path', currentPath.join('/'));
+            item.setAttribute('data-level', level);
+            
+            // Add hover effect for projects
+if (obj[key].project && obj[key].project.previewImage) {
+    let projectState = {
+        isContentActive: false,
+        currentContent: null
+    };
+    
+    const handleContentDisplay = (e) => {
+        const contentItem = e.target.closest('.content-item');
+        const folderItem = e.target.closest('.folder-item');
+        
+        if (contentItem) {
+            projectState.isContentActive = true;
+            projectState.currentContent = contentItem.textContent;
+        } else if (folderItem && folderItem !== item && !contentItem) {
+            projectState.isContentActive = false;
+            projectState.currentContent = null;
+        }
+    };
+    
+    item.addEventListener('mouseenter', () => {
+        if (!projectState.isContentActive) {
+            loadProjectPreview(obj[key].project);
+        }
+    });
+    
+    document.addEventListener('click', handleContentDisplay);
+    
+    // Remove hover reset if content is active
+    item.addEventListener('mouseleave', () => {
+        if (!projectState.isContentActive && !item.classList.contains('expanded')) {
+            resetContent();
+        }
+    });
+}
+    
+    // Update content displayed flag
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.content-item')) {
+            isContentDisplayed = true;
+        } else if (e.target.closest('.folder-item') && e.target !== item) {
+            isContentDisplayed = false;
+        }
+    });
+}
+            
+            const subFolder = document.createElement('div');
+            subFolder.className = 'subfolder';
+            
+            item.onclick = (e) => {
+                e.stopPropagation();
+                
+                // Handle folder state
+                const wasExpanded = item.classList.contains('expanded');
+                
+                // Close other folders at the same level
+                closeAllFoldersAtLevel(item, level);
+                
+                // Toggle current folder
+                item.classList.toggle('expanded');
+                
+                if (wasExpanded) {
+                    // Closing the folder
+                    resetContent();
+                } else {
+                    // Opening the folder
+                    if (obj[key].project) {
+                        // For projects, always show the preview first
+                        loadProjectPreview(obj[key].project);
+                    } else if (level === 0) {
+                        // For top level, clear content
+                        resetContent();
+                    }
+                }
+                
+                // Prevent event from bubbling to parent folders
+                e.stopPropagation();
+            };
+            
+            parentElement.appendChild(item);
+            parentElement.appendChild(subFolder);
+            
+            if (obj[key].content) {
+                // Create content items
+                for (let contentKey in obj[key].content) {
+                    const contentItem = document.createElement('div');
+                    const content = obj[key].content[contentKey];
+                    
+                    // Setup content item
+                    contentItem.className = `folder-item content-item content-type-${content.type}`;
+                    contentItem.innerHTML = `
+    <span class="content-name">${contentKey}</span>
+`;
+                    
+                    // Add hover preview behavior
+                   // Handle click
+contentItem.onclick = (e) => {
+    e.stopPropagation();
+    
+    // Remove active class from all items
+    document.querySelectorAll('.content-item.active').forEach(item => 
+        item.classList.remove('active')
+    );
+    
+    // Add active class to clicked item
+    contentItem.classList.add('active');
+    
+    // Display content persistently
+    displayContent(content, obj[key].project);
+};
+                    
+                    // Handle click
+                    contentItem.onclick = (e) => {
+                        e.stopPropagation();
+                        
+                        // Highlight selected content
+                        document.querySelectorAll('.content-item.active').forEach(item => 
+                            item.classList.remove('active')
+                        );
+                        contentItem.classList.add('active');
+                        
+                        // Display content
+                        displayContent(content, obj[key].project);
+                    };
+                    
+                    subFolder.appendChild(contentItem);
+                }
+            } else {
+                // Recursively create subfolders
+                createFolderStructure(obj[key], subFolder, level + 1, currentPath);
+            }
+        }
+    }
+}
+
+        // 6. Display content with improved handling
+        function displayContent(content, projectInfo) {
+    const contentArea = document.getElementById('contentArea');
+    const contentTitle = content.displayName || '';
+    const contentDescription = content.description || '';
+    
+    // Project info section that appears with all content
+    const projectInfoHtml = `
+        <div class="content-info">
+            <div class="info-container">
+                <div class="info-label">Name</div>
+                <div class="info-content">${projectInfo.name}</div>
+                
+                <div class="info-label">Type</div>
+                <div class="info-content">${projectInfo.type}</div>
+                
+                <div class="info-label">Visit link</div>
+                <div class="info-content">
+                    <a href="${projectInfo.visitLink}" target="_blank">Visit Project →</a>
+                </div>
+                
+                ${projectInfo.marketLink ? `
+                    <div class="info-label">Market link</div>
+                    <div class="info-content">
+                        <a href="${projectInfo.marketLink}" target="_blank">View in Market →</a>
+                    </div>
+                ` : ''}
+                
+                ${projectInfo.chain ? `
+                    <div class="info-label">Chain</div>
+                    <div class="info-content">${projectInfo.chain}</div>
+                ` : ''}
+                
+                ${projectInfo.price ? `
+                    <div class="info-label">Price</div>
+                    <div class="info-content">${projectInfo.price}</div>
+                ` : ''}
+            </div>
+            
+            <div class="description-text">${projectInfo.text}</div>
+            ${projectInfo.description2 ? `
+                <div class="secondary-text">${projectInfo.description2}</div>
+            ` : ''}
+        </div>
+    `;
+
+    // Content description that appears at top right
+    const descriptionHtml = `
+        <div class="content-description">
+            ${contentTitle}
+            ${contentDescription ? `<br>${contentDescription}` : ''}
+        </div>
+    `;
+
+    let mediaHtml = '';
+            switch(content.type) {
+                case 'model':
+                    mediaHtml = `<div class="model-container" id="modelViewer"></div>`;
+                    break;
+                    
+                case 'image':
+    mediaHtml = `
+        <div class="image-container" id="zoomableImage">
+            <img src="${content.media}" alt="${projectInfo.name}" style="max-width: 100%; max-height: 100%;">
+            <div class="magnifier-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+            </div>
+        </div>`;
+    // Initialize zoom after HTML is set
+    setTimeout(() => {
+        initializeImageZoom();
+    }, 100);
+    break;
+                    
+                
+    case 'video':
+    const isYouTube = content.media.includes('youtube.com') || content.media.includes('youtu.be');
+    if (isYouTube) {
+        const videoId = content.media.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i)?.[1];
+        mediaHtml = `
+            <div class="content-container">
+                <div class="video-container youtube-container">
+                    <iframe 
+                        src="https://www.youtube.com/embed/${videoId}"
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>`;
+    } else {
+        mediaHtml = `
+            <div class="content-container">
+                <div class="video-container custom-video-player" id="videoContainer">
+                    <video id="videoPlayer" controls playsinline crossorigin="anonymous">
+                        <source src="${content.media}" type="video/mp4">
+                    </video>
+                    <div class="video-controls" style="opacity: 1 !important;">
+                        <div class="video-progress">
+                            <div class="progress-filled"></div>
+                        </div>
+                        <div class="video-controls-bottom">
+                            <button class="play-pause">▶</button>
+                            <span class="time-display">0:00 / 0:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        
+        // Initialize video player after HTML is set
+        setTimeout(() => {
+            initializeVideoPlayer();
+        }, 100);
+    }
+    break;
+
+                case 'link':
+                    mediaHtml = `
+                        <iframe 
+                            class="link-content"
+                            src="${content.media}"
+                            frameborder="0"
+                            allowfullscreen>
+                        </iframe>`;
+                    break;
+
+                case 'html':
+                    mediaHtml = `
+                        <iframe 
+                            class="link-content"
+                            src="${content.media}"
+                            frameborder="0">
+                        </iframe>`;
+                    break;
+            }
+
+            contentArea.innerHTML = `
+    <div class="preview-page">
+        <div class="media-container">
+            ${mediaHtml}
+        </div>
+
+        <div class="info-container">
+            <div class="info-label">Name</div>
+            <div class="info-content">${projectInfo.name}</div>
+            
+            <div class="info-label">Type</div>
+            <div class="info-content">${projectInfo.type}</div>
+            
+            <div class="info-label">Visit link</div>
+            <div class="info-content">
+                <a href="${projectInfo.visitLink}" target="_blank">Visit Project →</a>
+            </div>
+            
+            ${projectInfo.marketLink ? `
+                <div class="info-label">Market link</div>
+                <div class="info-content">
+                    <a href="${projectInfo.marketLink}" target="_blank">View in Market →</a>
+                </div>
+            ` : ''}
+            
+            ${projectInfo.chain ? `
+                <div class="info-label">Chain</div>
+                <div class="info-content">${projectInfo.chain}</div>
+            ` : ''}
+            
+            ${projectInfo.price ? `
+                <div class="info-label">Price</div>
+                <div class="info-content">${projectInfo.price}</div>
+            ` : ''}
+        </div>
+        
+        <div class="description-text">${projectInfo.text}</div>
+        ${projectInfo.description2 ? `
+            <div class="secondary-text">${projectInfo.description2}</div>
+        ` : ''}
+    </div>
+`;
+
+// Initialize 3D model if present
+if (content.type === 'model') {
+    const modelContainer = document.getElementById('modelViewer');
+    if (modelContainer) {
+        initModel(modelContainer, content.media);
+    }
+}
+
+            // Initialize specific functionality based on content type
+            switch(content.type) {
+    case 'preview':
+        mediaHtml = `
+            <div class="project-preview">
+                <img src="${content.media}" alt="${projectInfo.name}">
+                <div class="project-briefing">
+                    ${projectInfo.briefing || ''}
+                </div>
+            </div>`;
+        break;
+
+    case 'model':
+        mediaHtml = `
+            <div class="content-container">
+                <div class="model-container" id="modelViewer"></div>
+            </div>`;
+        break;
+        
+    case 'image':
+        mediaHtml = `
+            <div class="content-container image-scroll" id="zoomableImage">
+                <img src="${content.media}" 
+                     alt="${projectInfo.name}" 
+                     style="max-width: 100%; height: auto;">
+                <div class="magnifier-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                </div>
+            </div>`;
+        break;
+
+    case 'html-viewer':
+        mediaHtml = `
+            <div class="content-container">
+                <iframe class="html-viewer"
+                        src="${content.media}"
+                        sandbox="allow-scripts allow-same-origin">
+                </iframe>
+            </div>`;
+        break;
+
+    case 'link-viewer':
+        mediaHtml = `
+            <div class="content-container">
+                <iframe class="link-viewer"
+                        src="${content.media}"
+                        allow="fullscreen">
+                </iframe>
+            </div>`;
+        break;
+            }
+        }
+
+        // 7. Initialize image zoom functionality
+        function initializeImageZoom() {
+    const container = document.getElementById('zoomableImage');
+    if (!container) return;
+    
+    const img = container.querySelector('img');
+    let isZoomed = false;
+    
+    container.addEventListener('click', () => {
+        isZoomed = !isZoomed;
+        if (isZoomed) {
+            container.classList.add('zoomed');
+            img.style.transform = 'scale(3)';
+        } else {
+            container.classList.remove('zoomed');
+            img.style.transform = 'scale(1)';
+        }
+    });
+    
+    container.addEventListener('mousemove', (e) => {
+        if (isZoomed) {
+            const rect = container.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width * 100;
+            const y = (e.clientY - rect.top) / rect.height * 100;
+            img.style.transformOrigin = `${x}% ${y}%`;
+        }
+    });
+    
+    container.addEventListener('mouseleave', () => {
+        if (isZoomed) {
+            isZoomed = false;
+            container.classList.remove('zoomed');
+            img.style.transform = 'scale(1)';
+        }
+    });
+}
+
+        // 8. Initialize video player
+        function initializeVideoPlayer() {
+            const player = document.querySelector('.custom-video-player');
+            if (!player) return;
+            
+            const video = player.querySelector('video');
+            const progress = player.querySelector('.progress-filled');
+            const progressBar = player.querySelector('.video-progress');
+            const playButton = player.querySelector('.play-pause');
+            const timeDisplay = player.querySelector('.time-display');
+
+            playButton.addEventListener('click', togglePlay);
+            video.addEventListener('click', togglePlay);
+
+            function togglePlay() {
+                if (video.paused) {
+                    video.play();
+                    playButton.textContent = '⏸';
+                } else {
+                    video.pause();
+                    playButton.textContent = '▶';
+                }
+            }
+
+            video.addEventListener('timeupdate', () => {
+                const percent = (video.currentTime / video.duration) * 100;
+                progress.style.width = `${percent}%`;
+                timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+            });
+
+            progressBar.addEventListener('click', (e) => {
+                const progressTime = (e.offsetX / progressBar.offsetWidth) * video.duration;
+                video.currentTime = progressTime;
+            });
+        }
+
+        // 9. Format time for video player
+        function formatTime(seconds) {
+            if (!seconds) return '0:00';
+            const minutes = Math.floor(seconds / 60);
+            seconds = Math.floor(seconds % 60);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function adjustVideoContainer(video) {
+    const container = document.getElementById('videoContainer');
+    if (!container) return;
+    
+    // Wait for video metadata to load
+    if (video.videoWidth && video.videoHeight) {
+        const aspectRatio = video.videoWidth / video.videoHeight;
+        if (aspectRatio < 1) { // vertical video
+            container.parentElement.classList.add('video-vertical');
+            container.style.width = `${420 * aspectRatio}px`; // 420 is the container height
+        } else {
+            container.parentElement.classList.remove('video-vertical');
+            container.style.width = '100%';
+        }
+    }
+}
+
+        // 10. Show link content
+        function showLinkContent(url) {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <div class="media-container">
+                    <iframe 
+                        class="link-content"
+                        src="${url}"
+                        frameborder="0"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            `;
+        }
+
+        // 11. Initialize application
+        // Add these state management functions
+const FolderState = {
+    _state: new Map(),
+    
+    // Set folder state
+    setFolder: function(path, state) {
+        this._state.set(path, {
+            expanded: state.expanded || false,
+            activeContent: state.activeContent || null,
+            lastOpened: Date.now()
+        });
+    },
+    
+    // Get folder state
+    getFolder: function(path) {
+        return this._state.get(path) || { expanded: false, activeContent: null };
+    },
+    
+    // Clear all states
+    clear: function() {
+        this._state.clear();
+    },
+    
+    // Get breadcrumb path
+    getBreadcrumb: function() {
+        let path = [];
+        this._state.forEach((state, folderPath) => {
+            if (state.expanded) {
+                path.push(folderPath);
+            }
+        });
+        return path.sort((a, b) => a.split('/').length - b.split('/').length);
+    }
+};
+
+// Initialize application with improved navigation
+window.onload = function() {
+    // Create folder structure
+    createFolderStructure(structure, document.getElementById('folderStructure'));
+    
+   
+    
+    // Add keyboard navigation
+    setupKeyboardNavigation();
+};
+
+
+// Update breadcrumb display
+function updateBreadcrumb() {
+    const breadcrumb = document.getElementById('folderBreadcrumb');
+    const path = FolderState.getBreadcrumb();
+    
+    breadcrumb.innerHTML = path.map((folderPath, index) => {
+        const name = folderPath.split('/').pop();
+        return `
+            <span class="breadcrumb-item" data-path="${folderPath}">
+                ${index > 0 ? '<span class="separator">/</span>' : ''}
+                ${name}
+            </span>
+        `;
+    }).join('');
+}
+
+// Setup keyboard navigation
+function setupKeyboardNavigation() {
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            // Close current folder
+            const lastOpen = Array.from(document.querySelectorAll('.folder-item.expanded'))
+                .sort((a, b) => b.dataset.level - a.dataset.level)[0];
+            if (lastOpen) {
+                lastOpen.click();
+            }
+        }
+    });
+}
+
+        // Structure definition (kept as is)
+        const structure = {
+  "Forgery Finder": {
+    "Experience": {
+      "C2W Runway": {
+        "project": {
+          "name": "C2W Runway",
+          "type": "Virtual Runway",
+          "previewImage": "https://static.wixstatic.com/media/54a996_fa144c09f63943649beb65df62c31dcb~mv2.jpg",
+          "briefing": "16 .VRM's from VCA x Draup Virtual Fashion Residency, selected 1st by RedDAO, happened live on 9.11.23 with 23 attendees.",
+          "date": "10.23",
+          "visitLink": "https://www.digitalforgerywork.shop/runway3d",
+          "marketLink": "https://opensea.io/assets/ethereum/0xf53b18570db14c1e7dbc7dc74538c48d042f1332/1871",
+          "chain": "Ethereum",
+          "price": "7 ETH (World + Content)",
+          "text": "The C2W Metaverse Runway event, held on 9.11.23 and was accessible through a $20 ticket purchased between 1-2.11.23 following the Digital Fashion Showcase at New Codes in London by VCA x Draup, showcased a distinctive digital fashion collection. This event provided attendees with an immersive virtual fashion show experience directly from their browsers without the need for downloads, marking a significant step in exploring and redefining personal expression in digital realms. Alongside their ticket, attendees received a complimentary avatar, The Viewer, which they showcased during this token-gated event. The show is available for free to anyone now.",
+          "description2": "These 16 personas are not mere 3D pixels; they are the new expression of self, where every mesh and mapped PNG screams a narrative of identity. They are molded by a vision where the decentralization of self meets the reconstruction of representation in software-scapes. They represent a new form of existence, a silent statement in a realm where we transform ourselves to exist. The journey of C2W didn't just stop at creation; it soared to recognition when it was awarded 1st place by RedDAO members at the Digital Fashion Residency Exhibition, standing out among 22 artists recognized for their innovative fusion of fashion and digital creativity during the residency. C2W stands to embrace a new narrative of what fashion can be. It's a ticket to a reality where your digital avatar is a reflection of your taste and a part of a larger movement that's redefining fashion in the digital age.\nA conversation between code and couture, between the avatar and the individual."
+        },
+        "content": {
+          "3D--end-display": {
+            "type": "model",
+            "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/RUNWAYFNL-v6.glb",
+            "displayName": "3D--end-display"
+          },
+          "CLIP-RunwayTicketArtwork_JAi-Z_CLICKSTATEOFBODY": {
+            "type": "video",
+            "media": "https://video.wixstatic.com/video/54a996_008a92463e2c490bae5c5176ccd0fa13/1080p/mp4/file.mp4",
+            "displayName": "CLIP-RunwayTicketArtwork_JAi-Z_CLICKSTATEOFBODY"
+          },
+          "CLIP-EXPERIENCE ON-WORLD RECORDING WITH 8 CAMERAS": {
+            "type": "video",
+            "media": "https://www.youtube.com/watch?v=Vx2QDQfhIMo",
+            "displayName": "CLIP-EXPERIENCE ON-WORLD RECORDING WITH 8 CAMERAS"
+          },
+          "CLIP-LIVE RECORDING OF THE EVENT BY CYNNX, 9.11,2023": {
+            "type": "video",
+            "media": "https://www.youtube.com/watch?v=Ougtz4jod9c",
+            "displayName": "CLIP-LIVE RECORDING OF THE EVENT BY CYNNX, 9.11,2023"
+          },
+          "CLIP-NewCodes-ExhibitionFootage": {
+            "type": "video",
+            "media": "https://video.wixstatic.com/video/54a996_0232a6790a7647ef862d91e3f8e7a223/1080p/mp4/file.mp4",
+            "displayName": "CLIP-NewCodes-ExhibitionFootage"
+          }
+        }
+      },
+      "Afterparty": {
+        "project": {
+          "name": "Afterparty",
+          "type": "Afterparty",
+          "previewImage": "https://static.wixstatic.com/media/54a996_dcee2a1a6f0240099bbf6217a2d2718f~mv2.jpg",
+          "briefing": "Designed as a afterparty venue to enjoy after the runway show, where models partying with the attendees, and there're click-to-wearable instantly.",
+          "date": "10.23",
+          "visitLink": "https://www.digitalforgerywork.shop/afterparty3d",
+          "marketLink": "https://opensea.io/assets/base/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/34",
+          "chain": "Ethereum",
+          "price": "0.55 ETH (model)",
+          "text": "Following the groundbreaking C2W Metaverse Runway event, attendees were invited to an exclusive Afterparty in a vibrant virtual world. This unique experience allowed guests to mingle and party for 20 minutes, alongside the models from the runway. The highlight of the evening was the innovative \"Click-to-Wear\" feature. As models danced and partied, attendees could click on them to instantly try on the showcased digital fashion pieces. This experimental approach to retail combined entertainment with interactivity, making it a fun and engaging way to explore and purchase the latest digital fashion. The Afterparty was a celebration of creativity, technology, and the future of fashion, leaving a lasting impression on all who attended.",
+          "description2": "Experience the unforgettable C2W Metaverse Afterparty through the live recording captured by Cynnx. Now available on YouTube, this video showcases how our friends enjoyed one of the best metaverse parties ever. Starting at 08:13, the footage captures the vibrant atmosphere, as our friends partied alongside runway models in a unique virtual pop-up world. The innovative \"Click-to-Wear\" feature allowed everyone to try on outfits by simply clicking on the dancing models, adding an interactive twist to the event. Watch as our friends embrace the future of digital fashion, celebrating in a space where creativity, technology, and fun come together seamlessly."
+        },
+        "content": {
+          "3D--space": {
+            "type": "model",
+            "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/popyp-v5.glb",
+            "displayName": "3D--space"
+          },
+          "CLIP-Footage-CAN U BE": {
+            "type": "video",
+            "media": "https://video.wixstatic.com/video/54a996_b120f236c9854ed1a890426666252145/1080p/mp4/file.mp4",
+            "displayName": "CLIP-Footage-CAN U BE"
+          },
+          "CLIP-Voxvienne-event-footage": {
+            "type": "video",
+            "media": "https://video.wixstatic.com/video/54a996_99bf250049af451596a557301c399b48/1080p/mp4/file.mp4",
+            "displayName": "CLIP-Voxvienne-event-footage"
+          },
+          "CLIP-LIVE RECORDING OF THE EVENT BY CYNNX, 9.11,2023": {
+            "type": "video",
+            "media": "https://www.youtube.com/watch?time_continue=527&v=Ougtz4jod9c",
+            "displayName": "CLIP-LIVE RECORDING OF THE EVENT BY CYNNX, 9.11,2023"
+          },
+          "CLIP-Promo5": {
+            "type": "video",
+            "media": "https://video.wixstatic.com/video/54a996_da9bac51d12f425182b687f06b6452a5/1080p/mp4/file.mp4",
+            "displayName": "CLIP-Promo5"
+          },
+          "IMAGE-Front": {
+            "type": "image",
+            "media": "https://video.wixstatic.com/video/54a996_53023ddd5904448288cf4fe409c4b682/1080p/mp4/file.mp4",
+            "displayName": "IMAGE-Front"
+          },
+          "IMAGE-TopV-pers": {
+            "type": "image",
+            "media": "https://static.wixstatic.com/media/54a996_a2955c90aec246829a3404171e93016f~mv2.png",
+            "displayName": "IMAGE-TopV-pers"
+          },
+          "IMAGE-ROOM3": {
+            "type": "image",
+            "media": "https://static.wixstatic.com/media/54a996_090e18d22ba044d7ad3545f97abb2a2a~mv2.png",
+            "displayName": "IMAGE-ROOM3"
+          },
+          "IMAGE-cooking": {
+            "type": "image",
+            "media": "https://static.wixstatic.com/media/54a996_71dcbc51daf640cf9fe4fea7bb739048~mv2.png",
+            "displayName": "IMAGE-cooking"
+          },
+          "IMAGE-THRU1stRoom": {
+            "type": "image",
+            "media": "https://static.wixstatic.com/media/54a996_b05a958b51324480904fba77ec587241~mv2.png",
+            "displayName": "IMAGE-THRU1stRoom"
+          }
+        }
+      },
+      "Why We Exist?": {
+        "project": {
+          "name": "Why We Exist?",
+          "type": "Virtual Theater no 1",
+          "previewImage": "https://static.wixstatic.com/media/54a996_902846939c494b1685817fb01c63d314~mv2.jpg",
+          "briefing": "We are not servants, we are not files, we are not flat jpegs. We are one of the first mates that boarded in this virtuality by ourselves.",
+          "date": "11.23",
+          "visitLink": "https://d--f--w.com/pill3d",
+          "marketLink": "https://opensea.io/assets/ethereum/0xf53b18570db14c1e7dbc7dc74538c48d042f1332/1766",
+          "chain": "Ethereum",
+          "price": "50 ETH (World + Content)",
+          "text": "\"Why We Exist\" emerges as an innovative virtual theater experience, marking a pioneering venture into the realm of digital performance art. This concept, the first of its kind in based civilization, pushes the boundaries of digital creativity and immersive storytelling through two distinct modes: Cinematic and Immersive.",
+          "description2": "\"Why We Exist\" is an innovative virtual theater project that explores digital creativity through 3D assets and interactive storytelling. Born from a desire to push the boundaries of digital art, the project combines elements of fashion, design, and architecture within a metaverse setting. At its core is the Murakami Pill concept, which metaphorically represents digital actors' connection to their creator. The experience offers two modes of engagement (Cinematic and Immersive) and allows viewers to influence the narrative by choosing between three Clone remixes. Built with technical precision and without coding, the project features smart objects and carefully orchestrated audio-visual elements. Supported by Neon DAO, this virtual theater experience ultimately serves as a meditation on digital identity, creativity, and the evolving relationship between creators and their digital creations."
+        },
+        "content": {
+          "3D--scene1-discussion": {
+            "type": "model",
+            "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/whyweexist-v4.glb",
+            "displayName": "3D--scene1-discussion"
+          },
+          "CLIP-Trailer": {
+            "type": "video",
+            "media": "https://youtu.be/vxgzvaw7Qog",
+            "displayName": "CLIP-Trailer"
+          },
+          "CLIP-Web Record": {
+            "type": "video",
+            "media": "https://www.youtube.com/watch?v=_s8EBp84b3w",
+            "displayName": "CLIP-Web Record"
+          },
+          "CLIP-VR-IMMERSIVE-ACTORMODE": {
+            "type": "video",
+            "media": "https://video.wixstatic.com/video/54a996_d0a53c2258ea418a9decdc5ff7ea8634/720p/mp4/file.mp4",
+            "displayName": "CLIP-VR-IMMERSIVE-ACTORMODE"
+          },
+          "IMAGE-FullScript": {
+            "type": "image",
+            "media": "https://static.wixstatic.com/media/54a996_7dd2500dbf604854ba481d58f98279fa~mv2.png",
+            "displayName": "IMAGE-FullScript"
+          }
+        }
+      },
+     "Balloon": {
+  "project": {
+    "name": "Balloon",
+    "type": "Virtual Theater no 2",
+    "previewImage": "https://static.wixstatic.com/media/54a996_0c2d096eeabe450686bb364af7f8bf01~mv2.jpg",
+    "briefing": "we pop out like a red balloon, we don't know it yet. experience the virtual theater no:2 now.",
+    "date": "05.24",
+    "visitLink": "https://d--f--w.com/balloon3d",
+    "marketLink": "https://opensea.io/assets/ethereum/0xf53b18570db14c1e7dbc7dc74538c48d042f1332/1766",
+    "chain": "Ethereum",
+    "price": "4 ETH (World + Content)",
+    "text": "\"Balloon\" emerges as an innovative virtual theater experience, marking a pioneering venture into the realm of digital performance art. This concept, the first of its kind in based civilization, pushes the boundaries of digital creativity and immersive storytelling through two distinct modes: Cinematic and Immersive. Please click VISIT to see the play directly, (PC / VR), or click ACQUIRE to own it on Eth.",
+    "description2": "\"Balloon\" reimagines virtual theater by placing audiences within a dynamic digital landscape where the very concept of consciousness becomes fluid and malleable. Through its dualistic viewing modes, the performance challenges traditional notions of theatrical space, allowing viewers to either follow a guided emotional journey or float freely through scenes like untethered observers, each discovering their own narrative threads within the greater tapestry of the show.\n\nThe production's power lies in its ability to transform based on audience presence, creating a living, breathing digital ecosystem where every viewing becomes unique. As artificial performers question their own existence and purpose, viewers become active participants in shaping the show's emotional landscape, turning each performance into a collaborative exploration of digital consciousness and human connection."
+  },
+  "content": {
+      "CLIP-Trailer": {
+        "type": "video",
+        "media": "https://video.wixstatic.com/video/54a996_9ad99d6734bc442caa28b3b2a7157f1a/1080p/mp4/file.mp4",
+        "displayName": "CLIP-Trailer"
+      },
+      "CLIP-Web Record": {
+        "type": "video",
+        "media": "https://www.youtube.com/watch?v=uZ7R2M2NvM8",
+        "displayName": "CLIP-Web Record"
+      },
+      "CLIP-Cinematography": {
+        "type": "video",
+        "media": "https://youtu.be/5veQ5uv6tbk",
+        "displayName": "CLIP-Cinematography"
+      }
+    }
+  },
+      "Hatch": {
+    "project": {
+      "name": "Hatch",
+      "type": "Virtual Theater no 3",
+      "previewImage": "https://static.wixstatic.com/media/54a996_0c2d096eeabe450686bb364af7f8bf01~mv2.jpg",
+      "briefing": "Fractured Realities: Navigating Time Loops and Identity Crises in a Metaverse Theater Where Viewers Experience the Same Story Through 'Repeat', 'Reverse', and 'Circular' Perspectives.",
+      "date": "07.24",
+      "visitLink": "https://d--f--w.com/hatch3d",
+      "marketLink": "https://opensea.io/assets/ethereum/0xf53b18570db14c1e7dbc7dc74538c48d042f1332/1958",
+      "chain": "Ethereum",
+      "price": "10 ETH (World + Content)",
+      "text": "In a nihilistic virtual setup, two digital beings and an external entity explore existence, freedom, and control. Their journey leads them to question the nature of their reality and dimensions, uncovering deeper truths that challenge their roles. The external entity faces a pivotal choice that could redefine their understanding of existence.",
+      "description2": "At HYPERFY.IO/HATCH, users respawn in a virtual world. They start by clicking an NPC to initiate part 1 (2 minutes). Afterward, they click the appearing button to start part 2 (4.5 minutes). Finally, they click another appearing button to finish. Users can replay in repeat, reverse, or circular modes. Avatars are crucial and can be easily added by dragging a VRM model into the browser. The Hyperfy world can be viewed on a PC or via a VR headset. The PC experience showcases the act through 31 timed camera angles, while the VR version allows free movement and a first-person perspective."
+    },
+    "content": {
+      "3D--scene2-reverse": {
+        "type": "model",
+        "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/HATCTH3D-v2.glb",
+        "displayName": "3D--scene2-reverse"
+      },
+      "CLIP-Trailer": {
+        "type": "video",
+        "media": "https://video.wixstatic.com/video/54a996_5ce62c8b70eb474ab936b596d8699c4c/1080p/mp4/file.mp4",
+        "displayName": "CLIP-Trailer"
+      },
+      "CLIP28-you think you are in the real world": {
+        "type": "video",
+        "media": "https://video.wixstatic.com/video/54a996_3dfd52b2582a4a9b992843ad555083fb/1080p/mp4/file.mp4",
+        "displayName": "CLIP28-you think you are in the real world"
+      },
+      "CLIP47-R-nooooo": {
+        "type": "video",
+        "media": "https://video.wixstatic.com/video/54a996_6144e5522bed4010ab016054f8d90c00/1080p/mp4/file.mp4",
+        "displayName": "CLIP47-R-nooooo"
+      },
+      "IMAGE-scene2-reverse": {
+        "type": "image",
+        "media": "https://static.wixstatic.com/media/54a996_7d20d885ac8b46a8b88ea15649c60510~mv2.jpg",
+        "displayName": "IMAGE-scene2-reverse"
+      }
+    }
+  }  // End of Hatch
+    },  // End of Experience
+    "Gallery": { 
+      "Retail": {
+        "project": {
+          "name": "Retail",
+          "type": "Designer Shop",
+          "previewImage": "https://static.wixstatic.com/media/54a996_24434bc3de87420197b192d1bc4b340c~mv2.png",
+          "briefing": "Blending the physical retail with digital innovation to redefine shopping in the virtual existence as an immersive, interactive brand experience.",
+          "date": "",
+          "visitLink": "https://www.digitalforgerywork.shop/retail3d",
+          "marketLink": "https://opensea.io/assets/base/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/55",
+          "chain": "Base",
+          "price": "2 ETH (model)",
+          "text": "Retail in the metaverse bridges the gap between fashion and daily life, offering a unique platform for connection and innovation. The concept of retail extends beyond mere transactions; it serves as a vital link that introduces individuals to new cultures and innovations through fashion. As the digital and physical realms converge, especially in the metaverse, this connection evolves, presenting untapped potential for immersive brand experiences. The challenge lies in reimagining retail in a space where traditional physical interactions are absent, yet the opportunity to engage and educate remains paramount.",
+          "description2": "A hybrid retail model combines the best aspects of physical and digital shopping experiences, offering personalized, immersive interactions. This innovative approach is realized through a virtual space that allows consumers to instantly try on items on their digital counterparts, merging the tactile satisfaction of in-store shopping with the convenience of online platforms. Within this virtual environment, the retail experience is elevated through the integration of AI-driven assistance and the ability to customize one's experience in real-time. Notably, the store features four distinct architectural designs and four unique DJ music sets, which, when combined, create 16 different atmospheric experiences. This level of customization ensures that each visit can offer a new and engaging experience, encouraging exploration and repeated engagement.\nThe ultimate goal is to create a cohesive and immersive brand experience that transcends traditional shopping. By carefully designing every aspect of the virtual retail environment, from the architectural choices to the musical ambiance, brands can craft a narrative that resonates deeply with their audience. The selection of four buildings and accompanying DJ sets exemplifies this commitment to diversity and personalization, ensuring that visitors can tailor their experience to suit their preferences, thereby fostering a deeper connection with the brand. This approach not only enhances the narrative of the collection but also redefines the possibilities of digital retail, offering a glimpse into the future of brand engagement in the metaverse."
+        },
+        "content": {
+          "3D--Expld": {
+            "type": "model",
+            "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/mm69-exploded-v1.glb",
+            "displayName": "3D--Expld"
+          },
+          "CLIP-Retailclipsongbiggie": {
+            "type": "video",
+            "media": "https://static.wixstatic.com/media/54a996_dcee2a1a6f0240099bbf6217a2d2718f~mv2.jpg",
+            "displayName": "CLIP-Retailclipsongbiggie"
+          },
+          "IMAGE-isoexplod": {
+            "type": "image",
+            "media": "https://static.wixstatic.com/media/54a996_24434bc3de87420197b192d1bc4b340c~mv2.png",
+            "displayName": "IMAGE-isoexplod"
+          },
+          "IMAGE-Enter": {
+            "type": "image",
+            "media": "https://static.wixstatic.com/media/54a996_24434bc3de87420197b192d1bc4b340c~mv2.png",
+            "displayName": "IMAGE-Enter"
+          }
+        }
+      },
+      "Scaffold": {
+        "project": {
+          "name": "Scaffold",
+          "type": "3D Browser Museum",
+          "previewImage": "https://static.wixstatic.com/media/54a996_456c0c5326d64fce8dc04b0abc005c9d~mv2.jpg",
+          "briefing": "A silent structure that is builded around architectural smart objects. explore all 50 of digital topographies with a single click, or experiment with guided tours via npc's.",
+          "date": "03.24",
+          "visitLink": "https://www.digitalforgerywork.shop/scaffold3d",
+          "marketLink": "Order",
+          "chain": "-",
+          "price": "-",
+          "text": "Explore \"Scaffold,\" a 3D browser that showcases 50 digital topographies—unique 3D architectural designs. Drawing inspiration from the lunar landscapes in 2001: A Space Odyssey, Scaffold serves as an open museum, integrating digital models with the existing architecture of DFW.",
+          "description2": "Unlike traditional 2D websites that require multiple tabs for different designs kie, Scaffold offers a single, immersive space. Users can navigate through this environment with VR headsets, experiencing each building in a more engaging way.Click on an image to bring its corresponding building into the center of the courtyard. For a guided experience, use the Promenade+ feature, which displays all 50 buildings in sequence, each for six seconds. Short tutorials on Camera and Teleportation are available from the NPC guide to help you navigate the space more effectively. The entire world is lightweight, with a total size of 13 MB and each model averaging 5 MB, ensuring smooth performance on any device. Interested in a tailored 3D browsing experience with Scaffold? CONTACT to get started."
+        },
+        "content": {
+          "3D--full": {
+            "type": "model",
+            "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/website-1-v1.glb",
+            "displayName": "3D--full"
+          },
+          "IMAGE-Frontfacade-pers-elev": {
+            "type": "image",
+            "media": "https://static.wixstatic.com/media/54a996_4e5cc2fb8423486382b7d4efa3fe510b~mv2.png",
+            "displayName": "IMAGE-Frontfacade-pers-elev"
+          },
+          "CLIP-WorldTutorial": {
+            "type": "video",
+            "media": "https://youtu.be/u5g1TcDGYCc",
+            "displayName": "CLIP-WorldTutorial"
+          },
+          "CLIP-plan1stfloor": {
+            "type": "image",
+            "media": "https://static.wixstatic.com/media/54a996_0189f5d704b1450886d4a5b8cacd7462~mv2.png",
+            "displayName": "CLIP-plan1stfloor"
+          }
+        }
+      },
+      "Blackcity": {
+        "project": {
+          "name": "Blackcity",
+          "type": "Virtual City",
+          "previewImage": "https://static.wixstatic.com/media/54a996_271510526532424ca818cbc1c5799c02~mv2.jpg",
+          "briefing": "a virtual city with 8 independent museums (MOCA ROOMS), designed by DFW and curated on-chain by their citizens.",
+          "date": "06.23",
+          "visitLink": "https://www.digitalforgerywork.shop/blackcity3d",
+          "marketLink": "https://opensea.io/collection/moca-rooms?search[stringTraits][0][name]=Architect%20Name&search[stringTraits][0][values][0]=DFW",
+          "chain": "Ethereum",
+          "price": "Offer",
+          "text": "DFW has constructed a city within a decentralized landscape, featuring two series of four curatable virtual museum buildings, resulting in a total of 240 empty frames ready for curation by Roomies. In addition to the eight museums, visitors can explore pxlDuomo to experience 2Pac's \"Black City\" and a Concept Furniture Store showcasing DFW designs, either by walking or utilizing the convenience of the Central Office. The Transparent Animal Rooms drop has been completed, and the launch of the Space Time Rooms is anticipated soon, marking the next phase in the evolution of Black City.",
+          "description2": "Launched by MOCA (Museum of Crypto Art), ROOMs are engine agnostic, virtual-world-interoperable, 1-of-1 architectural objects. They are decentralized extensions of the Museum itself. With a ROOM NFT, holders can independently and permissionless-ly curate, exhibit, and deploy art exhibitions, shows, and spatial experiences.\nDuring the launch of Transparent Animal Rooms, we employed an array of innovative and disruptive marketing videos to create widespread awareness and excitement about both the unique designs and the software product itself. These videos were strategically shared across various social media platforms, leveraging their wide reach and engagement potential to maximize the impact.\nAs the second Room series by DFW, Transparent Animal Rooms are primarily motivated by the thought of pulling themselves back to a point in the volume without losing their silhouettes since museum buildings are a typology that nearly transforms into an artwork itself with an attitude that stands out very much as a typology. However, this retreat is \"humble\" enough to allow users to explore artworks from many angles while also realizing that the museums themselves are a creation of art or design."
+        },
+        "content": {
+          "3D--abstract": {
+            "type": "model",
+            "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/BLACKCITY-v6.glb",
+            "displayName": "3D--abstract"
+          },
+          "CLIP-TAR-COLD**LAUNCH**VID": {
+            "type": "video",
+            "media": "https://youtu.be/LthRSJ8eK5U",
+            "displayName": "CLIP-TAR-COLD**LAUNCH**VID"
+          },
+          "CLIP-TUPAC-BLACKCITY-song": {
+            "type": "video",
+            "media": "https://video.wixstatic.com/video/54a996_f74cb85449ab4cf2a2c7ce8e82585f88/1080p/mp4/file.mp4",
+            "displayName": "CLIP-TUPAC-BLACKCITY-song"
+          },
+          "CLIP-M0rg4ndeepFraikeman OscarsR00M5WFD*CNTRALEYES": {
+            "type": "video",
+            "media": "https://youtu.be/hbzO4M-hg_M",
+            "displayName": "CLIP-M0rg4ndeepFraikeman OscarsR00M5WFD*CNTRALEYES"
+          },
+          "CLIP-3D-UI-CENTRALOFFICE": {
+            "type": "video",
+            "media": "https://video.wixstatic.com/video/54a996_53023ddd5904448288cf4fe409c4b682/1080p/mp4/file.mp4",
+            "displayName": "CLIP-3D-UI-CENTRALOFFICE"
+          },
+          "CLIP-PALPATINE-DFWCFS": {
+            "type": "video",
+            "media": "https://video.wixstatic.com/video/54a996_ac4ca67a28094ee5b839437ec2bc50c7/1080p/mp4/file.mp4",
+            "displayName": "CLIP-PALPATINE-DFWCFS"
+          },
+          "CLIP-blackcityrenderloop": {
+            "type": "video",
+            "media": "https://video.wixstatic.com/video/54a996_f91b0daf7a96414d9a403eae6d6f36e2/1080p/mp4/file.mp4",
+            "displayName": "CLIP-blackcityrenderloop"
+          }
+        }
+      },
+       "Neue2Dojo": {
+        "project": {
+          "name": "Neue²Dojo",
+          "type": "Independent Virtual Gallery",
+          "previewImage": "https://static.wixstatic.com/media/54a996_0c2d096eeabe450686bb364af7f8bf01~mv2.jpg",
+          "briefing": "",
+          "date": "01.23-today",
+          "visitLink": "https://www.digitalforgerywork.shop/neue2dojo3d",
+          "marketLink": "https://opensea.io/assets/base/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/30",
+          "chain": "Base",
+          "price": "6 ETH (model)",
+          "text": "The Neue² Dojo Gallery stands at the forefront of a cultural revolution, exemplifying how art and technology can coalesce to create entirely new paradigms for cultural expression and engagement. This pioneering project, anchored firmly on the blockchain and realized within the boundless possibilities of 3D web technology, redefines the essence of a gallery not as a physical space, but as a fluid, virtual environment that can adapt and transform to suit the thematic and aesthetic needs of each exhibition it hosts.",
+          "description2": "Neue² Dojo is 26th of digital topographies, designed between 21.12.2023 to 24.12.2023. In Neue² Dojo, 340 artworks made by decentralize* from 2017 until now are curated and exhibited in a museum form. Each room or corridor has its context of aesthetics and time, carefully designed to create a meaningful promenade scenario. Categories like digital art, digital painting, physical painting, crypto art, and photography could be experienced virtually over a manipulated surface.\nThe essence of the Neue² Dojo Gallery lies in its exploration of the flexible nature of virtual architecture. Unlike traditional galleries, where the physical constraints of the building dictate the scope and scale of exhibitions, the Neue² Dojo Gallery is liberated from these limitations. Each exhibition can be accompanied by a complete redesign of the gallery's virtual structure, allowing for an unprecedented level of thematic and conceptual integration between the space and the art it displays. This adaptability not only enhances the viewer's experience but also expands the creative possibilities for artists, curators, and designers.\nThe decision to anchor the gallery on the blockchain is both a philosophical and practical one. It serves as a testament to the gallery's commitment to the principles of decentralization, transparency, and accessibility. Artworks hosted in the Neue² Dojo Gallery are immortalized on the blockchain, ensuring their provenance and ownership are clear and indisputable. This integration with blockchain technology not only secures art against the vicissitudes of time and technology but also opens up new avenues for art ownership and appreciation in a digital age."
+        },
+        "content": {
+          "3D--exploded": {
+            "type": "model",
+            "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/NEUE2DOJO-v7.glb",
+            "displayName": "3D--exploded"
+          },
+          "CLIP-Heritage": {
+            "type": "video",
+            "media": "https://static.wixstatic.com/media/54a996_0c2d096eeabe450686bb364af7f8bf01~mv2.jpg",
+            "displayName": "CLIP-Heritage"
+          },
+          "CLIP-OfficialVisualRepresentation": {
+            "type": "video",
+            "media": "https://video.wixstatic.com/video/54a996_687bd3e072424a379a229842d2fdade1/1080p/mp4/file.mp4",
+            "displayName": "CLIP-OfficialVisualRepresentation"
+          },
+          "IMAGE-isometric-plan": {
+            "type": "image",
+            "media": "https://static.wixstatic.com/media/54a996_068ae40379aa431b8872aa74235e28d1~mv2.jpg",
+             "displayName": "IMAGE-isometric-plan"
+},
+      "IMAGE-N+D_4.png": {
+        "type": "image",
+        "media": "https://static.wixstatic.com/media/54a996_1904bc15c7824544a013c4e52ef72509~mv2.png",
+        "displayName": "IMAGE-N+D_4.png"
+      },
+      "IMAGE-N+D_3.png": {
+        "type": "image",
+        "media": "https://static.wixstatic.com/media/54a996_14c5caa79b6f42f2bca51a8972199ced~mv2.png",
+        "displayName": "IMAGE-N+D_3.png"
+      },
+      "IMAGE-N+D_7.png": {
+        "type": "image",
+        "media": "https://static.wixstatic.com/media/54a996_d16d77a791734134ba4180ab82925b36~mv2.png",
+        "displayName": "IMAGE-N+D_7.png"
+      },
+      "IMAGE-print1": {
+        "type": "image",
+        "media": "https://static.wixstatic.com/media/54a996_0291fb15e81c4d95a2dd3b949587b059~mv2.jpg",
+        "displayName": "IMAGE-print1"
+      },
+      "IMAGE-print2": {
+        "type": "image",
+        "media": "https://static.wixstatic.com/media/54a996_07d7890cb88e4e03932d37464a524e02~mv2.jpg",
+        "displayName": "IMAGE-print2"
+      },
+      "IMAGE-print3": {
+        "type": "image",
+        "media": "https://static.wixstatic.com/media/54a996_07d7890cb88e4e03932d37464a524e02~mv2.jpg",
+        "displayName": "IMAGE-print3"
+      }
+    }
+  },
+  "Forge": {
+    "project": {
+      "name": "Forge",
+      "type": "Music Exhibitions with 3 Museums, 3 Performance Spaces",
+      "previewImage": "https://static.wixstatic.com/media/54a996_91d68550d4e540bdb91d5eef465bbcc1~mv2.jpg",
+      "briefing": "NoiseDAO's world designed to showcase their collection of audio nft's in 3 different museums next to 3 different event spaces.",
+      "date": "",
+      "visitLink": "https://www.digitalforgerywork.shop/forge3d",
+      "marketLink": "-",
+      "chain": "Ethereum",
+      "price": "-",
+      "text": "NoiseDAO World Design: A Decentralized Approach to Music and Art  NoiseDAO, a decentralized autonomous organization, has embarked on a mission to support, acquire, and innovate within the music industry alongside its members. With a commendable collection at its disposal, NoiseDAO sought diverse solutions to showcase works across various dimensions. This initiative unfolded within DAOTown, a virtual city crafted by NeonBuidl and M3, designed as a haven for relaxation and education about DAOs. From NoiseDAO's portal, guests could teleport to a world dedicated to Noise, alongside other DAOs like FlamingoDAO and NeonDAO, enriching the visitor's experience.",
+      "description2": "The project commenced with thorough research into NoiseDAO's preferences and collections, leading to the creation of a mood board to align the vision. The initial keywords—\n\n​​black and white, pixel/glitch, metamorphosis, sound-sensitive, primitive/aggressive, sharp geometries, dark, underground, zen-like villain or reverse, minimalist\n \n—guided the generation of AI visuals. The initial approach aimed to consolidate multiple functions within a single volume, yet to enhance the experience, it was decided to distribute functions across various structures within the world.\nSubsequent urban planning sketches catered to the diverse needs of the collections, proposing an organic central space surrounded by related uses. This urban design was brought to life in a Hyperfy world, allowing for the testing of spatial arrangements and skybox/hdr options. An experimental phase included the Holy Shadow HQ as a temporary nightclub, utilizing three bloom layers, a decision solidified after early tests.\n​\nNoiseDAO members identified the need for six distinct spaces: five for exhibiting collections and one each for meetings and music-related activities.\n \nThe High-Frequency Building (Centipede), features 16 listening hubs within a single structure, with potential expansion based on future publications. The design incorporates floating techno bungalows linked to a horizontally flowing structure, with hubs distinguished by frosted glass floors reflecting interior lighting.\n​\nThe Experimental Audio Museum (0PP13) adopts a metaversal approach, utilizing spheres to represent museum rooms, interconnected to a larger central sphere serving as the entrance and patio. This futuristic design, inspired by basic chemical shapes, accommodates ten sections of experimental audio.\n​\nThe Music Collection (Metaboilerism), introduces a new tower, blending elements of the NY Guggenheim and Nagakin Capsule Tower, with modular listening hubs and vertical ramps guiding artwork visits. To avoid spatial audio interference, artworks are hosted via Webviewer, isolating music for individual users.\n​\nPerformance Hall (PH) offers a virtual post-industrial ambiance with skatepark elements, designed for live sets and performances by resident artists. The building features audio-reactive bloom layers and a virtual drum machine, hinting at future immersive performance possibilities.\n​\nLastly, a Temporary Exhibition Space (TES) and a contextual silent black city provide a cohesive backdrop, ensuring each edifice is showcased optimally. This comprehensive approach by NoiseDAO illustrates a pioneering venture into decentralized music and art exhibition, setting a new standard for digital creativity and community engagement."
+    },
+    "content": {
+      
+      "CLIP-Forgeworld": {
+        "type": "video",
+        "media": "https://video.wixstatic.com/video/54a996_339df704b0f04742a1eb45a4ef049d0a/1080p/mp4/file.mp4",
+        "displayName": "CLIP-Forgeworld"
+      },
+      "3D--Hiddendisco_HSHQ": {
+        "type": "model",
+        "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/11-HOLY SHADOW.glb",
+        "displayName": "3D--Hiddendisco_HSHQ"
+      },
+      
+      "3D--Metaboilerism": {
+        "type": "model",
+        "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/39-METABOILERISM.glb",
+        "displayName": "3D--Metaboilerism"
+      },
+      "3D--ExperimentalAudioMuseum-0PP13": {
+        "type": "model",
+        "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/44-0PP13.glb",
+        "displayName": "3D--ExperimentalAudioMuseum-0PP13"
+      },
+      "3D--HighFrequency-Centipede": {
+        "type": "model",
+        "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/48-CENTIPEDE.glb",
+        "displayName": "3D--HighFrequency-Centipede"
+      },
+      "3D--TES": {
+        "type": "model",
+        "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/TES-v2.glb",
+        "displayName": "3D--TES"
+      },
+      "3D--AM": {
+        "type": "model",
+        "media": "https://raw.githubusercontent.com/decentralize-dfw/finder/main/DFWAM-SKATE-v1.glb",
+        "displayName": "3D--AM"
+         }
+      }
+    }
+  }
+};
+    </script>
+</body>
+</html>
+
+CAN YOU PLEASE TELL ME WHERE IS THE SYNTAX ERROR?
