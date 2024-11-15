@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en" oncontextmenu="return false;" onselectstart="return false" ondragstart="return false">
+<head>
+    <meta charset="UTF-8">
+    <title>Digital Forgery Work 3D Viewer</title>
+    
+    <!-- SEO and Open Graph Tags -->
+    <meta name="description" content="Digital Forgery Work 3D Viewer - View exclusive 3D digital designs.">
+    <meta name="keywords" content="digital forgery, 3D design, digital art, NFT, furniture design">
+    <meta property="og:title" content="Digital Forgery Work 3D Viewer">
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="Explore and interact with exclusive 3D digital art pieces.">
+    
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+            overflow: -moz-scrollbars-none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background: transparent;
+        }
+        
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            width: 0 !important;
+            height: 0 !important;
+            display: none !important;
+            background: transparent !important;
+        }
+
+        body { 
+            height: 1000vh;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            pointer-events: auto;
+        }
+        
+        * {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+        
+        *::-webkit-scrollbar {
+            display: none !important;
+        }
+
+        #canvas-container {
+            width: 1200px;
+            height: 600px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            overflow: hidden;
+            background: transparent;
+        }
+
+        canvas { 
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+
+        .object-info {
+            position: fixed;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            text-align: right;
+            pointer-events: none;
+            z-index: 1000;
+            padding: 10px;
+        }
+
+        .object-name {
+            font-family: helvetica;
+            font-weight: bold;
+            font-size: 25px;
+            letter-spacing: -0.25px;
+            color: black;
+            margin-bottom: 7px;
+            white-space: nowrap;
+        }
+
+        .object-type {
+            font-family: helvetica;
+            font-weight: 500;
+            font-size: 15px;
+            letter-spacing: -0.05px;
+            color: black;
+            margin-bottom: 7px;
+            white-space: nowrap;
+        }
+
+        .object-colorways {
+            font-family: helvetica;
+            font-weight: 500;
+            font-style: italic;
+            font-size: 12px;
+            letter-spacing: -0.15px;
+            color: #595959;
+            margin-bottom: 7px;
+            white-space: nowrap;
+        }
+
+        .object-link {
+            font-family: helvetica;
+            font-weight: 500;
+            font-style: italic;
+            font-size: 12px;
+            letter-spacing: -0.15px;
+            color: rgb(9, 7, 102);
+            text-decoration: none;
+            cursor: pointer;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .object-link:hover {
+            text-decoration: underline;
+        }
+
+.market-button {
+    font-family: helvetica;
+    font-weight: 500;
+    font-style: italic;
+    font-size: 11px;
+    letter-spacing: -0.15px;
+    color: black;
+    padding: 7px 14px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid #000000;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    pointer-events: auto;
+    margin-top: 10px;
+}
+
+.market-button:hover {
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    border-color: transparent;
+}
+
+       #wireframe-toggle {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 7px 7px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.5);
+    border: 1px solid #808080;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: helvetica;
+    font-size: 12px;
+    font-style: italic;
+    letter-spacing: -0.15px;
+    z-index: 1000;
+    transition: all 0.3s;
+}
+
+#wireframe-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+#wireframe-toggle.active {
+    background-color: transparent;
+    color: black;
+}
+
+#wireframe-toggle.active:hover {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+   <button id="wireframe-toggle">Material</button>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js"></script>
+    <script>
+    // Security and protection scripts with IIFE for proper scoping
+    (function() {
+        const preventDefault = (e) => e.preventDefault();
+
+        document.addEventListener('contextmenu', preventDefault);
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 'i' || e.key === 'I' || e.key === 's' || e.key === 'S')) ||
+                e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J' || e.key === 'c' || e.key === 'C'))) {
+                preventDefault(e);
+            }
+        });
+
+        ['keypress', 'mousedown', 'keydown'].forEach(event => {
+            document.addEventListener(event, (e) => {
+                if (e.keyCode === 123) preventDefault(e);
+            });
+        });
+
+        ['selectstart', 'dragstart'].forEach(event => {
+            window.addEventListener(event, preventDefault);
+        });
+    })();
+
+    // Main application with proper scoping
+    (function initializeViewer() {
+        // Helper function to create DOM elements with properties
+        function createElement(tag, className, text) {
+            const element = document.createElement(tag);
+            if (className) element.className = className;
+            if (text) element.textContent = text;
+            return element;
+        }
+
+        // Object data with proper organization
+        const objectData = {
+            "1": {
+                name: "Mermaid Chair",
+                type: "chair",
+                colorways: "OG, BLCK, CHROME, RED",
+                link: "https://opensea.io/collection/dfw-design?search[query]=mermaid"
+            },
+            "2": {
+                name: "E66",
+                type: "chair",
+                colorways: "OG, BLCK, ANTRST, RED",
+                link: "https://opensea.io/collection/dfw-design?search[query]=e66"
+            },
+            "3": {
+        name: "Higgs Boson",
+        type: "chair",
+        colorways: "CHROME, NIGHT, CONCRETE, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=higgs"
+    },
+    "4": {
+        name: "Bilbao Lego Chair",
+        type: "chair",
+        colorways: "CHROME, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=bilbao"
+    },
+    "5": {
+        name: "Armageddon Seat",
+        type: "chair",
+        colorways: "OG, BLCK, WHT, DARK",
+        link: "https://opensea.io/collection/dfw-design?search[query]=armageddon"
+    },
+    "6": {
+        name: "Aretaix",
+        type: "chair",
+        colorways: "ANTRST, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=aretaix"
+    },
+    "7": {
+        name: "Jack the Lad-xx",
+        type: "chair",
+        colorways: "OG, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=jack"
+    },
+    "8": {
+        name: "Deconstruliazed_Sitting_Elements 2",
+        type: "chair",
+        colorways: "ANTRST, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=decons"
+    },
+    "9": {
+        name: "Fetuchair",
+        type: "chair",
+        colorways: "OG, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=fetuchair"
+    },
+    "10": {
+        name: "Accelerator",
+        type: "chair",
+        colorways: "OG, mono, DAVNC, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=accel"
+    },
+    "11": {
+        name: "冬",
+        type: "sofa",
+        colorways: "OG, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=winter"
+    },
+    "12": {
+        name: "Car Wreck Sofa",
+        type: "sofa",
+        colorways: "OG, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=car+wreck"
+    },
+    "13": {
+        name: "s:j:s:o:c:",
+        type: "sofa",
+        colorways: "OG, MONO, WHT, NEON",
+        link: "https://opensea.io/collection/dfw-design?search[query]=sjsoc"
+    },
+    "14": {
+        name: "Glass Dougnut Communication Unit",
+        type: "sofa",
+        colorways: "OG, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=glass"
+    },
+    "15": {
+        name: "Brown Shark Table",
+        type: "table",
+        colorways: "OG, DARK, ROCK, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=brown"
+    },
+    "16": {
+        name: "Agressiv Board Meeting Unit",
+        type: "table",
+        colorways: "OG, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=board"
+    },
+    "17": {
+        name: "2070s table for DJ's",
+        type: "table",
+        colorways: "OG, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=2070"
+    },
+    "18": {
+        name: "Spooky Carpet",
+        type: "carpet",
+        colorways: "OG, BLACKIGATOR, THRONE, DAVNC",
+        link: "https://opensea.io/collection/dfw-design?search[query]=spooky"
+    },
+    "19": {
+        name: "Genetic Carpet",
+        type: "carpet",
+        colorways: "OG, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=genetic"
+    },
+    "20": {
+        name: "screamer [audio speaker]",
+        type: "music",
+        colorways: "OG, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=screamer"
+    },
+    "21": {
+        name: "Decentralize*Joking 1 Dj Controller",
+        type: "music",
+        colorways: "OG, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=decentralize"
+    },
+    "22": {
+        name: "DJ*2 [offroad] {controller}",
+        type: "music",
+        colorways: "OG, GRY, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=offroad"
+    },
+    "23": {
+        name: "DJ*2_2 [standalone] {controller}",
+        type: "music",
+        colorways: "OG, BLCK, WHT, RED",
+        link: "https://opensea.io/collection/dfw-design?search[query]=standalone"
+    }
+};
+
+        // Configuration object
+        const config = {
+            model: {
+                url: 'https://raw.githubusercontent.com/decentralize-dfw/3dwebhome/main/agaa-360-sep-edited-v1.glb'
+            },
+            animation: {
+                frameCount: 150,
+                speedMultiplier: 1
+            },
+            camera: {
+                start: { x: -5.1, y: 5.9, z: 6 },
+                end: { x: -5.1, y: 91, z: 6 },
+                rotation: { x: -45, y: 0, z: 0 },
+                orthographicScale: 1.5
+            },
+            dimensions: {
+                width: 1590,
+                height: 830
+            }
+        };
+
+        // Debug helper
+        let lastLogTime = 0;
+        const LOG_THROTTLE = 1000;
+
+        function debugLog(message, data = {}) {
+            const now = Date.now();
+            if (now - lastLogTime > LOG_THROTTLE) {
+                console.log(`[DEBUG] ${message}`, data);
+                lastLogTime = now;
+            }
+        }
+
+        // Opacity calculation based on camera position
+        function calculateOpacity(objectId, cameraY) {
+            const objectId_num = parseInt(objectId);
+            const objectCenter = 6.5 + (4 * (objectId_num - 1));
+            const zeroStart = objectCenter - 1.5;
+            const oneStart = objectCenter - 1.25;
+            const oneEnd = objectCenter + 1.25;
+            const zeroEnd = objectCenter + 1.5;
+
+            if (cameraY <= zeroStart || cameraY >= zeroEnd) return 0;
+            
+            if (cameraY > zeroStart && cameraY <= objectCenter) {
+                const range = objectCenter - oneStart;
+                const distance = cameraY - oneStart;
+                return Math.max(0.01, Math.min(1, distance / range));
+            }
+            
+            if (cameraY > objectCenter && cameraY < zeroEnd) {
+                const range = oneEnd - objectCenter;
+                const distance = oneEnd - cameraY;
+                return Math.max(0.01, Math.min(1, distance / range));
+            }
+
+            return 0;
+        }
+
+        // Create elements 
+       function createObjectInfoElements() {
+    debugLog('Creating info elements');
+    
+    const existingElements = document.querySelectorAll('.object-info');
+    existingElements.forEach(el => el.remove());
+    
+    const mainContainer = document.createElement('div');
+    mainContainer.id = 'info-container';
+    
+    Object.entries(objectData).forEach(([objectId, objectInfo]) => {
+        const container = createElement('div', 'object-info', null);
+        container.id = `object-info-${objectId}`;
+        
+        const nameElement = createElement('div', 'object-name', objectInfo.name);
+        const typeElement = createElement('div', 'object-type', objectInfo.type);
+        const colorwaysElement = createElement('div', 'object-colorways', objectInfo.colorways);
+        
+        const marketButton = createElement('button', 'market-button', 'open in market');
+        marketButton.id = `market-button-${objectId}`;
+        marketButton.onclick = () => window.open(objectInfo.link, '_blank', 'noopener');
+        
+        container.appendChild(nameElement);
+        container.appendChild(typeElement);
+        container.appendChild(colorwaysElement);
+        container.appendChild(marketButton);
+        
+        mainContainer.appendChild(container);
+    });
+    
+    document.body.appendChild(mainContainer);
+}
+
+        // Update visibility
+        function updateObjectInfo(objectId, opacity) {
+    const info = document.getElementById(`object-info-${objectId}`);
+    if (info) {
+        info.style.opacity = opacity;
+        const button = document.getElementById(`market-button-${objectId}`);
+        if (button) {
+            button.style.opacity = opacity;
+            button.style.pointerEvents = opacity > 0.01 ? 'auto' : 'none';
+        }
+    }
+}
+
+        // Three.js setup
+        const scene = new THREE.Scene();
+        const aspect = config.dimensions.width / config.dimensions.height;
+        const camera = new THREE.OrthographicCamera(
+            -config.camera.orthographicScale * aspect,
+            config.camera.orthographicScale * aspect,
+            config.camera.orthographicScale,
+            -config.camera.orthographicScale,
+            0.1,
+            1000
+        );
+
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: true,
+            alpha: true,
+            premultipliedAlpha: false,
+            logarithmicDepthBuffer: true
+        });
+        renderer.setSize(config.dimensions.width, config.dimensions.height);
+        renderer.setClearColor(0x000000, 0);
+        renderer.physicallyCorrectLights = true;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        camera.position.set(config.camera.start.x, config.camera.start.y, config.camera.start.z);
+        camera.rotation.set(
+            THREE.MathUtils.degToRad(config.camera.rotation.x),
+            THREE.MathUtils.degToRad(config.camera.rotation.y),
+            THREE.MathUtils.degToRad(config.camera.rotation.z)
+        );
+
+        // Lighting setup
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const mainLight = new THREE.DirectionalLight(0xffffff, 0.7);
+        mainLight.position.set(0, 10, 10);
+        mainLight.castShadow = true;
+        scene.add(mainLight);
+
+        const frontFill = new THREE.DirectionalLight(0xffffff, 0.3);
+        frontFill.position.set(0, 0, 5);
+        scene.add(frontFill);
+
+        const topFill = new THREE.DirectionalLight(0xffffff, 0.3);
+        topFill.position.set(0, 5, 0);
+        scene.add(topFill);
+
+        const backFill = new THREE.DirectionalLight(0xffffff, 0.2);
+        backFill.position.set(0, 0, -5);
+        scene.add(backFill);
+
+        // Add wireframe state tracking
+      let isWireframe = true;
+        let currentModel = null;
+
+        // Wireframe toggle button functionality
+        const wireframeToggle = document.getElementById('wireframe-toggle');
+        
+        function toggleWireframe() {
+    isWireframe = !isWireframe;
+    wireframeToggle.textContent = isWireframe ? 'Material' : 'Wireframe';
+    wireframeToggle.classList.toggle('active', isWireframe);
+    
+    if (currentModel) {
+        currentModel.traverse((child) => {
+            if (child.isMesh) {
+                if (isWireframe) {
+                    // Store original material
+                    child.userData.originalMaterial = child.material;
+                    
+                    // Create simple wireframe material
+                    child.material = new THREE.MeshBasicMaterial({
+                        wireframe: true,
+                        color: 0x000000,
+                        transparent: true,
+                        opacity: 0.2,
+                        side: THREE.DoubleSide
+                    });
+                } else {
+                    // Restore original material
+                    if (child.userData.originalMaterial) {
+                        child.material = child.userData.originalMaterial;
+                    }
+                }
+            }
+        });
+    }
+}
+
+        wireframeToggle.addEventListener('click', toggleWireframe);
+
+        // Model loading setup
+        const dracoLoader = new THREE.DRACOLoader();
+        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+
+        const loader = new THREE.GLTFLoader();
+        loader.setDRACOLoader(dracoLoader);
+
+        let mixer;
+
+        // Create info elements before loading model
+        createObjectInfoElements();
+
+        loader.load(config.model.url, function(gltf) {
+    const model = gltf.scene;
+    currentModel = model; // Store reference to model
+    
+    model.traverse((child) => {
+        if (child.isMesh) {
+            // Store original material first
+            child.userData.originalMaterial = child.material;
+            
+            // Apply wireframe material initially
+            child.material = new THREE.MeshBasicMaterial({
+                wireframe: true,
+                color: 0x000000,
+                transparent: true,
+                opacity: 0.65,
+                side: THREE.DoubleSide
+            });
+
+            // The rest of your material settings (if any)
+            if (child.material.metalness > 0) {
+                child.material.metalness = 0.5;
+                child.material.roughness = 1.2;
+                child.material.envMapIntensity = 1.5;
+            }
+            
+            if (child.material.transmission > 0) {
+                child.material.roughness *= 0.6;
+                child.material.envMapIntensity = 2;
+                child.material.clearcoat = 1;
+                child.material.clearcoatRoughness = 0.1;
+            }
+
+            child.material.transparent = true;
+            child.material.alphaToCoverage = true;
+            child.material.depthWrite = true;
+        }
+    });
+    
+    scene.add(model);
+
+    // Set initial button state
+    wireframeToggle.textContent = 'Material';
+    wireframeToggle.classList.add('active');
+
+    if (gltf.animations && gltf.animations.length) {
+        mixer = new THREE.AnimationMixer(model);
+        gltf.animations.forEach(clip => {
+            mixer.clipAction(clip).play();
+        });
+    }
+});
+
+        // Animation and camera movement setup
+        let currentY = config.camera.start.y;
+        let targetY = currentY;
+        const smoothness = 0.05;
+        let lastCameraUpdate = 0;
+        const CAMERA_UPDATE_THROTTLE = 16;
+
+        function lerp(start, end, factor) {
+            return start + (factor * (end - start));
+        }
+
+        function updateCamera() {
+            const now = Date.now();
+            if (now - lastCameraUpdate < CAMERA_UPDATE_THROTTLE) return;
+            
+            const scrollFraction = window.pageYOffset / (document.documentElement.scrollHeight - window.innerHeight);
+            const currentCameraY = config.camera.start.y + (scrollFraction * (config.camera.end.y - config.camera.start.y));
+            
+            if (mixer) {
+                mixer.setTime((scrollFraction * config.animation.frameCount) * config.animation.speedMultiplier);
+            }
+
+            targetY = currentCameraY;
+            currentY = lerp(currentY, targetY, smoothness);
+            camera.position.y = currentY;
+
+            Object.keys(objectData).forEach(objectId => {
+                const opacity = calculateOpacity(objectId, currentY);
+                updateObjectInfo(objectId, opacity);
+            });
+            
+            lastCameraUpdate = now;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            updateCamera();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', function() {
+            const aspect = config.dimensions.width / config.dimensions.height;
+            camera.left = -config.camera.orthographicScale * aspect;
+            camera.right = config.camera.orthographicScale * aspect;
+            camera.top = config.camera.orthographicScale;
+            camera.bottom = -config.camera.orthographicScale;
+            camera.updateProjectionMatrix();
+            renderer.setSize(config.dimensions.width, config.dimensions.height);
+        });
+
+    })();
+    </script>
+</body>
+</html>
