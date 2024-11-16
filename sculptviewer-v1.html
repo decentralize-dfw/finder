@@ -344,8 +344,8 @@
                 speedMultiplier: 1
             },
             camera: {
-                start: { x: -5, y: 6.8, z: 6 },
-                end: { x: -5, y: 67.8, z: 6 },
+                start: { x: -4.7, y: 6.4, z: 6 },
+                end: { x: -4.7, y: 67.4, z: 6 },
                 rotation: { x: -45, y: 0, z: 0 },
                 orthographicScale: 1.5
             },
@@ -370,7 +370,7 @@
         // Opacity calculation based on camera position
         function calculateOpacity(objectId, cameraY) {
             const objectId_num = parseInt(objectId);
-            const objectCenter = 6.8 + (4 * (objectId_num - 1));
+            const objectCenter = 6.4 + (4 * (objectId_num - 1));
             const zeroStart = objectCenter - 1.5;
             const oneStart = objectCenter - 1.25;
             const oneEnd = objectCenter + 1.25;
