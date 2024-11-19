@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.scroll-container {
+    width: 1200px;
+    height: 590px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: transparent;
+    position: relative;
+    font-family: "Lucida Console", Monaco, monospace;
+    color: black;
+    direction: rtl;
+}
+
+.scroll-content {
+    direction: ltr;
+    padding: 15px;
+}
+
+.scroll-container::-webkit-scrollbar {
+    width: 6px;
+    left: 0;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.main-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+}
+
+.second-title {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+
+.third-title {
+    font-size: 11px;
+    font-weight: 500;
+    font-style: italic;
+    margin-bottom: 10px;
+    letter-spacing: -0.25px;
+}
+
+.regular-text {
+    font-size: 9px;
+    font-weight: normal;
+    margin-bottom: 9px;
+    letter-spacing: -0.2px;
+}
+
+.bullet-point {
+    position: relative;
+    padding-left: 15px;
+    margin-left: 15px;
+}
+
+.bullet-point::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.contact-link {
+    display: block;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 20px 0;
+    color: black;
+    text-decoration: none;
+}
+
+.contact-link:hover {
+    text-decoration: underline;
+}
+</style>
+
+<script>
+window.onload = function() {
+    const container = document.querySelector('.scroll-container');
+    let isMouseOver = false;
+    
+    container.addEventListener('mouseover', () => {
+        isMouseOver = true;
+    });
+    
+    container.addEventListener('mouseout', () => {
+        isMouseOver = false;
+    });
+    
+    function autoScroll() {
+        if (!isMouseOver) {
+            container.scrollTop += 1;
+            if (container.scrollTop >= (container.scrollHeight - container.clientHeight)) {
+                container.scrollTop = 0;
+            }
+        }
+        setTimeout(autoScroll, 50);
+    }
+    
+    autoScroll();
+}
+</script>
+</head>
+<body>
+<div class="scroll-container">
+    <div class="scroll-content">
+        <div class="main-title">DFW, Digital Forgery Workshop</div>
+        
+        <div class="regular-text">DFW is a Milan-based creative studio pioneering the frontier of digital spatial design. We transform conventional digital experiences into immersive environments that transcend traditional web browsing, creating a new paradigm for digital interaction.</div>
+
+        <div class="main-title">CORE</div>
+        
+        <div class="regular-text">Operating at the convergence of architecture, fashion, technology, and theatrical experience, we craft digital spaces that challenge the conventional boundaries of the virtual realm. Our work spans from browser-based 3D environments to revolutionary virtual theater experiences, each project pushing the boundaries of what's possible in digital space.</div>
+
+        <div class="main-title">SERVICES</div>
+
+        <div class="second-title">3D Design Browser</div>
+        <div class="regular-text">Transform your portfolio or products into an interactive 3D space accessible through a single link. We believe in dimensional appreciation – making smart mean simple.</div>
+
+        <div class="second-title">Virtual Theater</div>
+        <div class="regular-text">A groundbreaking format that exists between cinema and traditional theater, offering real-time digital performances where files become the actors. Features include:</div>
+        <div class="regular-text bullet-point">Multiple viewing modes (cinematic, immersive, actor mode)</div>
+        <div class="regular-text bullet-point">Browser-based accessibility (under 15MB)</div>
+        <div class="regular-text bullet-point">Real-time rendering and dynamic file management</div>
+        <div class="regular-text bullet-point">Interactive storytelling possibilities</div>
+        <div class="regular-text bullet-point">Customizable experiences for different narratives</div>
+
+        <div class="second-title">Museum/Gallery Spaces</div>
+        <div class="regular-text">We reimagine the art of exhibition in the metaverse, creating spaces that transcend traditional gallery constraints. Each virtual gallery is designed as a total experience for all senses.</div>
+
+        <div class="main-title">CURRENT OFFERINGS</div>
+
+        <div class="second-title">On-Chain Experiences</div>
+        <div class="regular-text bullet-point">Four unique metaverse worlds:</div>
+        <div class="regular-text bullet-point">Three featuring our revolutionary virtual theater concept</div>
+        <div class="regular-text bullet-point">One dedicated virtual runway environment</div>
+        <div class="regular-text bullet-point">Collection of premium 3D design objects</div>
+        <div class="regular-text bullet-point">Architectural pieces and digital furniture</div>
+        <div class="regular-text bullet-point">Limited edition digital sculptures</div>
+        <div class="regular-text bullet-point">Custom vehicle models</div>
+
+        <div class="second-title">Consulting Services</div>
+        <div class="regular-text">We guide brands and businesses through their metaverse journey, offering strategic insights and technical expertise for sustainable digital presence.</div>
+
+        <div class="main-title">APPROACH</div>
+        
+        <div class="regular-text">We believe in creating experiences that are both innovative and accessible. Our browser-based solutions eliminate the need for downloads or complex setups, while our blockchain integration ensures authentic ownership and creates new possibilities for digital commerce.</div>
+
+        <div class="regular-text">Each project is built on three principles:</div>
+        <div class="regular-text bullet-point">1. Spatial Innovation: Rethinking how digital spaces can be experienced</div>
+        <div class="regular-text bullet-point">2. Technical Efficiency: Optimizing performance without compromising quality</div>
+        <div class="regular-text bullet-point">3. Interactive Narrative: Creating engaging stories through spatial design</div>
+
+        <div class="main-title">COLLECTORS</div>
+
+        <div class="regular-text">When acquiring a DFW virtual theater or world, you're not just purchasing a digital asset – you're obtaining a complete, editable virtual environment. As an owner, you receive:</div>
+        <div class="regular-text bullet-point">Full world NFT rights on Ethereum</div>
+        <div class="regular-text bullet-point">Complete editing capabilities</div>
+        <div class="regular-text bullet-point">Original asset files</div>
+        <div class="regular-text bullet-point">Technical documentation</div>
+        <div class="regular-text bullet-point">Collaboration opportunities for future modifications</div>
+
+        <a href="https://www.digitalforgerywork.shop/form" target="_blank" class="contact-link">Contact</a>
+    </div>
+</div>
+</body>
+</html>
