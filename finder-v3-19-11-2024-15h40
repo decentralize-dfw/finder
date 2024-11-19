@@ -1918,7 +1918,6 @@ function setupKeyboardNavigation() {
     "briefing": "We don't just build digital environments – we create revolutionary experiences that redefine how people interact with brands, art, and ideas",
     "text": "Our Experience section showcases groundbreaking digital environments and interactive installations that push the boundaries of virtual engagement."
   },
-  
       "Virtual Runway": {
         "project": {
           "name": "C2W, Click-to-Wear Launch Runway",
@@ -2186,10 +2185,7 @@ function setupKeyboardNavigation() {
         "displayName": "CLIP-Trailer"
       }
     }
-  }
-   
-    
-  
+  },
       
   // End of Reading
  
@@ -2514,25 +2510,24 @@ function setupKeyboardNavigation() {
             "displayName": "3D--Expld"
           },
           
-          "mona marketpage": {
+          "METAVERSE-DT Virtual Exhibition- All in 1 @oncyber": {
+    "type": "silent-link",
+    "media": "https://v2.oncyber.io/digitaltopographies",
+    "displayName": "Documentation",
+   
+},
+          "MARKET-Explore Models": {
     "type": "link-viewer",
     "media": "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2",
     "displayName": "Documentation",
     "trackUrl": true  // Add this flag to enable URL tracking for this viewer
 },
-"Archive": {
+"PAGE-Archive": {
     "type": "silent-link",
     "media": "https://www.digitalforgerywork.shop/archworks",
     "displayName": "Documentation"
     
-},
-"METAVERSE-Explore all-oncyber": {
-    "type": "silent-link",
-    "media": "https://v2.oncyber.io/digitaltopographies",
-    "displayName": "Documentation",
-   
 }
-          
         }
       },
       "Virtual Fashion": {
@@ -2828,7 +2823,7 @@ function setupKeyboardNavigation() {
       "description2": "Experience: C2W Runway, Afterparty, Why We Exist?,Balloon, Hatch. Gallery: Retail,Scaffold,Blackcity,Neue2Dojo, Forge."
     },
         "content": {
-        "ENTER": {
+        "Click to ENTER": {
             "type": "external-link",
             "media": "https://www.digitalforgerywork.shop/3d-home",
             "displayName": "Twitter"
@@ -2919,11 +2914,6 @@ function setupKeyboardNavigation() {
           
     
       
-  "excell-deletethis-new tab": {
-    "type": "external-link",
-    "media": "https://docs.google.com/spreadsheets/d/1nHWmifoGXNZaIZEkiZpXUkQ41enZ0Omys4p3O7HPfRU/edit?gid=0#gid=0", 
-    "displayName": "Instagram"
-          },
           
         }
       },
