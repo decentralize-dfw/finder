@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.scroll-container {
+    width: 1200px;
+    height: 590px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: transparent;
+    position: relative;
+    font-family: "Lucida Console", Monaco, monospace;
+    color: black;
+    direction: rtl;
+}
+
+.scroll-content {
+    direction: ltr;
+    padding: 15px;
+}
+
+.scroll-container::-webkit-scrollbar {
+    width: 6px;
+    left: 0;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.date-read {
+    font-size: 12px;
+    font-family: "Lucida Console", Monaco, monospace;
+    margin-bottom: 20px;
+    letter-spacing: -0.2px;
+}
+
+.main-title {
+    font-size: 32px;
+    font-family: "Lucida Console", Monaco, monospace;
+    font-weight: bold;
+    margin-bottom: 30px;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.subtitle {
+    font-size: 18px;
+    font-family: "Lucida Console", Monaco, monospace;
+    font-style: italic;
+    margin-bottom: 20px;
+    letter-spacing: -0.3px;
+}
+
+.intro-text {
+    font-size: 14px;
+    font-family: "Lucida Console", Monaco, monospace;
+    margin-bottom: 40px;
+    line-height: 1.6;
+    letter-spacing: -0.2px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-family: "Lucida Console", Monaco, monospace;
+    font-weight: bold;
+    margin-top: 60px;
+    margin-bottom: 30px;
+    letter-spacing: 0px;
+}
+
+.paragraph {
+    font-size: 12px;
+    font-family: "Lucida Console", Monaco, monospace;
+    margin-bottom: 20px;
+    line-height: 1.6;
+    letter-spacing: -0.2px;
+}
+
+.numbered-list {
+    font-size: 14px;
+    font-family: "Lucida Console", Monaco, monospace;
+    margin-bottom: 15px;
+    line-height: 1.6;
+    letter-spacing: -0.2px;
+    font-style: italic;
+}
+
+.link-section {
+    font-size: 14px;
+    font-family: "Lucida Console", Monaco, monospace;
+    margin-top: 40px;
+    color: #0066cc;
+    font-style: italic;
+}
+
+.link-section a {
+    text-decoration: none;
+    color: #0066cc;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.link-section a:hover {
+    text-decoration: underline;
+}
+</style>
+
+<script>
+window.onload = function() {
+    const container = document.querySelector('.scroll-container');
+    let isMouseOver = false;
+    
+    container.addEventListener('mouseover', () => {
+        isMouseOver = true;
+    });
+    
+    container.addEventListener('mouseout', () => {
+        isMouseOver = false;
+    });
+    
+    function autoScroll() {
+        if (!isMouseOver) {
+            container.scrollTop += 1;
+            if (container.scrollTop >= (container.scrollHeight - container.clientHeight)) {
+                container.scrollTop = 0;
+            }
+        }
+        setTimeout(autoScroll, 50);
+    }
+    
+    autoScroll();
+}
+</script>
+</head>
+<body>
+<div class="scroll-container">
+    <div class="scroll-content">
+        <div class="date-read">Nov 19 · 5 min read</div>
+        
+        <div class="main-title">Enter 3D</div>
+        
+        <div class="subtitle">Digital worlds no longer just mirror reality - they dance with it</div>
+
+        <div class="intro-text">
+            In our browser-based environments, galleries breathe, theaters defy physics, and fashion shows ripple through impossible geometries. Here, a virtual museum might remember your footsteps, a play could unfold differently for each viewer, and a runway show lets every seat be the perfect seat.
+        </div>
+
+        <div class="section-title">The Spaces</div>
+        
+        <div class="paragraph">
+            These aren't static 3D models or simple virtual rooms. They're living spaces where art, architecture, and imagination collide. Walk through walls that respond to sound, watch performances from angles that shouldn't exist, or float through fashion collections that transform with your movement. All this happens right in your browser - no downloads, no apps, just pure exploration.
+        </div>
+
+        <div class="section-title">Basic Controls</div>
+        
+        <div class="paragraph">
+           On PC:<br><br>
+-Move with W, A, S, D keys<br>
+-F11 for fullscreen view<br>
+-Z shows/hides interface<br>
+-Double tap Space to fly
+        </div>
+
+        <div class="paragraph">
+            Using VR:<br><br>
+            - Navigate with thumbsticks<br>
+            - Left stick rotates, right stick moves<br>
+            - Double tap A to fly<br>
+        </div>
+        
+
+        <div class="subtitle">Virtual Theater Productions</div>
+        
+        <div class="paragraph">
+            Immersive plays where stories unfold around you. Watch from fixed camera angles or wander freely through the scene. Recent works include "Why We Exist?", "Balloon", and "Hatch" - each offering different ways to experience theater beyond physical limits.
+        </div>
+
+        <div class="subtitle">Digital Galleries & Museums</div>
+        
+        <div class="paragraph">
+            Browse exhibitions at your own pace. Scaffold hosts 50 architectural designs you can examine up close. The Neue²Dojo gallery presents over 300 artworks in carefully curated virtual rooms.
+        </div>
+
+        <div class="subtitle">Fashion Spaces</div>
+        
+        <div class="paragraph">
+            Experience runway shows where clothes transform mid-stride and every seat offers the perfect view. The C2W Launch Runway hosted 16 digital fashion pieces with live attendees from around the world.
+        </div>
+
+        <div class="subtitle">Music Venues</div>
+        
+        <div class="paragraph">
+            Explore spaces like Forge, where three distinct museums and performance areas showcase audio NFTs through innovative virtual architecture.
+        </div>
+
+        <div class="section-title">Behind the Scenes</div>
+        
+        <div class="paragraph">
+            These virtual worlds are more than just 3D spaces - they're intricate ecosystems of interactive elements working together seamlessly. Built on platforms like Hyperfy, Mona, and Oncyber, each environment is carefully orchestrated through smart objects and chain reactions.
+        </div>
+
+        <div class="subtitle">Smart Objects & Chain Reactions</div>
+        
+        
+<div class="paragraph">
+Every interaction triggers a carefully planned sequence of events. When you enter a virtual theater, smart objects coordinate everything from lighting changes to character movements. These aren't pre-rendered animations - they're real-time responses happening as you explore. A single click might initiate a cascade of events: lights dim, music swells, digital actors take their positions, all synchronized perfectly.
+</div>
+
+<div class="subtitle">Digital Guides & NPCs</div>
+
+<div class="paragraph">
+We've populated our spaces with friendly NPCs (Non-Player Characters) who serve as guides and companions. These digital agents transform our virtual environments from mere spaces into interactive experiences. They can:
+- Guide you through exhibitions
+- Explain artwork details
+- Demonstrate how to interact with the space
+- Share stories and context
+- Help with technical questions
+- Trigger special events or performances
+</div>
+
+<div class="paragraph">
+Think of them as a living, breathing interface - part docent, part wayfinder, part storyteller.
+</div>
+
+<div class="subtitle">Responsive Environments</div>
+
+<div class="paragraph">
+Our spaces use sophisticated trigger systems that respond to visitor presence and actions. Walk near a gallery installation, and accompanying audio might fade in. Approach a fashion showcase, and the lighting adjusts to highlight specific details. These environments act like living organisms, constantly adjusting to enhance your experience.
+</div>
+
+<div class="subtitle">Technical Architecture</div>
+
+<div class="paragraph">
+While complex behind the scenes, everything runs smoothly in your browser through:
+- Optimized 3D assets for fast loading
+- Smart resource management
+- Progressive loading systems
+- Adaptive performance scaling
+- Cross-platform compatibility
+</div>
+
+<div class="paragraph">
+We've carefully balanced visual quality with performance, ensuring smooth experiences whether you're on a gaming PC or a basic laptop.
+</div>
+
+<div class="section-title">Our Vision Today</div>
+
+<div class="paragraph">
+Virtual spaces are experiencing a remarkable transformation. Where once we merely replicated physical environments, we now craft experiences that transcend reality's constraints. These aren't just digital twins - they're living laboratories where architecture responds to emotion, where time bends to accommodate global audiences, and where art breaks free from physical limitations.
+</div>
+
+<div class="paragraph">
+Consider our virtual theater productions. Here, viewers aren't bound to fixed seats - they can float through scenes, experiencing moments from impossible angles. Our fashion shows turn gravity into a creative choice rather than a constraint. Music venues pulse with visualized sound, creating symphonies of space and motion that react to each note.
+</div>
+
+<div class="paragraph">
+These spaces challenge traditional notions of presence and participation. When someone enters our virtual gallery, they're not just viewing art - they're part of an evolving dialogue between space, content, and community. Every visitor adds to the story, leaving subtle traces that shape future experiences.
+</div>
+
+<div class="section-title">Looking Forward</div>
+
+<div class="paragraph">
+The horizon of virtual architecture stretches far beyond our current understanding. We're witnessing the birth of spaces that think, feel, and grow. Imagine:
+</div>
+
+<div class="subtitle">Living Architecture</div>
+
+<div class="paragraph">
+Buildings that breathe with their inhabitants. Walls that ripple with collective emotion. Spaces that learn from every footstep and reshape themselves to create perfect moments of discovery. These aren't static structures - they're dynamic environments that evolve through use.
+</div>
+
+<div class="subtitle">Temporal Freedom</div>
+
+<div class="paragraph">
+Future spaces will transcend time zones and schedules. A performance might unfold over weeks for some viewers while others experience it in minutes. Exhibitions could exist in multiple temporal states simultaneously, allowing visitors to explore not just space but time itself.
+</div>
+
+<div class="subtitle">Collective Dreaming</div>
+
+<div class="paragraph">
+We're moving toward spaces where thousands can share one perfect moment, each from their own perfect perspective. Imagine theaters where every seat is the best seat, galleries where artworks reveal different aspects to different viewers, fashion shows where each attendee can follow their own thread through a collection.
+</div>
+
+<div class="subtitle">Emotional Resonance</div>
+
+<div class="paragraph">
+Future virtual spaces will respond to emotional currents like wind shapes a sail. A room might expand when filled with joy, or create intimate corners for moments of contemplation. Architecture becomes a living partner in the human experience, not just its container.
+</div>
+
+<div class="subtitle">Cultural Convergence</div>
+
+<div class="paragraph">
+These spaces will bridge cultural gaps in unprecedented ways. A virtual venue might simultaneously present itself through multiple cultural lenses, allowing visitors from different backgrounds to share experiences while maintaining their unique perspectives.
+</div>
+
+<div class="subtitle">Impossible Physics</div>
+
+<div class="paragraph">
+We're developing spaces where physics becomes poetry. Gravity, scale, and dimension become creative tools rather than constraints. Buildings can fold into themselves, expand infinitely, or exist in multiple states simultaneously.
+</div>
+
+<div class="subtitle">Adaptive Learning</div>
+
+<div class="paragraph">
+Each space will learn and evolve through interaction. A virtual museum might gradually optimize its layout based on visitor movement patterns, or a theater could adjust its acoustics in real-time to perfect each viewer's experience.
+</div>
+
+<div class="intro-text">
+The future we're building isn't about replacing physical experiences - it's about expanding the vocabulary of human connection and creativity. As technology evolves, these spaces will become more intuitive, more responsive, and more deeply integrated with our collective imagination.
+</div>
+
+<div class="intro-text">
+We're not just creating new venues - we're developing new ways of being together, of experiencing art, of sharing stories. Every virtual space we build is an experiment in possibility, a question asked about what architecture can become when freed from physical constraints.
+</div>
+
+<div class="intro-text">
+This is an invitation to explore, to dream, to question what's possible when imagination meets technology. Welcome to the future of spatial experience.
+</div>
+
+
+
+    </div>
+</div>
+</body>
+</html>
