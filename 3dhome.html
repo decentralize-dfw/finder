@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en" oncontextmenu="return false">
+<head>
+<meta charset="UTF-8">
+<!-- SEO Meta Tags -->
+<meta name="description" content="Explore innovative virtual architecture, metaverse design, and digital fashion experiences. Custom-built virtual environments, 3D spaces, and immersive VR solutions for fashion, retail, and digital art galleries.">
+<meta name="keywords" content="metaverse, virtual architecture, VR design, digital fashion, 3D environments, virtual retail, immersive experiences, virtual gallery, digital art space, VR architecture, metaverse design, virtual worlds, digital design, VR fashion, 3D modeling, virtual reality spaces, web3 design, NFT gallery, digital showroom, virtual events">
+<meta name="author" content="Digital Forgery Workshop">
+<meta property="og:title" content="Digital Forgery Workshop - Virtual Architecture & Metaverse Design">
+<meta property="og:description" content="Custom virtual environments and metaverse spaces for fashion, retail, and digital art. Experience innovative VR architecture and immersive 3D design.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Digital Forgery Workshop - Metaverse Architecture">
+<meta name="twitter:description" content="Innovative virtual spaces and metaverse architecture. Custom 3D environments for fashion, retail, and digital art experiences.">
+<meta name="robots" content="index, follow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://www.digitalforgerywork.shop/" />
+<title>Digital Forgery Workshop - Virtual Architecture & Metaverse Design</title>
+
+<style>
+    /* Security Measures */
+    body {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        overflow: hidden;
+    }
+
+    /* Top Menu Styles */
+    #menuContainer {
+        position: relative;
+        height: 35px;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    #menuStrip {
+        position: relative;
+        height: 25px;
+        display: flex;
+        align-items: flex-start;
+        width: fit-content;
+        min-width: 100%;
+    }
+
+    .menuItem {
+        height: 25px;
+        display: flex;
+        align-items: center;
+        padding: 0 clamp(4px, 0.8vw, 12px);
+        color: black;
+        text-decoration: none;
+        font-family: "Lucida Console", monospace;
+        font-size: clamp(9px, 0.9vw, 11px);
+        font-weight: 400;
+        white-space: nowrap;
+        position: relative;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+    .mainTitle {
+        font-size: clamp(11px, 1.1vw, 13px);
+        font-weight: bold;
+    }
+
+    .midTitle {
+        font-size: clamp(10px, 1vw, 12px);
+        font-style: italic;
+    }
+
+    .tooltip {
+        display: none;
+        position: absolute;
+        top: 20px;
+        left: 0;
+        background: transparent;
+        color: black;
+        font-family: "Times New Roman", Times, serif;
+        font-size: clamp(7px, 0.7vw, 9px);
+        font-style: italic;
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 1000;
+        letter-spacing: -0.5px;
+    }
+
+    .menuItem:hover {
+        color: #f0f0f0;
+    }
+
+    .menuItem:hover .tooltip {
+        display: block;
+    }
+
+    /* Content Viewer */
+    #contentViewer {
+        width: 100%;
+        height: 740px;
+        border: none;
+        display: block;
+    }
+
+    /* Dynamic Bottom Bar */
+    /* Active Menu Item */
+.menuItem.active {
+    color: white !important;
+    text-shadow: 1px 1px 0 #000;
+}
+
+.menuItem.active .tooltip {
+    color: black;
+    text-shadow: none;
+}
+
+/* Bottom Bar */
+#bottomBar {
+    height: 45px;
+    width: 100%;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    position: relative;
+}
+
+#bottomLeft {
+    width: 270px;
+    padding-left: 20px;
+    font-family: "Lucida Console", monospace;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+#bottomDesc {
+    width: 540px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 9px;
+    letter-spacing: -0.2px;
+    line-height: 8px;
+    padding: 0 20px;
+    text-align: justify;
+    text-align-last: left;
+    display: flex;
+    align-items: center;
+}
+
+#bottomCenter {
+    width: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 20px;
+    gap: 10px;
+}
+
+.actionLink {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 13px;
+    text-decoration: none;
+    color: black;
+    padding: 5px 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.actionLink:hover {
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    border-radius: 5px;
+}
+
+
+</style>
+</head>
+<body>
+    <div id="menuContainer">
+        <div id="menuStrip"></div>
+    </div>
+
+    <iframe id="contentViewer" src="about:blank"></iframe>
+
+    <div id="bottomBar">
+    <div id="bottomLeft"></div>
+    <div id="bottomDesc"></div>
+    <div id="bottomCenter"></div>
+    <div id="bottomRight"></div>
+</div>
+
+<script>
+    // Security Measures
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.keyCode == 123) { // Block F12 and Ctrl combinations
+            e.stopPropagation();
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    window.addEventListener('beforeunload', function() {
+        localStorage.clear();
+        sessionStorage.clear();
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i];
+            const eqPos = cookie.indexOf('=');
+            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+        }
+    });
+
+    // Menu Items Configuration
+   const menuItems = [
+
+        { title: "Finder", isMain: true, url: "https://www.digitalforgerywork.shop/finder", tooltip: "Back to home", newTab: true  },
+        { title: "3D Instructions Sheet", isMid: true, url: "https://static.wixstatic.com/media/54a996_20dfc7a4ff6c4704b7b12ec785370fcb~mv2.jpg", tooltip: "Check the basic info of navigation if needed", newTab: true  },
+        // EXPERIENCE Section
+        { title: "EXPERIENCE", isMain: true, tooltip: "We don't just build digital environments", newTab: false  },
+        { title: "C2W RUNWAY", url: "https://hyperfy.io/c2w", tooltip: "VRM's from VCA x Draup", newTab: false  },
+        { title: "AFTERPARTY", url: "https://spaces.monaverse.com/spaces/c2w-popyp", tooltip: "Designed as an afterparty venue", newTab: false  },
+        { title: "WHY WE EXIST", url: "https://hyperfy.io/pill", tooltip: "Innovative virtual theater experience", newTab: false  },
+        { title: "BALLOON", url: "https://hyperfy.io/balloon", tooltip: "Virtual Theater no:2", newTab: false  },
+        { title: "HATCH", url: "https://hyperfy.io/hatch", tooltip: "Virtual Theater no:3", newTab: false  },
+        // GALLERY Section
+        { title: "GALLERY", isMain: true, tooltip: "Professional-grade virtual spaces", newTab: false  },
+        { title: "RETAIL", url: "https://hyperfy.io/retail", tooltip: "Blending physical with digital retail", newTab: false  },
+        { title: "SCAFFOLD", url: "https://hyperfy.io/scaffold", tooltip: "Silent structure around smart objects", newTab: false  },
+        { title: "BLACKCITY", url: "https://hyperfy.io/blackcity", tooltip: "A virtual city with museums", newTab: false  },
+        { title: "NEUE²DOJO", url: "https://hyperfy.io/neue2dojo", tooltip: "Testament to evolving architecture", newTab: false  },
+        { title: "FORGE", url: "https://hyperfy.io/noise", tooltip: "Showcase collection by NoiseDAO", newTab: false  },
+        { title: "DIGITAL TOPOGRAPHIES", url: "https://v2.oncyber.io/digitaltopographies", tooltip: "Showcase collection by NoiseDAO", newTab: false  },
+        // ELEMENTS Section
+
+        // Other Main Sections
+        
+        
+        
+        { title: "worldsSHOP", isMid: true, url: "https://www.digitalforgerywork.shop/shop-vw-finder", tooltip: "Explore acquiring possibities", newTab: true  },
+        { title: "DIGITAL FORGERY WORKSHOP", isMain: true, tooltip: "Why, how, what, but who also", newTab: false  },
+
+    ];
+
+    // Bottom Bar Configuration System
+  const bottomBarConfigs = {
+    'default': {
+        title: 'DIGITAL TOPOGRAPHIES',
+        description: "Welcome to the ENTER 3D of DFW. Please enjoy, and don't forget to check 3D Instructions Sheet if it is your first time.",
+        actions: [
+            { text: 'ORDER', url: 'https://www.digitalforgerywork.shop/form-finder' },
+            { text: 'BUY MODEL', url: 'https://www.digitalforgerywork.shop/shop-vw-finder' },
+            { text: 'BUY WORLD', url: 'https://opensea.io/assets/ethereum/0xf53b18570db14c1e7dbc7dc74538c48d042f1332/1871' }
+        ]
+    },
+    'c2wrunway': {  // Note: key is normalized to match the function
+    title: 'C2W RUNWAY',
+    description: "16 .VRM's from VCA x Draup Virtual Fashion Residency, selected 1st by RedDAO, happened live on 9.11.23 with 23 attendees.",
+    actions: [
+        { text: 'ORDER', url: 'https://www.digitalforgerywork.shop/form-finder' },
+        { text: 'BUY AVATARS', url: 'https://monaverse.com/collections/1/0xdd0df57dbbf9dc804e778fd907e5a7f5d3051d60' },
+        { text: 'BUY WORLD', url: 'https://www.digitalforgerywork.shop/form-finder' }
+    ]
+},
+    'afterparty': {
+        title: 'AFTERPARTY',
+        description: "Designed as a afterparty venue to enjoy after the runway show, where models partying with the attendees, and there're click-to-wearable instantly.",
+        actions: [
+            { text: 'ORDER', url: 'https://www.digitalforgerywork.shop/form-finder' },
+            { text: 'BUY MODEL', url: 'https://opensea.io/assets/base/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/34' },
+            { text: 'BUY WORLD', url: 'https://www.digitalforgerywork.shop/form-finder' }
+        ]
+    },
+    'whyweexist': {
+        title: 'WHY WE EXIST',
+        description: "We are not servants, we are not files, we are not flat jpegs. We are one of the first mates that boarded in this virtuality by ourselves.",
+        actions: [
+            { text: 'ORDER', url: 'https://www.digitalforgerywork.shop/form-finder' },
+            { text: 'BUY MODEL, 1st Scene', url: 'https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/19' },
+            { text: 'BUY WORLD', url: 'https://www.digitalforgerywork.shop/form-finder' }
+        ]
+    },
+    'balloon': {
+        title: 'BALLOON',
+        description: "we pop out like a red balloon, we don't know it yet. experience the virtual theater no:2 now.",
+        actions: [
+            { text: 'ORDER', url: 'https://www.digitalforgerywork.shop/form-finder' },
+            { text: 'BUY MODEL, 1st Scene', url: 'https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/4' },
+            { text: 'BUY WORLD', url: 'https://www.digitalforgerywork.shop/form-finder' }
+        ]
+    },
+    'hatch': {
+        title: 'HATCH',
+        description: "Fractured Realities: Navigating Time Loops and Identity Crises in a Metaverse Theater Where Viewers Experience the Same Story Through 'Repeat', 'Reverse', and 'Circular'.",
+        actions: [
+            { text: 'ORDER', url: 'https://www.digitalforgerywork.shop/form-finder' },
+            { text: 'BUY MODEL, 1st Scene', url: 'https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/54' },
+            { text: 'BUY WORLD', url: 'https://opensea.io/assets/ethereum/0xf53b18570db14c1e7dbc7dc74538c48d042f1332/1958' }
+        ]
+    },
+    'retail': {
+        title: 'RETAIL',
+        description: "Blending the physical retail with digital innovation to redefine shopping in the virtual existence as an immersive, interactive brand experience.",
+        actions: [
+            { text: 'ORDER', url: 'https://www.digitalforgerywork.shop/form-finder' },
+            { text: 'BUY MODEL', url: 'https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/55' },
+            { text: 'BUY WORLD', url: 'https://opensea.io/assets/ethereum/0xf53b18570db14c1e7dbc7dc74538c48d042f1332/1316' }
+        ]
+    },
+    'scaffold': {
+        title: 'SCAFFOLD',
+        description: "A silent structure that is builded around architectural smart objects. explore all 50 of digital topographies with a single click, or experiment with guided tours via npc's.",
+        actions: [
+            { text: 'ORDER', url: 'https://www.digitalforgerywork.shop/form-finder' },
+            
+            { text: 'BUY WORLD', url: 'https://opensea.io/assets/ethereum/0xf53b18570db14c1e7dbc7dc74538c48d042f1332/1850' }
+        ]
+    },
+    'blackcity': {
+        title: 'BLACKCITY',
+        description: "DFW has constructed a city within a decentralized landscape, featuring two series of four curatable virtual museum buildings, resulting in a total of 240 empty frames ready for curation by Roomies. In addition to the eight museums, visitors can explore pxlDuomo to experience 2Pac's Black City and a Concept Furniture Store showcasing DFW designs, either by walking or utilizing the convenience of the Central Office.",
+        actions: [
+            { text: 'ORDER', url: 'https://www.digitalforgerywork.shop/form-finder' },
+            { text: 'MOCA ROOMS', url: 'https://opensea.io/collection/moca-rooms?search[stringTraits][0][name]=Architect%20Name&search[stringTraits][0][values][0]=DFW' },
+            { text: 'SPACE TIME ROOMS', url: 'https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/17' }
+        ]
+    },
+    'neue2dojo': {  // This exact key will match the normalized version
+        title: 'NEUE²DOJO',
+        description: "The Neue² Dojo Gallery stands at the forefront of a cultural revolution, exemplifying how art and technology can coalesce to create entirely new paradigms for cultural expression and engagement. The project, anchored firmly on the blockchain and realized within the boundless possibilities of 3D web technology, redefines the essence of a gallery not as a physical space, but as a fluid, virtual environment.",
+        actions: [
+            { text: 'ORDER', url: 'https://www.digitalforgerywork.shop/form-finder' },
+            { text: 'BUY MODEL', url: 'https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/30' },
+            { text: 'EXPLORE ARTWORKS', url: 'https://www.de-centralize.com/' }
+        ]
+    },
+    'forge': {
+        title: 'FORGE',
+        description: "NoiseDAO's world designed to showcase their collection of audio nft's in 3 different museums next to 3 different event spaces.",
+        actions: [
+            { text: 'ORDER', url: 'https://www.digitalforgerywork.shop/form-finder' },
+            { text: 'BUY MODEL', url: 'https://www.digitalforgerywork.shop/form-finder' },
+            { text: 'BUY WORLD', url: 'https://www.digitalforgerywork.shop/form-finder' }
+        ]
+    },
+    'digitaltopographies': {
+        title: 'DIGITAL TOPOGRAPHIES',
+        description: "A virtual exhibition of Digital Topographies by DFW since 2022 from an isometric camera view.",
+         actions: [
+            { text: 'ORDER', url: 'https://www.digitalforgerywork.shop/form-finder' },
+            { 
+                text: 'WALKABLE VERSION', 
+                url: 'https://v2.oncyber.io/dt-walk',
+                toggleText: 'ISOMETRIC VERSION',
+                toggleUrl: 'https://v2.oncyber.io/digitaltopographies',
+                isToggleable: true
+            }
+        ]
+    }
+};
+
+    function createMenuItem(item) {
+    const div = document.createElement('div');
+    let className = 'menuItem';
+    if (item.isMain) className += ' mainTitle';
+    if (item.isMid) className += ' midTitle';
+    div.className = className;
+    div.innerHTML = `${item.title}${item.tooltip ? `<div class="tooltip">${item.tooltip}</div>` : ''}`;
+    
+    if (item.url) {
+        div.addEventListener('click', function(e) {
+            e.preventDefault();
+            clearBrowserData();
+            
+            document.querySelectorAll('.menuItem').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            if (item.newTab) {
+                window.open(item.url, '_blank');
+            } else {
+                div.classList.add('active');
+                const contentViewer = document.getElementById('contentViewer');
+                contentViewer.src = item.url;
+                
+                // Simplified key normalization
+                let configKey = item.title
+                    .toLowerCase()
+                    .replace(/²/g, '2')
+                    .replace(/³/g, '3')
+                    .replace(/\s+/g, '')
+                    .replace(/[^a-z0-9]/g, '');
+                
+                console.log('Normalized key:', configKey); // For debugging
+                
+                if (bottomBarConfigs[configKey]) {
+                    updateBottomBar(configKey);
+                }
+            }
+        });
+        div.style.cursor = 'pointer';
+    } else {
+        div.style.cursor = 'default';
+    }
+    
+    return div;
+}
+
+    function clearBrowserData() {
+        // Clear localStorage and sessionStorage
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // Clear cookies
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i];
+            const eqPos = cookie.indexOf('=');
+            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+        }
+
+        // Clear cache for the iframe
+        const iframe = document.getElementById('contentViewer');
+        iframe.src = 'about:blank';
+    }
+
+   function updateBottomBar(configKey = 'default') {
+    const config = bottomBarConfigs[configKey];
+    const bottomLeft = document.getElementById('bottomLeft');
+    const bottomDesc = document.getElementById('bottomDesc');
+    const bottomCenter = document.getElementById('bottomCenter');
+
+    bottomLeft.textContent = config.title;
+    bottomDesc.textContent = config.description;
+    bottomCenter.innerHTML = '';
+
+    config.actions.forEach(action => {
+        const link = document.createElement('a');
+        link.className = 'actionLink';
+        link.textContent = action.text;
+        
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            clearBrowserData();
+            
+            if (action.isToggleable) {
+                const contentViewer = document.getElementById('contentViewer');
+                
+                // Toggle the button text and URL
+                if (link.textContent === action.text) {
+                    link.textContent = action.toggleText;
+                    contentViewer.src = action.url;
+                } else {
+                    link.textContent = action.text;
+                    contentViewer.src = action.toggleUrl;
+                }
+            } else {
+                window.open(action.url, '_blank');
+            }
+        });
+        
+        bottomCenter.appendChild(link);
+    });
+}
+
+    // Initialize
+    // Update the initialization function
+(function() {
+    // Populate menu
+    const strip = document.getElementById('menuStrip');
+    menuItems.forEach(item => strip.appendChild(createMenuItem(item)));
+
+    // Get the current path
+    const path = window.location.pathname;
+    const pageName = path.split('/').pop().toLowerCase();
+
+    // Find matching menu item if path exists
+    if (pageName && pageName !== '3d') {
+        const matchingItem = menuItems.find(item => 
+            item.title.toLowerCase().replace(/[²³]/g, '').replace(/\s+/g, '').replace(/[^a-z0-9]/g, '') === pageName
+        );
+
+        if (matchingItem && !matchingItem.newTab) {
+            // Simulate click on matching menu item
+            document.querySelectorAll('.menuItem').forEach(item => {
+                if (item.textContent === matchingItem.title) {
+                    // Remove active class from all items
+                    document.querySelectorAll('.menuItem').forEach(i => i.classList.remove('active'));
+                    // Add active class to current item
+                    item.classList.add('active');
+                    // Load content
+                    const contentViewer = document.getElementById('contentViewer');
+                    contentViewer.src = matchingItem.url;
+                    // Update bottom bar
+                    const configKey = matchingItem.title.toLowerCase()
+                        .replace(/[²³]/g, '')
+                        .replace(/\s+/g, '')
+                        .replace(/[^a-z0-9]/g, '');
+                    if (bottomBarConfigs[configKey]) {
+                        updateBottomBar(configKey);
+                    }
+                }
+            });
+        }
+    } else {
+        // Set default state
+        updateBottomBar();
+    }
+
+    // Additional security measures
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('selectstart', e => e.preventDefault());
+    document.addEventListener('dragstart', e => e.preventDefault());
+})();
+</script>
+</body>
+</html>
