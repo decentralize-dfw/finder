@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secure Sliding Menu</title>
+<style>
+    body { 
+        margin: 0; 
+        padding: 0; 
+        background: transparent; 
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+    #menuContainer { 
+        position: relative; 
+        height: 40px; 
+        width: 100%; 
+        margin: 0;
+        padding: 0;
+    }
+    #menuStrip { 
+        position: relative;
+        height: 40px; 
+        display: flex; 
+        align-items: flex-start; 
+        width: fit-content;
+        min-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    .menuItem { 
+        height: 40px; 
+        display: flex; 
+        align-items: center; 
+        padding: 0 clamp(4px, 0.8vw, 12px); 
+        color: black; 
+        text-decoration: none; 
+        font-family: "Lucida Console", monospace; 
+        font-size: clamp(9px, 0.9vw, 11px);
+        font-weight: 400; 
+        white-space: nowrap; 
+        position: relative; 
+        cursor: pointer;
+        transition: color 0.2s ease;
+        margin: 0;
+    }
+    .menuItem:hover {
+        color: #f0f0f0;
+    }
+    .mainTitle { 
+        font-size: clamp(11px, 1.1vw, 13px);
+        font-weight: bold; 
+        font-family: "Lucida Console", monospace;
+    }
+    
+    .midTitle { 
+        font-size: clamp(10px, 1vw, 12px);
+        font-style: italic;
+        font-family: "Lucida Console", monospace;
+        letter-spacing: -0.5px;
+    }
+    .tooltip { 
+        display: none; 
+        position: absolute; 
+        top: 25px;
+        left: 0; 
+        background: transparent; 
+        color: black; 
+        font-family: "Times New Roman", Times, serif;
+        font-size: clamp(7px, 0.7vw, 9px);
+        font-style: italic; 
+        white-space: nowrap; 
+        pointer-events: none; 
+        z-index: 1000;
+        letter-spacing: -0.2px;
+        padding-top: 2px; /* Added to give some space from the menu item */
+        margin: 0;
+    }
+    .menuItem:hover .tooltip { 
+        display: block; 
+    }
+    ::-webkit-scrollbar { 
+        height: 0;
+        width: 0;
+    }
+    * { 
+        -ms-overflow-style: none; 
+        scrollbar-width: none; 
+        margin: 0;
+        padding: 0;
+    }
+</style>
+</head>
+<body>
+<div id="menuContainer">
+    <div id="menuStrip"></div>
+</div>
+
+<script>
+    
+    
+    const menuItems = [
+        
+        { title: "Finder", isMain: true, url: "https://www.digitalforgerywork.shop/finder", tooltip: "Back to home", newTab: true  },
+        { title: "3D Instructions Sheet", isMid: true, url: "https://static.wixstatic.com/media/54a996_20dfc7a4ff6c4704b7b12ec785370fcb~mv2.jpg", tooltip: "Check the basic info of navigation if needed", newTab: true  },
+        // EXPERIENCE Section
+        { title: "EXPERIENCE", isMain: true, url: "https://www.digitalforgerywork.shop/experience", tooltip: "We don't just build digital environments", newTab: false  },
+        { title: "C2W RUNWAY", url: "https://www.digitalforgerywork.shop/runway3d", tooltip: "VRM's from VCA x Draup", newTab: false  },
+        { title: "AFTERPARTY", url: "https://www.digitalforgerywork.shop/afterparty3d", tooltip: "Designed as an afterparty venue", newTab: false  },
+        { title: "WHY WE EXIST", url: "https://www.digitalforgerywork.shop/pill3d", tooltip: "Innovative virtual theater experience", newTab: false  },
+        { title: "BALLOON", url: "https://www.digitalforgerywork.shop/balloon3d", tooltip: "Virtual Theater no:2", newTab: false  },
+        { title: "HATCH", url: "https://www.digitalforgerywork.shop/hatch3d", tooltip: "Virtual Theater no:3", newTab: false  },
+        // GALLERY Section
+        { title: "GALLERY", isMain: true, url: "", tooltip: "Professional-grade virtual spaces", newTab: false  },
+        { title: "RETAIL", url: "https://www.digitalforgerywork.shop/retai3dl", tooltip: "Blending physical with digital retail", newTab: false  },
+        { title: "SCAFFOLD", url: "https://www.digitalforgerywork.shop/scaffold3d", tooltip: "Silent structure around smart objects", newTab: false  },
+        { title: "BLACKCITY", url: "https://www.digitalforgerywork.shop/blackcity3d", tooltip: "A virtual city with museums", newTab: false  },
+        { title: "NEUE2DOJO", url: "https://www.digitalforgerywork.shop/neue2dojo3d", tooltip: "Testament to evolving architecture", newTab: false  },
+        { title: "FORGE", url: "https://www.digitalforgerywork.shop/forge3d", tooltip: "Showcase collection by NoiseDAO", newTab: false  },
+        { title: "DIGITAL TOPOGRAPHIES", url: "https://www.digitalforgerywork.shop/digitaltopographies3d", tooltip: "Showcase collection by NoiseDAO", newTab: false  },
+        // ELEMENTS Section
+        
+       
+        // Other Main Sections
+        { title: "ORDER", isMain: true, url: "https://www.digitalforgerywork.shop/3d-home", tooltip: "Spatial web one click away", newTab: true  },
+        
+        { title: "ABOUT", isMain: true, url: "https://www.digitalforgerywork.shop/about", tooltip: "Why, how, what, but who also", newTab: true  },
+        { title: "CONTACT", isMain: true, url: "https://www.digitalforgerywork.shop/form-finder", tooltip: "Fill the form and reach out", newTab: true  },
+        { title: "worldsSHOP", isMid: true, url: "https://www.digitalforgerywork.shop/shop-vw-finder", tooltip: "Explore acquiring possibities", newTab: true  },
+        
+    ];
+
+    function createMenuItem(item) {
+        const div = document.createElement('div');
+        let className = 'menuItem';
+        if (item.isMain) {
+            className += ' mainTitle';
+        } else if (item.isMid) {
+            className += ' midTitle';
+        }
+        div.className = className;
+        div.innerHTML = `${item.title}<div class="tooltip">${item.tooltip}</div>`;
+        
+        div.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetUrl = item.url;
+            if (item.newTab) {
+                window.open(targetUrl, '_blank');
+            } else {
+                try {
+                    window.parent.location.replace(targetUrl);
+                } catch(err) {
+                    window.parent.location = targetUrl;
+                }
+            }
+        });
+        
+        return div;
+    }
+
+    (function() {
+        const strip = document.getElementById('menuStrip');
+        const container = document.getElementById('menuContainer');
+
+        menuItems.forEach(item => {
+            strip.appendChild(createMenuItem(item));
+        });
+
+        // Function to adjust menu sizing
+        function adjustMenuSizing() {
+            const totalWidth = Array.from(strip.children)
+                .reduce((acc, item) => acc + item.offsetWidth, 0);
+            strip.style.width = `${Math.max(totalWidth, container.offsetWidth)}px`;
+        }
+
+        // Initial sizing
+        adjustMenuSizing();
+
+        // Resize observer for dynamic updates
+        const resizeObserver = new ResizeObserver(adjustMenuSizing);
+        resizeObserver.observe(container);
+    })();
+</script>
+</body>
+</html>
