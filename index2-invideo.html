@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.scroll-container {
+    width: 615px;
+    height: 300px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: transparent;
+    position: relative;
+    font-family: "Lucida Console", Monaco, monospace;
+    color: black;
+    direction: rtl;
+    
+}
+
+.scroll-content {
+    direction: ltr;
+    padding: 15px;
+}
+
+.scroll-container::-webkit-scrollbar {
+    width: 6px;
+    left: 0;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.main-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+}
+
+.second-title {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+
+.third-title {
+    font-size: 11px;
+    font-weight: 500;
+    font-style: italic;
+    margin-bottom: 10px;
+    letter-spacing: -0.25px;
+}
+
+.regular-text {
+    font-size: 9px;
+    font-weight: normal;
+    margin-bottom: 9px;
+    letter-spacing: -0.2px;
+}
+
+.bullet-point {
+    position: relative;
+    padding-left: 15px;
+    margin-left: 15px;
+}
+
+.bullet-point::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: rgba(0, 0, 0, 0.5);
+}
+</style>
+
+<script>
+window.onload = function() {
+    const container = document.querySelector('.scroll-container');
+    let isMouseOver = false;
+    
+    container.addEventListener('mouseover', () => {
+        isMouseOver = true;
+    });
+    
+    container.addEventListener('mouseout', () => {
+        isMouseOver = false;
+    });
+    
+    function autoScroll() {
+        if (!isMouseOver) {
+            container.scrollTop += 1;
+            if (container.scrollTop >= (container.scrollHeight - container.clientHeight)) {
+                container.scrollTop = 0;
+            }
+        }
+        setTimeout(autoScroll, 50);
+    }
+    
+    autoScroll();
+}
+</script>
+</head>
+<body>
+<div class="scroll-container">
+    <div class="scroll-content">
+        <div class="main-title">AWARDS / MENTIONS</div>
+        <div class="regular-text bullet-point">Creatorverse Buildathon by Parcel x PangeaDAO, Music Venue, 2022, Winner</div>
+        <div class="regular-text bullet-point">Creatorverse Buildathon by Parcel x PangeaDAO, Meeting Space, 2022, Runner-Up</div>
+        <div class="regular-text bullet-point">Grant Program by EnterDAO's Landworks, Fashion Venue, 2022, Winner</div>
+        <div class="regular-text bullet-point">Grant Program by EnterDAO's Landworks, Headquarters, 2022, Winner</div>
+        <div class="regular-text bullet-point">Top 50 Creators of Metaverse by Metamundo, 2023</div>
+        <div class="regular-text bullet-point">CryptoCubes by Han, 2023, Runner-Up</div>
+        <div class="regular-text bullet-point">VCA x Draup Virtual Fashion Residency 1st Prize, selected by RedDAO, 2023</div>
+        <div class="regular-text bullet-point">MONA 3D Objects Buildathon, Center Pieces, 2024, Honorable Mention</div>
+
+        <div class="main-title">TALKS</div>
+        <div class="regular-text bullet-point">Virtual Show & Tell at Hyperfy, Hosted by untitled, xyz- 2023</div>
+        <div class="regular-text bullet-point">VCA Mentorship, 6th Cohort, Architecture in the Metaverse - 2023</div>
+        <div class="regular-text bullet-point">Opening Keynote, Digital Fashion Summit, Lifestyle Design Cluster, Creative Denmark -2024</div>
+
+        <div class="main-title">EXHIBITIONS</div>
+        <div class="regular-text bullet-point">Power of the Nature @ Fabbrica Del Vapore, Milano / ITA - 2019</div>
+        <div class="regular-text bullet-point">The Art's Special Projects @ Fabbrica Del Vapore, Milano / ITA - 2019</div>
+        <div class="regular-text bullet-point">Communitas III: Digital Community by Kollektiv Kollektiv @ Kunsthaus Steffisburg / CH - 2021</div>
+        <div class="regular-text bullet-point">New Freedom Think @ Mads Gallery, Milano / ITA - 2022</div>
+        <div class="regular-text bullet-point">Art Design @ Holy Art Gallery, London / UK - 2022</div>
+        <div class="regular-text bullet-point">Klein Metaverse Event @ BabylonsNFT, Yacthingverse - 2022</div>
+        <div class="regular-text bullet-point">DYOR @ Kunsthalle Zürich, Zurich/ CH - 2022</div>
+        <div class="regular-text bullet-point">Creators of the Metaverse by Metamundo @ Art Basel Miami, Miami / USA - 2022</div>
+        <div class="regular-text bullet-point">FIRST LOOK METAVERSE WATCH PARTY @MONA -2023</div>
+        <div class="regular-text bullet-point">KODA by Polkadot @ Factory Berlin, Berlin / GER - 2023</div>
+        <div class="regular-text bullet-point">New Codes Exhibition by VCA, Draup, Mad Global @ Royal Institution, London / UK - 2023</div>
+
+        <div class="main-title">VIRTUAL WORLDS</div>
+        <div class="regular-text bullet-point">C2W Runway, Virtual Runway, Event, Hyperfy</div>
+        <div class="regular-text bullet-point">Afterparty, Interactive Shop, Event, Mona</div>
+        <div class="regular-text bullet-point">Concept Furniture Store, Showroom, Oncyber</div>
+        <div class="regular-text bullet-point">Scaffold, 3D Smart Browser, Showroom, Hyperfy</div>
+        <div class="regular-text bullet-point">C2W2 Runners, Conceptual, Showroom, Oncyber</div>
+        <div class="regular-text bullet-point">SERVICES, Info Point, Showroom, Oncyber</div>
+        <div class="regular-text bullet-point">Black City, MOCA ROOMS World, Museum City, Hyperfy</div>
+        <div class="regular-text bullet-point">Neue2Dojo, Independent Art Gallery, Hyperfy</div>
+        <div class="regular-text bullet-point">Promethade, Museum, Oncyber</div>
+        <div class="regular-text bullet-point">Forge, NoiseDAO Music Collection World, Museum City, Hyperfy</div>
+        <div class="regular-text bullet-point">JJ8, avatar / virtual fashion store, retail no.4, hyperfy</div>
+        <div class="regular-text bullet-point">C2W-R-V3 Rust,Bau,Rabbit,Nietzsc., avatar / virtual fashion store, retail no.3, Oncyber</div>
+        <div class="regular-text bullet-point">Blackcorridor, avatar / virtual fashion store, retail no.2, Oncyber</div>
+        <div class="regular-text bullet-point">QQ-FU2 Patio, avatar / virtual fashion store, retail no.1, Oncyber</div>
+        <div class="regular-text bullet-point">forgeshop.arch, Arch.Viewer, Building Exhibition, Oncyber</div>
+        <div class="regular-text bullet-point">forgeshop.design, Design Viewer, Objects Exhibition, Oncyber</div>
+        <div class="regular-text bullet-point">Why We Exist, virtual theater no 1, Hyperfy</div>
+        <div class="regular-text bullet-point">Balloon, virtual theater no 2, Hyperfy</div>
+        <div class="regular-text bullet-point">Hatch, virtual theater no:3, Hyperfy</div>
+
+        <div class="main-title">COMPLETED PROJECTS</div>
+        <div class="regular-text bullet-point">Why We Exist? / Virtual Theater (world) / CloneX</div>
+        <div class="regular-text bullet-point">C2W Virtual Runway / Event (world) / DFW</div>
+        <div class="regular-text bullet-point">Solar Panel Construction XR Integration / Digital Twin(world) / anon</div>
+        <div class="regular-text bullet-point">Scaffold / 3D Architecture Browser (world) / DFW</div>
+        <div class="regular-text bullet-point">Neue² Dojo Gallery / Virtual Art Space of the Future Forged in Blockchain (world) / F.D*</div>
+        <div class="regular-text bullet-point">Retail / C2W Virtual Shop (world) / DFW</div>
+        <div class="regular-text bullet-point">Black City / ROOMS (world) / MOCA</div>
+        <div class="regular-text bullet-point">Metacoders / 3D Collection Design (project) / crypto_Txt</div>
+        <div class="regular-text bullet-point">Radio Existpert / VRM (avatar) / NFT Crap</div>
+        <div class="regular-text bullet-point">0PP13 / Experimental Audio Museum (building) / NoiseDAO</div>
+        <div class="regular-text bullet-point">Centipede / High Frequency Building (building) / NoiseDAO</div>
+        <div class="regular-text bullet-point">Metaboilerism / Music NFT Building (building) / NoiseDAO</div>
+        <div class="regular-text bullet-point">The Constro / World Design (world) / Endangered Labs</div>
+        <div class="regular-text bullet-point">Black City, 2Pac / Music Video (artwork) / ROOMS</div>
+        <div class="regular-text bullet-point">Poddio Dark Twisted Verticale / Competition (building) / EnterDAO</div>
+        <div class="regular-text bullet-point">Museum of Unlimited Growth ii / ROOMS (building) / MOCA</div>
+        <div class="regular-text bullet-point">SpyderMosk / ROOMS (building) / MOCA</div>
+        <div class="regular-text bullet-point">Spyder Mosk Piccolo / ROOMS (building) / MOCA</div>
+        <div class="regular-text bullet-point">FlyClub / ROOMS (building) / MOCA</div>
+        <div class="regular-text bullet-point">Astral Egg Plant / Competition (building) / Parcel + PangeaDAO</div>
+        <div class="regular-text bullet-point">Finger Dome / Competition (building) / Parcel + PangeaDAO</div>
+        <div class="regular-text bullet-point">UMMUSE / Buildathon Submission (building) / Neon Buidl</div>
+        <div class="regular-text bullet-point">Holy Shadow HQ / Facility at DAOTown (building) / Neon Buidl</div>
+        <div class="regular-text bullet-point">PH / Performance Hall (building) / NoiseDAO</div>
+        <div class="regular-text bullet-point">Promethade / Museum (building) / F.D*</div>
+        <div class="regular-text bullet-point">Cave Design Store / Buildathon Submission (building) / Neon Buidl</div>
+        <div class="regular-text bullet-point">C2W Ticket Artwork / Competition (artwork) / VCA x Draup x RedDAO</div>
+        <div class="regular-text bullet-point">C2W / Click-to-Wear Collection (vrm avatars) / DFW</div>
+        <div class="regular-text bullet-point">C2W Virtual Runway / Event (world) / DFW</div>
+        <div class="regular-text bullet-point">pxl DUOMO / Competition (building) / CryptoCubes</div>
+
+        <div class="main-title">DIGITAL TOPOGRAPHIES</div>
+        <div class="regular-text bullet-point">POTBELLY Q_FU (Digital_Topographies_00)</div>
+        <div class="regular-text bullet-point">XHBTION_SPC (Digital_Topographies_01)</div>
+        <div class="regular-text bullet-point">VEGANCELL+PARK (Digital_Topographies_02)</div>
+        <div class="regular-text bullet-point">BUREAU+THEATRE (Digital_Topographies_03)</div>
+        <div class="regular-text bullet-point">DIGITAL EXPO CENTER (Digital_Topographies_04)</div>
+        <div class="regular-text bullet-point">BEPFMV (Digital_Topographies_05)</div>
+        <div class="regular-text bullet-point">DECONSTRUCTIVIST EAGLE NEST (Digital_Topographies_06)</div>
+        <div class="regular-text bullet-point">ASTRAL EGG PLANT (Digital_Topographies_07)</div>
+        <div class="regular-text bullet-point">THE FINGER DOME (Digital_Topographies_08)</div>
+        <div class="regular-text bullet-point">UMMUSE (Digital_Topographies_09)</div>
+        <div class="regular-text bullet-point">#NP17658 (Digital_Topographies_10)</div>
+        <div class="regular-text bullet-point">HOLY SHADOW HQ (Digital_Topographies_11)</div>
+        <div class="regular-text bullet-point">TECHNO BRUTAL PUNK FABRIQUE (Digital_Topographies_12)</div>
+        <div class="regular-text bullet-point">K-DOCIINE HQ (Digital_Topographies_13)</div>
+        <div class="regular-text bullet-point">PODDIO VERTICALE (Digital_Topographies_14)</div>
+        <div class="regular-text bullet-point">PODDIO DARK TWISTED VERTICALE (Digital_Topographies_15)</div>
+        <div class="regular-text bullet-point">SPACE TIME ROOMS (Digital_Topographies_16)</div>
+        <div class="regular-text bullet-point">MATISSE TIME CHAIPEL (Digital_Topographies_17)</div>
+        <div class="regular-text bullet-point">MATSOUKA HILLS MANSION (Digital_Topographies_18)</div>
+        <div class="regular-text bullet-point">MUSEUM OF UNLIMITED GROWTH 2 (Digital_Topographies_19)</div>
+        <div class="regular-text bullet-point">SPYDER MOSK (Digital_Topographies_20)</div>
+        <div class="regular-text bullet-point">SPYDER MOSK PICCOLO (Digital_Topographies_21)</div>
+        <div class="regular-text bullet-point">THE FLY CLUB (Digital_Topographies_22)</div>
+        <div class="regular-text bullet-point">BEYOND THE INFINITY (Digital_Topographies_23)</div>
+        <div class="regular-text bullet-point">ATONAL VEINS (Digital_Topographies_24)</div>
+        <div class="regular-text bullet-point">C2W-R-v3 (Digital_Topographies_25)</div>
+        <div class="regular-text bullet-point">NEUEDOJO (Digital_Topographies_26)</div>
+        <div class="regular-text bullet-point">DFWAM (Digital_Topographies_27)</div>
+        <div class="regular-text bullet-point">PROMETHADE (Digital_Topographies_28)</div>
+        <div class="regular-text bullet-point">CAVE DESIGN STORE (Digital_Topographies_29)</div>
+        <div class="regular-text bullet-point">POP-YP (Digital_Topographies_30)</div>
+        <div class="regular-text bullet-point">C1TY (Digital_Topographies_31)</div>
+        <div class="regular-text bullet-point">MUSEBOROUGH PAVS (Digital_Topographies_32)</div>
+        <div class="regular-text bullet-point">FIGHT ARENA(Digital_Topographies_33)</div>
+        <div class="regular-text bullet-point">MIKADO FIBER PAVILLION (Digital_Topographies_34)</div>
+        <div class="regular-text bullet-point">POTBELLY QQ_FU_v2 (Digital_Topographies_35)</div>
+        <div class="regular-text bullet-point">CONCEPT FURNITURE STORE (Digital_Topographies_36)</div>
+        <div class="regular-text bullet-point">POKEMUSEUM (Digital_Topographies_37)</div>
+        <div class="regular-text bullet-point">THE CONSTRO (Digital_Topographies_38)</div>
+        <div class="regular-text bullet-point">METABOILERISM (Digital_Topographies_39)</div>
+        <div class="regular-text bullet-point">pxl DUOMO (Digital_Topographies_40)</div>
+        <div class="regular-text bullet-point">ROTAS VIRGIL (Digital_Topographies_41)</div>
+        <div class="regular-text bullet-point">BOXMATE (Digital_Topographies_42)</div>
+        <div class="regular-text bullet-point">CARBINE WICK (Digital_Topographies_43)</div>
+        <div class="regular-text bullet-point">0PP13 (Digital_Topographies_44)</div>
+        <div class="regular-text bullet-point">STARDEM (Digital_Topographies_45)</div>
+        <div class="regular-text bullet-point">ISOLA (Digital_Topographies_46)</div>
+        <div class="regular-text bullet-point">ALIEN EARTHQUAKE (Digital_Topographies_47)</div>
+        <div class="regular-text bullet-point">CENTIPEDE (Digital_Topographies_48)</div>
+        <div class="regular-text bullet-point">VERTICAL CANDY BUNGALOWS (Digital_Topographies_49)</div>
+        <div class="regular-text bullet-point">MYNHTTNWARE (Digital_Topographies_50)</div>
+        <div class="regular-text bullet-point">JJ8 (Digital_Topographies_51)</div>
+
+        <div class="main-title">DESIGN</div>
+        <div class="regular-text bullet-point">MERMAIDCHAIR, chair1 (og + blck + chrome + red)</div>
+        <div class="regular-text bullet-point">FETUCHAIR, chair2 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">DSE, chair3 (antrst + blck + wht + red)</div>
+        <div class="regular-text bullet-point">JACKTHELAD, chair4 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">ARETAIX, chair5 (antrst + blck + wht + red)</div>
+        <div class="regular-text bullet-point">ARMAGEDDON, chair6 (og + blck + wht + dark)</div>
+        <div class="regular-text bullet-point">BILBAO LEGO CHAIR, chair7 (chrome + blck + wht + red)</div>
+        <div class="regular-text bullet-point">HIGGS BOSON, chair8 (chrome + night + concrete + red)</div>
+        <div class="regular-text bullet-point">E66, chair9 (og + blck + antrst + red)</div>
+        <div class="regular-text bullet-point">ACCELERATOR, chair10 (og + mono + davnc + red)</div>
+        <div class="regular-text bullet-point">GLASS GOUGNUT, sofa1 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">SJSOC, sofa2 (og + mono + wht + neon)</div>
+        <div class="regular-text bullet-point">CRAWRECKSOFA, sofa3 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">JAPON, sofa4 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">2070S DJ TABLE, table1 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">BOARDROOMTABLE-, table2 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">BROWN SHARK TABLE, table3 (og + dark + rock + red)</div>
+        <div class="regular-text bullet-point">DECENTRLIZEJOKING1, music1 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">DECENTRLIZEJOKING2_OFFROAD, music2 (og + gry + wht + red)</div>
+        <div class="regular-text bullet-point">DECENTRLIZE*JOKING2_2, music3 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">SCREAMER, music4 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">GENETIC CARPET, carpet1 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">SPOOKY CARPET, carpet2 (og + blackigator + throne + davnc)</div>
+        <div class="regular-text bullet-point">OSIRIS RAKE, sculpture1 (og + blck + gry + red)</div>
+        <div class="regular-text bullet-point">MIDAS SPACE, sculpture2 (og + dark + light + candle)</div>
+        <div class="regular-text bullet-point">ANGRY NAPKIN, sculpture3 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">W6O1M6, sculpture4 (og + blck + gry + red)</div>
+        <div class="regular-text bullet-point">STATUE OF HANGOVER, sculpture5 (sohiii + sohii + sohi + -)</div>
+        <div class="regular-text bullet-point">PRAİFİED, sculpture6 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">SANCTİFİED, sculpture7 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">ME-TREE-X, sculpture8 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">MOLECULAR DATA PLANT, sculpture9 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">NEO KLEIN, sculpture10 (og + blck + gry + red)</div>
+        <div class="regular-text bullet-point">SQUGGLE, sculpture11 (og + alien + gry + red)</div>
+        <div class="regular-text bullet-point">CROOKEDASWEFUNASYU, sculpture12 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">LEGEND, sculpture13 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">2002, sculpture14 (og + blck + tea + red)</div>
+        <div class="regular-text bullet-point">0FF_WITH_HIS_HEAD, sculpture15 (no colors listed)</div>
+        <div class="regular-text bullet-point">MYSTICALARCASES, sculpture16 (black + red + - + -)</div>
+        <div class="regular-text bullet-point">EXCLAMATIONAL PENCIL SHARPENER-ANIMATED, sculpture17 (og + wood + tea + red)</div>
+        <div class="regular-text bullet-point">XYZ008, automobile1 (og + blck + glasser + gold)</div>
+        <div class="regular-text bullet-point">ZENBUBBLE, automobile2 (og + blck + wht + neon)</div>
+        <div class="regular-text bullet-point">SKEWER, automobile3 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">WELLINGTON, automobile4 (og + blck + wht + red)</div>
+        <div class="regular-text bullet-point">MARSDEADLEAF, automobile5 (og + villain + wht + red)</div>
+    </div>
+</div>
+</body>
+</html>
