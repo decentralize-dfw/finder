@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 1400px;
+            height: 700px;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Lucida Console', Monaco, monospace;
+        }
+
+        #container {
+            position: absolute;
+            top: 170px;
+            left: 0;
+            width: 100%;
+            display: flex;
+        }
+
+        #videoSection {
+            width: 480px;
+            margin-right: 0px;
+        }
+
+        #videoBox {
+            width: 480px;
+            height: 270px;
+            background: #fff;
+            margin-bottom: 0px;
+            position: relative;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: transparent;
+        }
+
+        video::-webkit-media-controls {
+            display: none !important;
+        }
+
+        video::-webkit-media-controls-enclosure {
+            display: none !important;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .play-button {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            position: relative;
+            background: #000;
+        }
+
+        .play-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 55%;
+            transform: translate(-50%, -50%);
+            border-left: 15px solid #fff;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }
+
+        .fullscreen-icon {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 16px;
+            height: 16px;
+            filter: drop-shadow(1px 0 0 #000);
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        #buttonBar {
+            width: 480px;
+            height: 30px;
+            display: flex;
+            gap: 0px;
+        }
+
+        .stateButton {
+            flex: 1;
+            height: 30px;
+            background: transparent;
+            border: 0px solid #ccc;
+            font-family: 'Lucida Console', Monaco, monospace;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .stateButton:hover {
+            background: white;
+            text-shadow: 2px 2px rgba(0, 0, 0, .25);
+            color: black;
+        }
+
+        .stateButton.active {
+            color: white;
+            font-style: italic;
+            text-shadow: 2px 2px rgba(0, 0, 0, 1);
+            padding: 2px 7px;
+            background: transparent;
+        }
+
+        .stateButton.active:hover {
+            background: transparent;
+        }
+
+        #contentViewer {
+            flex: 1;
+            height: 300px;
+            background: transparent;
+            border: 0px solid #eee;
+            padding-left: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="videoSection">
+            <div id="videoBox">
+                <!-- Video will be loaded here -->
+            </div>
+            <div id="buttonBar">
+                <button class="stateButton active" onclick="changeState(1)">About</button>
+                <button class="stateButton" onclick="changeState(2)">Services</button>
+                <button class="stateButton" onclick="changeState(3)">Index</button>
+            </div>
+        </div>
+        <div id="contentViewer">
+            <!-- Content from GitHub will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        let currentVideo = null;
+        let currentState = null;
+
+        function setVideoBackground(video, stateNumber) {
+            if (stateNumber === 3) {
+                video.style.background = '#000';
+            } else {
+                video.style.background = 'transparent';
+            }
+        }
+
+        function setupVideo(videoUrl, stateNumber) {
+            const videoBox = document.getElementById('videoBox');
+            videoBox.innerHTML = `
+                <div class="video-wrapper">
+                    <video>
+                        <source src="${videoUrl}" type="video/mp4">
+                    </video>
+                    <div class="video-overlay">
+                        <div class="play-button"></div>
+                    </div>
+                    <img src="https://raw.githubusercontent.com/decentralize-dfw/finder/main/fullscreen.png" class="fullscreen-icon">
+                </div>
+            `;
+
+            const video = videoBox.querySelector('video');
+            setVideoBackground(video, stateNumber);
+            
+            const overlay = videoBox.querySelector('.video-overlay');
+            const fullscreenIcon = videoBox.querySelector('.fullscreen-icon');
+            const videoWrapper = videoBox.querySelector('.video-wrapper');
+
+            if (currentVideo) {
+                currentVideo.pause();
+            }
+            currentVideo = video;
+
+            videoWrapper.addEventListener('click', (e) => {
+                if (e.target !== fullscreenIcon) {
+                    if (video.paused) {
+                        video.play();
+                        overlay.style.display = 'none';
+                    } else {
+                        video.pause();
+                        overlay.style.display = 'flex';
+                    }
+                }
+            });
+
+            fullscreenIcon.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    videoWrapper.requestFullscreen().then(() => {
+                        document.addEventListener('fullscreenchange', () => {
+                            if (document.fullscreenElement) {
+                                video.style.width = '100vw';
+                                video.style.height = '100vh';
+                                setVideoBackground(video, stateNumber);
+                            } else {
+                                video.style.width = '100%';
+                                video.style.height = '100%';
+                                setVideoBackground(video, stateNumber);
+                            }
+                        });
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            });
+
+            video.addEventListener('ended', () => {
+                overlay.style.display = 'flex';
+            });
+
+            video.addEventListener('loadedmetadata', () => {
+                video.controls = false;
+            });
+        }
+
+        function changeState(stateNumber) {
+            if (currentState === stateNumber) return;
+            currentState = stateNumber;
+            
+            const contentViewer = document.getElementById('contentViewer');
+            const buttons = document.querySelectorAll('.stateButton');
+
+            buttons.forEach((btn, index) => {
+                btn.classList.remove('active');
+                if (index + 1 === stateNumber) btn.classList.add('active');
+            });
+
+            contentViewer.innerHTML = '';
+
+            const videoUrls = {
+                1: "https://video.wixstatic.com/video/54a996_e6d16d06cf7b490bbc64d936760c2dae/1080p/mp4/file.mp4",
+                2: "https://video.wixstatic.com/video/54a996_772b4cd12b8644a9abeb19ff792f57ee/1080p/mp4/file.mp4",
+                3: "https://video.wixstatic.com/video/54a996_6da48d6916b24734aba549bb585d4675/720p/mp4/file.mp4"
+            };
+
+            const contentUrls = {
+                1: 'https://raw.githubusercontent.com/decentralize-dfw/finder/main/dfwabout3-invideo.html',
+                2: 'https://raw.githubusercontent.com/decentralize-dfw/finder/main/services2-invideo.html',
+                3: 'https://raw.githubusercontent.com/decentralize-dfw/finder/main/index2-invideo.html'
+            };
+
+            setupVideo(videoUrls[stateNumber], stateNumber);
+
+            fetch(contentUrls[stateNumber])
+                .then(response => response.text())
+                .then(data => contentViewer.innerHTML = data);
+        }
+
+        window.onload = () => {
+            currentState = null;
+            changeState(1);
+        };
+    </script>
+</body>
+</html>
