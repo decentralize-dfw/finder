@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html oncontextmenu="return false;">
+<head>
+    <meta charset="utf-8">
+    <title>DFW Landing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            background: black;
+            color: white;
+            width: 100%;
+            height: 740px;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        #viewer-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        
+
+        .content-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+            z-index: 2;
+        }
+
+        .main-title {
+            font-family: "Lucida Console", Monaco, monospace;
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            opacity: 0;
+            transform: translateZ(0px);
+            text-align: center;
+        }
+
+        .subtitle {
+            font-family: "Times New Roman", Times, serif;
+            font-style: italic;
+            font-size: 24px;
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: translateZ(0px);
+            text-align: center;
+        }
+
+        .description {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 18px;
+            max-width: 800px;
+            text-align: center;
+            padding: 0 20px;
+            opacity: 0;
+            transform: translateZ(0px);
+            margin-bottom: 40px;
+        }
+
+        .navigation-hint {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: "Times New Roman", Times, serif;
+            font-size: 14px;
+            opacity: 0;
+            animation: bounce 2s infinite;
+            animation-delay: 2s;
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: "Times New Roman", Times, serif;
+            font-size: 12px;
+            opacity: 0;
+        }
+
+        .section-titles {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .section-title {
+            font-family: "Lucida Console", Monaco, monospace;
+            font-size: 12px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: color 0.3s;
+            opacity: 0;
+            transform: translateX(-20px);
+            white-space: nowrap;
+        }
+
+        .section-title:hover {
+            color: #666;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="viewer-container"></div>
+    
+    <div class="content-container">
+        <h1 class="main-title">Let's Forge the Future Together.</h1>
+        <div class="subtitle">The Internet is still flat.</div>
+        <div class="description">
+            Digital Forgery Workshop explores the threshold where architecture, art, and technology converge. 
+            We create responsive virtual environments that transcend physical limitations.
+        </div>
+        <div class="navigation-hint">Select any title from top to start their experience immediately.</div>
+        <div class="scroll-hint">or scroll down</div>
+    </div>
+
+    <div class="section-titles">
+        <div class="section-title" data-position="20,-10,14">How to use this website</div>
+        <div class="section-title" data-position="40,-10,14">Mission</div>
+        <div class="section-title" data-position="60,-10,14">Why</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        // Security measures
+        (function() {
+            const securityHandler = (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                return false;
+            };
+
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey || e.keyCode == 123) securityHandler(e);
+            });
+            
+            document.addEventListener('contextmenu', securityHandler);
+            document.addEventListener('selectstart', securityHandler);
+            document.addEventListener('dragstart', securityHandler);
+        })();
+
+        // Main Application
+        (function() {
+            let initialAnimationComplete = false;
+            let scene, camera, renderer, model;
+            let scrollPosition = 0;
+            let mixer, clock;
+            let currentFrame = 0;
+            const TOTAL_FRAMES = 50;
+            
+            // Animation Control
+            const animationConfig = {
+                speed: 1.0,  // Animation playback speed
+                frameRate: 24 // Frames per second
+            };
+
+            // Three.js Setup
+            function initThreeJS() {
+                clock = new THREE.Clock();
+                scene = new THREE.Scene();
+                
+                // Camera Setup
+                camera = new THREE.OrthographicCamera(
+                    window.innerWidth / -2,
+                    window.innerWidth / 2,
+                    370,
+                    -370,
+                    0.1,
+                    1000
+                );
+
+                // Renderer Setup
+                renderer = new THREE.WebGLRenderer({ 
+                    antialias: true, 
+                    alpha: true,
+                    preserveDrawingBuffer: true,
+                    powerPreference: "high-performance"
+                });
+                renderer.setSize(window.innerWidth, 740);
+                renderer.setClearColor(0x000000, 0);
+                renderer.outputEncoding = THREE.sRGBEncoding;
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                renderer.toneMappingExposure = 1.0;
+                renderer.physicallyCorrectLights = true;
+
+                document.getElementById('viewer-container').appendChild(renderer.domElement);
+
+                // Initial camera position
+                camera.position.set(10, -10, 14);
+                camera.rotation.set(Math.PI/4, 0, Math.PI/4);
+
+                setupLighting();
+                setupEnvironment();
+            }
+
+            // Environment and Lighting Setup
+            function setupEnvironment() {
+                new THREE.RGBELoader()
+                    .load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/equirectangular/neutral.hdr', 
+                        function(texture) {
+                            texture.mapping = THREE.EquirectangularReflectionMapping;
+                            scene.environment = texture;
+                            scene.background = null;
+                        }
+                    );
+            }
+
+            function setupLighting() {
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                scene.add(ambientLight);
+
+                const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.5);
+                scene.add(hemisphereLight);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+                directionalLight.position.set(1, 1, 1);
+                scene.add(directionalLight);
+            }
+
+            // Model Loading
+            // Model Loading
+function loadModel() {
+    // Initialize Draco loader
+    const dracoLoader = new THREE.DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
+    
+    // Initialize GLTF loader
+    const gltfLoader = new THREE.GLTFLoader();
+    gltfLoader.setDRACOLoader(dracoLoader);
+
+    // Load the model
+    gltfLoader.load(
+        // You can host your model on GitHub and use the raw content URL
+        'https://raw.githubusercontent.com/decentralize-dfw/finder/main/untitled-v1.glb',
+        function(gltf) {
+            model = gltf.scene;
+            
+            // Material handling
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    const material = child.material;
+                    
+                    // Handle texture encodings
+                    if (material.map) {
+                        material.map.encoding = THREE.sRGBEncoding;
+                    }
+                    if (material.normalMap) {
+                        material.normalMapType = THREE.TangentSpaceNormalMap;
+                    }
+                    
+                    // Enable PBR
+                    material.needsUpdate = true;
+                    material.envMapIntensity = 1.0;
+                    material.roughness = material.roughness || 0.5;
+                    material.metalness = material.metalness || 0.5;
+                }
+            });
+
+            scene.add(model);
+
+            // Handle animations if present
+            if (gltf.animations && gltf.animations.length) {
+                mixer = new THREE.AnimationMixer(model);
+                const clip = gltf.animations[0];
+                const action = mixer.clipAction(clip);
+                action.setLoop(THREE.LoopRepeat);
+                action.clampWhenFinished = true;
+                action.play();
+            }
+        },
+        // Progress callback
+        undefined,
+        // Error callback
+        function(error) {
+            console.error('Error loading model:', error);
+        }
+    );
+}
+
+            // Animation Loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                if (mixer) {
+                    const delta = clock.getDelta();
+                    mixer.update(delta * animationConfig.speed);
+                    
+                    // Update frame counter
+                    currentFrame = (currentFrame + 1) % TOTAL_FRAMES;
+                }
+
+                renderer.render(scene, camera);
+            }
+
+            // Text Animations
+            function initTextAnimations() {
+                const timeline = gsap.timeline({
+                    onComplete: () => {
+                        initialAnimationComplete = true;
+                        document.getElementById('viewer-container').style.pointerEvents = 'all';
+                    }
+                });
+
+                timeline
+                    .to(".main-title", {
+                        opacity: 1,
+                        duration: 1,
+                        delay: 0.5
+                    })
+                    .to(".subtitle", {
+                        opacity: 1,
+                        duration: 1
+                    }, "-=0.5")
+                    .to(".description", {
+                        opacity: 1,
+                        duration: 1
+                    }, "-=0.5")
+                    .to(".navigation-hint", {
+                        opacity: 1,
+                        duration: 1
+                    }, "-=0.5")
+                    .to(".scroll-hint", {
+                        opacity: 1,
+                        duration: 1
+                    }, "-=0.5");
+            }
+
+            // Scroll Handler
+            function handleScroll(e) {
+                if (!initialAnimationComplete) return;
+
+                scrollPosition += e.deltaY * 0.01;
+                scrollPosition = Math.max(0, Math.min(scrollPosition, 90));
+
+                if (scrollPosition > 2) {
+                    gsap.to([".main-title", ".subtitle", ".description"], {
+                        translateZ: 500,
+                        opacity: 0,
+                        duration: 0.5,
+                        stagger: 0.1
+                    });
+
+                    gsap.to([".navigation-hint", ".scroll-hint"], {
+                        opacity: 0,
+                        duration: 0.3
+                    });
+
+                    gsap.to(".section-titles", {
+                        opacity: 1,
+                        duration: 0.5,
+                        delay: 0.4,
+                        onStart: () => {
+                            document.querySelector('.section-titles').style.pointerEvents = 'all';
+                        }
+                    });
+
+                    document.querySelectorAll('.section-title').forEach((title, index) => {
+                        gsap.to(title, {
+                            opacity: 1,
+                            x: 0,
+                            duration: 0.5,
+                            delay: 0.5 + (index * 0.1)
+                        });
+                    });
+                } else {
+                    gsap.to([".main-title", ".subtitle", ".description"], {
+                        translateZ: 0,
+                        opacity: 1,
+                        duration: 0.5
+                    });
+
+                    gsap.to([".navigation-hint", ".scroll-hint"], {
+                        opacity: 1,
+                        duration: 0.3
+                    });
+
+                    gsap.to(".section-titles", {
+                        opacity: 0,
+                        duration: 0.3,
+                        onComplete: () => {
+                            document.querySelector('.section-titles').style.pointerEvents = 'none';
+                        }
+                    });
+                }
+
+                gsap.to(camera.position, {
+                    x: 10 + scrollPosition,
+                    duration: 0.5,
+                    ease: "power2.out"
+                });
+            }
+
+            // Section Title Click Handlers
+            function initSectionTitles() {
+                document.querySelectorAll('.section-title').forEach(title => {
+                    title.addEventListener('click', function() {
+                        const position = this.dataset.position.split(',').map(Number);
+                        gsap.to(camera.position, {
+                            x: position[0],
+                            y: position[1],
+                            z: position[2],
+                            duration: 1.5,
+                            ease: "power2.inOut"
+                        });
+                    });
+                });
+            }
+
+            // Responsive Handler
+            function handleResize() {
+                const width = window.innerWidth;
+                const height = 740;
+
+                camera.left = width / -2;
+                camera.right = width / 2;
+                camera.top = height / 2;
+                camera.bottom = height / -2;
+                camera.updateProjectionMatrix();
+
+                renderer.setSize(width, height);
+            }
+
+            // Animation Speed Control
+            window.setAnimationSpeed = function(speed) {
+                animationConfig.speed = speed;
+            };
+
+            // Initialize Everything
+          function init() {
+    initThreeJS();
+    initTextAnimations(); // Start text animations immediately
+    loadModel(); // Load model in background
+    initSectionTitles();
+
+    window.addEventListener('wheel', handleScroll);
+    window.addEventListener('resize', handleResize);
+
+    animate();
+}
+
+            // Start the application
+            init();
+        })();
+    </script>
+</body>
+</html>
