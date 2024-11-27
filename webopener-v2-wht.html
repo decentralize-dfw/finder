@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html oncontextmenu="return false;">
+<head>
+    <meta charset="utf-8">
+    <title>DFW Landing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            background: transparent;
+            color: black;
+            width: 100%;
+            height: 740px;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        #viewer-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .content-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+            z-index: 2;
+        }
+
+        .main-title {
+            font-family: "Lucida Console", Monaco, monospace;
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            opacity: 0;
+            transform: translateZ(0px);
+            text-align: center;
+        }
+
+        .subtitle {
+            font-family: "Times New Roman", Times, serif;
+            font-style: italic;
+            font-size: 24px;
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: translateZ(0px);
+            text-align: center;
+        }
+
+        .description {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 18px;
+            max-width: 800px;
+            text-align: center;
+            padding: 0 20px;
+            opacity: 0;
+            transform: translateZ(0px);
+            margin-bottom: 40px;
+        }
+
+        .navigation-hint {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: "Times New Roman", Times, serif;
+            font-size: 14px;
+            opacity: 0;
+            animation: bounce 4s infinite;
+            animation-delay: 2s;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+        
+        .corner-text {
+    position: absolute;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 11px;
+    font-style: italic;
+    color: black;
+    letter-spacing: -0.1px;
+    opacity: 0;
+}
+
+.left-corner {
+    top: 20px;
+    left: 20px;
+}
+
+.right-corner {
+    top: 20px;
+    right: 20px;
+}
+
+    </style>
+</head>
+<body>
+    <div id="viewer-container"></div>
+    
+    <div class="content-container">
+        <h1 class="main-title">Let's Forge the Future Together.</h1>
+        <div class="subtitle">The Internet is still flat.</div>
+        <div class="description">
+            Digital Forgery Workshop explores the threshold where architecture, art, and technology converge. 
+            We create responsive virtual environments that transcend physical limitations.
+        </div>
+        <div class="navigation-hint">Select any title from top to start their experience immediately.</div>
+    </div>
+
+<div class="corner-text left-corner">FIND WORLDS FROM THESE 3 CATEGORIES, AND START THEIR EXPERIENCE NOW.</div>
+<div class="corner-text right-corner">EXPLORE DFW, AND ITS ARCHIVE.</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
+
+<script>
+    (function() {
+        const securityHandler = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            return false;
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.keyCode == 123) securityHandler(e);
+        });
+        
+        document.addEventListener('contextmenu', securityHandler);
+        document.addEventListener('selectstart', securityHandler);
+        document.addEventListener('dragstart', securityHandler);
+    })();
+
+    (function() {
+        let initialAnimationComplete = false;
+        let scene, camera, renderer, model, mixer;
+        let clock = new THREE.Clock();
+        let scrollPosition = 0;
+        let isModelVisible = false;
+
+        const config = {
+            dimensions: {
+                width: window.innerWidth,
+                height: 740
+            },
+            camera: {
+                start: { x: 0, y: 0, z: 10 },
+                rotation: { x: 0, y: 0, z: 0 }
+            }
+        };
+
+        function initThreeJS() {
+            scene = new THREE.Scene();
+
+            const aspect = config.dimensions.width / config.dimensions.height;
+            const frustumSize = 10;
+            camera = new THREE.OrthographicCamera(
+                frustumSize * aspect / -2,
+                frustumSize * aspect / 2,
+                frustumSize / 2,
+                frustumSize / -2,
+                0.1,
+                1000
+            );
+
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                alpha: true,
+                premultipliedAlpha: false,
+                logarithmicDepthBuffer: true,
+                powerPreference: 'high-performance',
+                preserveDrawingBuffer: true
+            });
+            renderer.setSize(config.dimensions.width, config.dimensions.height);
+            renderer.setClearColor(0x000000, 0);
+            renderer.physicallyCorrectLights = true;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.debug.checkShaderErrors = false;
+            document.getElementById('viewer-container').appendChild(renderer.domElement);
+
+            camera.position.set(
+                config.camera.start.x,
+                config.camera.start.y,
+                config.camera.start.z
+            );
+            camera.rotation.set(
+                THREE.MathUtils.degToRad(config.camera.rotation.x),
+                THREE.MathUtils.degToRad(config.camera.rotation.y),
+                THREE.MathUtils.degToRad(config.camera.rotation.z)
+            );
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+            scene.add(ambientLight);
+
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            mainLight.position.set(0, 10, 10);
+            mainLight.castShadow = true;
+            scene.add(mainLight);
+
+            const frontFill = new THREE.DirectionalLight(0xffffff, 1.0);
+            frontFill.position.set(0, 0, 5);
+            scene.add(frontFill);
+
+            const topFill = new THREE.DirectionalLight(0xffffff, 1.5);
+            topFill.position.set(0, 5, 0);
+            scene.add(topFill);
+
+            const backFill = new THREE.DirectionalLight(0xffffff, 1.2);
+            backFill.position.set(0, 0, -5);
+            scene.add(backFill);
+
+            [
+                [5, 5, 5],
+                [-5, 5, -5],
+                [0, -5, 0],
+                [0, 5, -5]
+            ].forEach(pos => {
+                const pointLight = new THREE.PointLight(0xffffff, 1.0);
+                pointLight.position.set(...pos);
+                scene.add(pointLight);
+            });
+
+            loadModel();
+            animate();
+        }
+
+        function loadModel() {
+            const loader = new THREE.GLTFLoader();
+            
+            loader.load(
+                'https://raw.githubusercontent.com/decentralize-dfw/finder/main/DFWLOGOOPENER.glb',
+                function(gltf) {
+                    model = gltf.scene;
+                    model.position.y = -3;
+                    model.visible = false;
+
+                    model.traverse((child) => {
+                        if (child.isMesh) {
+                            const material = child.material;
+                            material.roughness = 0.5;
+                            material.metalness = 0.8;
+                            material.envMapIntensity = 1.5;
+                        }
+                    });
+
+                    scene.add(model);
+
+                    mixer = new THREE.AnimationMixer(model);
+                    if (gltf.animations && gltf.animations.length > 0) {
+                        const action = mixer.clipAction(gltf.animations[0]);
+                        action.setEffectiveTimeScale(1.8);
+                        action.setLoop(THREE.LoopRepeat);
+                        action.stop();
+                    }
+                }
+            );
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (mixer && model && model.visible) {
+                const delta = clock.getDelta();
+                mixer.update(delta);
+            }
+            
+            renderer.render(scene, camera);
+        }
+
+        function initTextAnimations() {
+            const timeline = gsap.timeline({
+                onComplete: () => {
+                    initialAnimationComplete = true;
+                    document.getElementById('viewer-container').style.pointerEvents = 'all';
+                }
+            });
+
+            timeline
+                .to(".main-title", {
+                    opacity: 1,
+                    duration: 1,
+                    delay: 0.5
+                })
+                .to(".subtitle", {
+                    opacity: 1,
+                    duration: 1
+                }, "-=0.5")
+                .to(".description", {
+                    opacity: 1,
+                    duration: 1
+                }, "-=0.5")
+                .to(".navigation-hint", {
+                    opacity: 1,
+                    duration: 1
+                }, "-=0.5");
+        }
+
+        function handleScroll(e) {
+    if (!initialAnimationComplete) return;
+
+    scrollPosition += e.deltaY * 0.01;
+    scrollPosition = Math.max(0, Math.min(scrollPosition, 90));
+
+    if (scrollPosition > 2) {
+        if (!isModelVisible) {
+            gsap.to([".main-title", ".subtitle", ".description", ".navigation-hint"], {
+                translateZ: 500,
+                opacity: 0,
+                duration: 0.5,
+                stagger: 0.1,
+                onComplete: () => {
+                    if (model) {
+                        model.visible = true;
+                        isModelVisible = true;
+                        if (mixer && mixer._actions.length > 0) {
+                            const action = mixer._actions[0];
+                            action.play();
+                        }
+                        gsap.to(model.position, {
+                            y: 0,
+                            duration: 1,
+                            ease: "power2.out"
+                        });
+                        // Show corner texts
+                        gsap.to([".corner-text"], {
+                            opacity: 1,
+                            duration: 0.5
+                        });
+                    }
+                }
+            });
+        }
+    } else if (isModelVisible) {
+        if (model) {
+            if (mixer && mixer._actions.length > 0) {
+                mixer._actions[0].stop();
+            }
+            // Hide corner texts
+            gsap.to([".corner-text"], {
+                opacity: 0,
+                duration: 0.5
+            });
+            gsap.to(model.position, {
+                y: -3,
+                duration: 0.5,
+                ease: "power2.in",
+                onComplete: () => {
+                    model.visible = false;
+                    isModelVisible = false;
+                }
+            });
+        }
+        gsap.to([".main-title", ".subtitle", ".description", ".navigation-hint"], {
+            translateZ: 0,
+            opacity: 1,
+            duration: 0.5
+        });
+    }
+}
+
+        function handleResize() {
+            const width = window.innerWidth;
+            const height = 740;
+            const aspect = width / height;
+            const frustumSize = 10;
+
+            camera.left = frustumSize * aspect / -2;
+            camera.right = frustumSize * aspect / 2;
+            camera.top = frustumSize / 2;
+            camera.bottom = frustumSize / -2;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(width, height);
+        }
+
+        function init() {
+            initThreeJS();
+            initTextAnimations();
+            
+            window.addEventListener('wheel', handleScroll);
+            window.addEventListener('resize', handleResize);
+        }
+
+        init();
+    })();
+</script>
+   
+</body>
+</html>
