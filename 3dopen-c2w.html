@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GLB Viewer</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: transparent;
+        }
+        #canvas-container {
+            width: 100%;
+            height: 840px;
+            position: relative;
+            overflow: hidden;
+            background: transparent;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background: transparent;
+        }
+       .controls {
+    position: absolute;
+    top: 10px;
+    left: -200px;
+    background: rgba(0,0,0,0.7);
+    padding: 0px;
+    border-radius: 5px;
+    color: white;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: -100px;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.control-row {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.control-label {
+    min-width: 0px;
+    font-size: 0px;
+}
+
+.control-input {
+    width: 60px;
+    padding: 4px;
+    background: #333;
+    border: 1px solid #555;
+    color: white;
+    border-radius: 3px;
+}
+
+#toggleWireframe {
+    background: #444;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+#toggleWireframe:hover {
+    background: #555;
+}
+
+#applyCamera {
+    background: #446;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 5px;
+}
+
+#applyCamera:hover {
+    background: #557;
+}
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="canvas"></canvas>
+      <!-- Bu bölümü bulup tamamen değiştirin -->
+<div class="controls">
+    <div class="control-group">
+        <div class="control-row">
+            <span class="control-label">Position X:</span>
+            <input type="number" id="posX" class="control-input" value="0" step="0.1">
+        </div>
+        <div class="control-row">
+            <span class="control-label">Position Y:</span>
+            <input type="number" id="posY" class="control-input" value="0" step="0.1">
+        </div>
+        <div class="control-row">
+            <span class="control-label">Position Z:</span>
+            <input type="number" id="posZ" class="control-input" value="1.4" step="0.1">
+        </div>
+        <div class="control-row">
+            <span class="control-label">Rotation X:</span>
+            <input type="number" id="rotX" class="control-input" value="90" step="1">
+        </div>
+        <div class="control-row">
+            <span class="control-label">Rotation Y:</span>
+            <input type="number" id="rotY" class="control-input" value="0" step="1">
+        </div>
+        <div class="control-row">
+            <span class="control-label">Rotation Z:</span>
+            <input type="number" id="rotZ" class="control-input" value="0" step="1">
+        </div>
+        <div class="control-row">
+            <span class="control-label">Lens Size:</span>
+            <input type="number" id="lensSize" class="control-input" value="1" step="0.1" min="0.1">
+        </div>
+    </div>
+    <button id="applyCamera">Apply Camera</button>
+    <button id="toggleWireframe">Wireframe</button>
+</div>
+        </div>
+        <div class="loading" id="loadingText">Loading...</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/draco/1.4.1/draco_decoder.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+
+
+<script>
+// Global değişkenler
+let scene, camera, renderer, controls, currentModel, mixer;
+let isWireframe = false;
+const clock = new THREE.Clock();
+
+// Sabitler
+const MODEL_URL = "https://raw.githubusercontent.com/decentralize-dfw/3dwebhome/main/C2W-OPT_256-v3.glb";
+
+
+function init() {
+    scene = new THREE.Scene();
+    scene.background = null;
+
+    renderer = new THREE.WebGLRenderer({
+        canvas: document.querySelector('#canvas'),
+        antialias: true,
+        alpha: true,
+        powerPreference: 'high-performance',
+        preserveDrawingBuffer: true
+    });
+    renderer.setSize(window.innerWidth, 840);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.setClearColor(0x000000, 0);
+    renderer.debug.checkShaderErrors = false;
+
+    setupCamera();
+    setupLighting();
+    loadModel();
+    setupRaycaster();
+    addInputListeners();
+
+    window.addEventListener('resize', onWindowResize, false);
+    
+    animate();
+}
+
+function setupCamera() {
+    const aspect = window.innerWidth / 840;
+    const defaultLensSize = 35;
+    camera = new THREE.OrthographicCamera(
+        -defaultLensSize * aspect,
+        defaultLensSize * aspect,
+        defaultLensSize,
+        -defaultLensSize,
+        -5000,
+        5000
+    );
+
+    camera.rotation.order = 'XYZ';
+    camera.position.set(0, 0, 1.4);
+    camera.rotation.set(90 * Math.PI / 180, 0, 0);
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 0.6;
+    controls.panSpeed = 0.6;
+    controls.zoomSpeed = 0.6;
+    controls.target.set(0, 0, 0);
+    controls.minPolarAngle = 0;
+    controls.maxPolarAngle = Math.PI;
+
+    document.getElementById('lensSize').value = defaultLensSize;
+
+    renderer.domElement.addEventListener('wheel', (event) => {
+        event.preventDefault();
+        let currentLensSize = parseFloat(document.getElementById('lensSize').value);
+        const zoomFactor = 1.05;
+        
+        if (event.deltaY > 0) {
+            currentLensSize *= zoomFactor;
+        } else {
+            currentLensSize /= zoomFactor;
+        }
+        
+        currentLensSize = Math.max(8, Math.min(200, currentLensSize));
+        document.getElementById('lensSize').value = currentLensSize.toFixed(1);
+        updateCameraLens(currentLensSize);
+    }, { passive: false });
+
+    controls.addEventListener('change', updateInputsFromCamera);
+    updateInputsFromCamera();
+}
+
+function updateCameraLens(lensSize) {
+    const aspect = window.innerWidth / 840;
+    camera.left = -lensSize * aspect;
+    camera.right = lensSize * aspect;
+    camera.top = lensSize;
+    camera.bottom = -lensSize;
+    camera.updateProjectionMatrix();
+    renderer.render(scene, camera);
+}
+
+function updateCamera() {
+    try {
+        controls.enabled = false;
+
+        const posX = parseFloat(document.getElementById('posX').value) || 0;
+        const posY = parseFloat(document.getElementById('posY').value) || 0;
+        const posZ = parseFloat(document.getElementById('posZ').value) || 1.4;
+        const rotX = ((parseFloat(document.getElementById('rotX').value) || 0) * Math.PI) / 180;
+        const rotY = ((parseFloat(document.getElementById('rotY').value) || 0) * Math.PI) / 180;
+        const rotZ = ((parseFloat(document.getElementById('rotZ').value) || 0) * Math.PI) / 180;
+        const lensSize = Math.max(8, Math.min(200, parseFloat(document.getElementById('lensSize').value) || 35));
+
+        camera.position.set(posX, posY, posZ);
+        camera.rotation.set(rotX, rotY, rotZ);
+        
+        updateCameraLens(lensSize);
+        
+        controls.target.set(0, 0, 0);
+        controls.update();
+        
+        setTimeout(() => {
+            controls.enabled = true;
+        }, 100);
+
+    } catch (error) {
+        console.error("Camera update error:", error);
+        camera.position.set(0, 0, 1.4);
+        camera.rotation.set(90 * Math.PI / 180, 0, 0);
+        updateCameraLens(35);
+        controls.target.set(0, 0, 0);
+        controls.update();
+        updateInputsFromCamera();
+    }
+}
+
+function updateInputsFromCamera() {
+    const pos = camera.position;
+    const rot = camera.rotation;
+    
+    document.getElementById('posX').value = pos.x.toFixed(2);
+    document.getElementById('posY').value = pos.y.toFixed(2);
+    document.getElementById('posZ').value = pos.z.toFixed(2);
+    
+    document.getElementById('rotX').value = (rot.x * 180 / Math.PI).toFixed(2);
+    document.getElementById('rotY').value = (rot.y * 180 / Math.PI).toFixed(2);
+    document.getElementById('rotZ').value = (rot.z * 180 / Math.PI).toFixed(2);
+}
+
+function setupLighting() {
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 5, 5);
+    scene.add(directionalLight);
+
+    const backLight = new THREE.DirectionalLight(0xffffff, 0.3);
+    backLight.position.set(-5, 5, -5);
+    scene.add(backLight);
+}
+
+function setupRaycaster() {
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    function onMouseClick(event) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(scene.children, true);
+
+        if (intersects.length > 0) {
+            const object = intersects[0].object;
+            const name = object.name.toLowerCase();
+            if (MODEL_LINKS[name]) {
+                window.open(MODEL_LINKS[name], '_blank');
+            }
+        }
+    }
+
+    renderer.domElement.addEventListener('click', onMouseClick);
+}
+
+function loadModel() {
+    const loader = new THREE.GLTFLoader();
+    const dracoLoader = new THREE.DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.4.1/');
+    loader.setDRACOLoader(dracoLoader);
+
+    loader.load(
+        MODEL_URL,
+        function (gltf) {
+            if (currentModel) {
+                scene.remove(currentModel);
+                mixer = null;
+            }
+            
+            currentModel = gltf.scene;
+            currentModel.traverse((child) => {
+                if (child.isMesh) {
+                    child.frustumCulled = false;
+                    child.userData.originalMaterial = child.material.clone();
+                    if (isWireframe) {
+                        const wireframeMaterial = new THREE.MeshBasicMaterial({
+                            wireframe: true,
+                            color: 0x808080,
+                            vertexColors: false,
+                            skinning: child.material.skinning,
+                            morphTargets: child.material.morphTargets,
+                            morphNormals: child.material.morphNormals
+                        });
+                        child.material = wireframeMaterial;
+                    }
+                    child.material.needsUpdate = true;
+                }
+            });
+            
+            scene.add(currentModel);
+            
+            if (gltf.animations && gltf.animations.length) {
+                mixer = new THREE.AnimationMixer(currentModel);
+                gltf.animations.forEach(clip => {
+                    mixer.clipAction(clip).play();
+                });
+            }
+            
+            const box = new THREE.Box3().setFromObject(currentModel);
+            const center = box.getCenter(new THREE.Vector3());
+            currentModel.position.sub(center);
+        }
+    );
+}
+
+function toggleWireframe() {
+    isWireframe = !isWireframe;
+    const button = document.getElementById('toggleWireframe');
+    button.textContent = isWireframe ? 'Material' : 'Wireframe';
+    
+    if (currentModel) {
+        currentModel.traverse((child) => {
+            if (child.isMesh) {
+                if (!child.userData.originalMaterial) {
+                    child.userData.originalMaterial = child.material.clone();
+                }
+                
+                if (isWireframe) {
+                    const wireframeMaterial = new THREE.MeshBasicMaterial({
+                        wireframe: true,
+                        color: 0x808080,
+                        vertexColors: false,
+                        skinning: child.material.skinning,
+                        morphTargets: child.material.morphTargets,
+                        morphNormals: child.material.morphNormals
+                    });
+                    
+                    wireframeMaterial.skeletal = child.material.skeletal;
+                    wireframeMaterial.morphTargets = child.material.morphTargets;
+                    wireframeMaterial.morphNormals = child.material.morphNormals;
+                    
+                    child.material = wireframeMaterial;
+                } else {
+                    child.material = child.userData.originalMaterial;
+                }
+                
+                child.material.needsUpdate = true;
+            }
+        });
+    }
+}
+
+function addInputListeners() {
+    const inputs = document.querySelectorAll('.control-input');
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            updateCamera();
+        });
+    });
+
+    document.getElementById('toggleWireframe').addEventListener('click', toggleWireframe);
+    document.getElementById('applyCamera').addEventListener('click', updateCamera);
+}
+
+function onWindowResize() {
+    const lensSize = Math.max(8, Math.min(200, parseFloat(document.getElementById('lensSize').value) || 35));
+    updateCameraLens(lensSize);
+    renderer.setSize(window.innerWidth, 700);
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    const delta = clock.getDelta();
+    
+    if (mixer) {
+        mixer.update(delta);
+    }
+    
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
