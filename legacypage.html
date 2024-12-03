@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-            --viewer-left: 20px;  /* Edit this value to change left position */
-            --viewer-top: 20px;     /* Edit this value to change top position */
+            --viewer-left: 10px;  /* Edit this value to change left position */
+            --viewer-top: 10px;     /* Edit this value to change top position */
         }
 
         * {
@@ -38,9 +38,10 @@
             height: 320px;
             left: var(--viewer-left);
             top: var(--viewer-top);
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.5);
             z-index: 1000;
-            border: 1px solid #ddd;
+border-radius: 5px;
+             border: 1px solid #000000;
             overflow: hidden;
             pointer-events: auto;
         }
