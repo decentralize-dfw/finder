@@ -1,0 +1,2600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Topographies</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Global styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Helvetica", monospace;
+        }
+        
+        body {
+            background-color: transparent;
+            overflow: hidden;
+            color: #000;
+        }
+        
+        /* Main container */
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 800px;
+            width: 100vw;
+            margin: 0 auto;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Top section with filters and search */
+        .top-section {
+            height: auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0);
+            z-index: 10;
+            gap: 10px;
+        }
+
+        .top-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 400px;
+            gap: 10px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 1000;
+            margin-left: 0;
+            -webkit-text-stroke: 0.5px black;
+            width: 100%;
+        }
+
+        .media-btn-container {
+            z-index: 6;
+            height: 32px;
+            display: flex;
+            gap: 8px;
+            width: 400px;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .collections-row {
+            display: flex;
+            width: 400px;
+            padding-left: 0;
+            padding-right: 0;
+            gap: 6px;
+        }
+
+        .collections {
+            display: flex;
+            gap: 6px;
+            z-index: 6;
+            height: 32px;
+            width: 100%;
+            white-space: nowrap;
+        }
+
+        .search-row {
+            display: flex;
+            width: 400px;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .search-container {
+            z-index: 6;
+            width: 100%;
+        }
+
+        .search-input {
+            padding: 5px 10px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            width: 100%;
+            font-family: "Helvetica", monospace;
+            height: 32px;
+            line-height: 20px;
+            box-sizing: border-box;
+        }
+
+        .media-btn, .collection-btn {
+            padding: 5px 6px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.2s;
+            color: #000;
+            box-shadow: none;
+            text-shadow: none;
+            height: 32px;
+            line-height: 20px;
+            flex: 1;
+            outline: none;
+        }
+
+        .collection-btn {
+            padding: 5px 4px;
+            font-size: 9px;
+            letter-spacing: 0px;
+        }
+
+        .media-btn {
+            font-style: italic;
+            font-weight: bold;
+            letter-spacing: 0.1px;
+        }
+
+        .all-btn {
+            font-weight: bolder !important;
+            background-color: rgba(240, 240, 240, 0.9);
+        }
+        
+        .collection-btn:hover, .media-btn:hover {
+            background-color: rgba(240, 240, 240, 0.9);
+        }
+        
+        .collection-btn.active, .media-btn.active {
+            background-color: rgba(100, 100, 100, 0.8);
+            color: white;
+        }
+        
+        .viewer-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            overflow: visible;
+            pointer-events: auto;
+        }
+        
+        #viewer-canvas {
+            width: 100%;
+            height: 100%;
+            pointer-events: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .viewer-container.active {
+            pointer-events: auto;
+            z-index: 1;
+        }
+        
+        .avatar-details {
+            position: absolute;
+            padding: 0;
+            max-height: 80vh;
+            overflow: hidden;
+            z-index: 4;
+            color: #000;
+            background-color: transparent;
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            left: 15px;
+            top: 50px;
+            box-sizing: border-box;
+        }
+        
+        .details-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 0;
+        }
+        
+        .compact-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+            align-items: center;
+            width: 100%;
+            padding: 0;
+        }
+        
+        .info-pill, .link-pill {
+            background-color: rgba(255, 255, 255, 0.4);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            white-space: nowrap;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .link-pill {
+            cursor: pointer;
+        }
+        
+        .description-text {
+            font-size: 10px;
+            font-weight: bold;
+            line-height: 1.5;
+            text-align: left;
+            margin-bottom: 10px;
+            letter-spacing: -0.2px;
+            width: 100%;
+            padding: 0;
+        }
+        
+        .collection-text {
+            font-size: 9px;
+            font-style: italic;
+            line-height: 1.4;
+            text-align: justify;
+            width: 100%;
+            padding: 0;
+        }
+        
+        .control-label, .lighting-label {
+            font-size: 11px;
+            color: rgba(0, 0, 0, 0.7);
+            margin-bottom: 5px;
+            display: block;
+            width: 100%;
+            padding: 0;
+        }
+        
+        .control-row {
+            display: flex;
+            width: 100%;
+            gap: 14px;
+            margin-bottom: 10px;
+            align-items: center;
+            padding: 0;
+        }
+        
+        .light-btn, .action-btn {
+            padding: 8px 0;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.5);
+            color: #000;
+            cursor: pointer;
+            font-size: 9px;
+            transition: all 0.2s;
+            text-align: center;
+            flex: 1;
+            box-sizing: border-box;
+        }
+        
+        .light-label {
+            font-size: 9px;
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0;
+            padding: 0;
+            flex: 0 0 30px;
+        }
+        
+        .light-btn:hover, .action-btn:hover {
+            background-color: rgba(220, 220, 220, 0.9);
+        }
+        
+        .light-btn.active {
+            background-color: rgba(100, 100, 100, 0.8);
+            color: white;
+        }
+        
+        .bottom-section {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 80px;
+            z-index: 5;
+            text-align: center;
+        }
+        
+        .avatar-selector {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .avatar-carousel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .avatar-item {
+            width: 64.5px;
+            height: 80px;
+            position: absolute;
+            transform-origin: center;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+            z-index: 1;
+            margin: 0;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        
+        .avatar-thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            background-color: #fff;
+            margin-bottom: 0;
+        }
+        
+        .avatar-item.active .avatar-thumbnail {
+            border-color: rgba(0, 120, 255, 0.8);
+            box-shadow: 0 0 10px rgba(0, 120, 255, 0.5);
+            opacity: 1;
+        }
+        
+        .avatar-name, .media-item-name {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #000;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0;
+            font-weight: normal;
+        }
+        
+        .avatar-item:hover .avatar-name, .media-item:hover .media-item-name {
+            opacity: 1;
+        }
+        
+        .media-view {
+            position: absolute;
+            top: 90px;
+            left: 10px;
+            right: 10px;
+            bottom: 120px;
+            background-color: transparent;
+            z-index: 2;
+            display: none;
+            pointer-events: none;
+        }
+        
+        .media-view.active {
+            pointer-events: auto;
+        }
+        
+        .media-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent !important;
+        }
+        
+        .media-preview {
+            width: 80%;
+            height: 80%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: visible;
+            background: transparent !important;
+            position: relative;
+        }
+        
+        .media-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .media-video-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent !important;
+            position: relative;
+        }
+
+        .media-video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            width: auto;
+            height: auto;
+            background: transparent !important;
+            aspect-ratio: 16/9;
+        }
+        
+        .media-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s ease;
+            z-index: 5;
+            pointer-events: none;
+        }
+        
+        .media-video-container:hover .media-overlay,
+        .media-preview:hover .media-overlay {
+            opacity: 0;
+        }
+        
+        .media-overlay-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 10px;
+            text-align: center;
+            padding: 0 20px;
+        }
+        
+        .media-overlay-description {
+            font-size: 12px;
+            color: #000;
+            text-align: center;
+            padding: 0 20px;
+            line-height: 1.4;
+        }
+        
+        .media-text {
+            width: 50%;
+            height: 90%;
+            padding: 0px;
+            padding-right: 10px;
+            letter-spacing: -0.15px;
+            background-color: rgba(255, 255, 255, 0);
+            overflow-y: auto;
+            border-radius: 0px;
+            color: #000;
+            font-size: 16px;
+            line-height: 1.5;
+            text-align: justify;
+            text-align-last: left;
+            justify-content: flex-start;
+            max-height: 80%;
+            box-sizing: border-box;
+        }
+
+        .media-text p {
+            margin: 0 0 1.5em 0;
+            padding: 0;
+        }
+
+        .media-text p:empty {
+            display: none;
+        }
+
+        .media-text h2 {
+            margin-bottom: 1em;
+        }
+        
+        .media-item {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            transform-origin: center center;
+            opacity: 0.7;
+            z-index: 10;
+            border-radius: 8px;
+            overflow: visible;
+            margin-top: 25px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        
+        .media-item.image { background-color: white; }
+        .media-item.video { background-color: white; }
+        .media-item.text { background-color: white; }
+        
+        .media-item-thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            z-index: 11;
+            position: relative;
+            margin-bottom: 0;
+        }
+        
+        .media-item.active .media-item-thumbnail {
+            border-color: rgba(0, 120, 255, 0.8);
+            box-shadow: 0 0 10px rgba(0, 120, 255, 0.5);
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: #000;
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+            background-color: rgba(255, 255, 255, 0);
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-family: "Lucida Console", monospace;
+            letter-spacing: -1px;
+        }
+        
+        .loading-progress {
+            width: 200px;
+            height: 6px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: rgba(0, 120, 255, 0.8);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .media-video-container iframe.media-video {
+            width: auto;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            aspect-ratio: 16/9;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .video-container, .media-video-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .avatar-grid-container {
+            position: absolute;
+            top: 250px;
+            left: 0;
+            right: 0;
+            bottom: 0px;
+            padding: 15px;
+            overflow-y: auto;
+            z-index: 6;
+            background-color: rgba(255, 255, 255, 1);
+            display: none;
+        }
+
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .grid-item {
+            width: 100%;
+            aspect-ratio: 1;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            background-color: #fff;
+            margin-bottom: 0;
+        }
+
+        .grid-item:hover img {
+            transform: scale(1.05);
+            border-color: rgba(0, 120, 255, 0.8);
+        }
+
+        .grid-item-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px;
+            font-size: 10px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            word-break: break-word;
+        }
+
+        .grid-item:hover .grid-item-name {
+            opacity: 1;
+        }
+
+        .grid-toggle-button {
+            position: absolute;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .grid-toggle-button:hover {
+            background-color: rgba(220, 220, 220, 0.9);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js"></script>
+    <script src="https://unpkg.com/meshoptimizer@0.18.1/meshopt_decoder.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="top-section">
+            <div class="top-controls">
+                
+                <div class="media-btn-container">
+                    <button class="media-btn" id="runway-btn">DT_Museum</button>
+                    <button class="media-btn" id="retail-btn">Isometric ExhB.</button>
+                    <button class="media-btn" id="market-btn">Market</button>
+                    <button class="media-btn" id="media-btn">Media</button>
+                </div>
+            </div>
+            <div class="collections-row">
+                <div class="collections" id="collections"></div>
+            </div>
+            <div class="search-row">
+                <div class="search-container">
+                    <input type="text" class="search-input" id="search-input" placeholder="Search spaces...">
+                </div>
+            </div>
+        </div>
+
+        <div class="avatar-grid-container" id="avatar-grid-container">
+            <div class="avatar-grid" id="avatar-grid"></div>
+        </div>
+        
+        <div class="viewer-container" id="viewer-container">
+            <canvas id="viewer-canvas"></canvas>
+            <div class="avatar-details" id="avatar-details">
+                <div class="details-title" id="avatar-title">POTBELLY Q_FU</div>
+                <div class="details-info" id="details-info"></div>
+                <div class="control-row">
+                    <span class="light-label">Light</span>
+                    <button class="light-btn active" id="light-btn-1">1</button>
+                    <button class="light-btn" id="light-btn-2">2</button>
+                    <button class="light-btn" id="light-btn-3">3</button>
+                    <button class="light-btn" id="light-btn-4">4</button>
+                    <button class="light-btn" id="light-btn-5">5</button>
+                </div>
+                <div class="control-row">
+                    <button class="action-btn" id="buy-btn">Mint</button>
+                </div>
+                <div class="description-text" id="description-text"></div>
+                <div class="collection-text" id="collection-text"></div>
+            </div>
+            <div class="loading-overlay" id="loading-overlay">
+                <div class="loading-text">Forging... <span id="loading-percentage">0%</span></div>
+                <div class="loading-progress">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+            </div>
+            <div class="media-view" id="media-view">
+                <div class="media-content" id="media-content">
+                    <div class="media-preview" id="media-preview"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-toggle-button" id="grid-toggle-button">
+            <i class="fas fa-th-large"></i>
+        </div>
+        
+        <div class="bottom-section" id="bottom-section">
+            <div class="avatar-selector">
+                <div class="avatar-carousel" id="avatar-carousel"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Configurable Parameters
+        const CONFIG = {
+            thumbnails: { size: 80, spacing: 40, minSideOffset: 40 },
+            ui: { detailsBox: { top: 220, left: 0, width: 400 } },
+            viewer: {
+                top: 0, left: 10, right: 10, bottom: 0, modelScale: 1.0,
+                camera: { 
+                    position: { x: 0, y: 0, z: 70 }, // Kamerayı daha yakına aldık
+                    target: { x: 0, y: 0, z: 0 }, // Modelin merkezi (0,0,0)
+                    orthoSize: 48 // Orthographic kamera için görünüm alanı (48m x 48m modele göre ayarlandı)
+                }
+            },
+            media: { top: 90, left: 10, right: 10, bottom: 120 },
+            sectionPositions: { avatarBar: { bottom: 30 }, mediaBar: { bottom: 55 } }
+        };
+
+        // Global Variables
+        let scene, camera, renderer, controls, clock = new THREE.Clock();
+        let mixer = null, currentModel = null;
+        let activeSpace = null, SpaceData = [], collections = [], activeCollection = "ALL";
+        let modelAnimations = [], activeSpaceIndex = 0, isModelLoading = false;
+        let mediaData = [], activeMediaIndex = 0, isMediaMode = false, activeHdriIndex = 0;
+        let isGridView = true;
+        let wasAutoRotateEnabled = false;
+        let initialLoad = true;
+        let hasSpaceBeenSelected = false;
+
+        const collectionDescriptions = {
+            "Gallery": "Spaces designed for exhibitions and artistic displays.",
+            "Multi": "Versatile, multipurpose complexes for various activities.",
+            "HQ": "Modern office spaces with innovative designs."
+        };
+
+        const hdriPaths = [
+            'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/equirectangular/venice_sunset_1k.hdr',
+            'https://raw.githubusercontent.com/decentralize-dfw/c2w2/main/nebula-hdr.hdr',
+            'https://raw.githubusercontent.com/decentralize-dfw/c2w2/main/surreal_hdr.hdr',
+            'https://raw.githubusercontent.com/decentralize-dfw/c2w2/main/DARK-NEBULA.hdr',
+            'https://raw.githubusercontent.com/decentralize-dfw/c2w2/main/photo_studio_01_2k.hdr'
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initMeshoptDecoder();
+            applyUIConfiguration();
+            initApp();
+        });
+
+        function initMeshoptDecoder() {
+            if (typeof MeshoptDecoder === 'undefined') {
+                console.error("MeshoptDecoder not available!");
+                return;
+            }
+            THREE.GLTFLoader.prototype.setMeshoptDecoder = function(decoder) {
+                this.meshoptDecoder = decoder;
+                return this;
+            };
+        }
+
+        function applyUIConfiguration() {
+            const viewerContainer = document.getElementById('viewer-container');
+            viewerContainer.style.top = `${CONFIG.viewer.top}px`;
+            viewerContainer.style.left = `${CONFIG.viewer.left}px`;
+            viewerContainer.style.right = `${CONFIG.viewer.right}px`;
+            viewerContainer.style.bottom = `${CONFIG.viewer.bottom}px`;
+            
+            const avatarDetails = document.getElementById('avatar-details');
+            avatarDetails.style.top = `${CONFIG.ui.detailsBox.top}px`;
+            avatarDetails.style.left = `${CONFIG.ui.detailsBox.left}px`;
+            avatarDetails.style.width = `${CONFIG.ui.detailsBox.width}px`;
+            
+            const mediaView = document.getElementById('media-view');
+            mediaView.style.top = `${CONFIG.media.top}px`;
+            mediaView.style.left = `${CONFIG.media.left}px`;
+            mediaView.style.right = `${CONFIG.media.right}px`;
+            mediaView.style.bottom = `${CONFIG.media.bottom}px`;
+            
+            const bottomSection = document.getElementById('bottom-section');
+            bottomSection.style.bottom = `${CONFIG.sectionPositions.avatarBar.bottom}px`;
+        }
+
+        function initApp() {
+            initScene();
+            loadSpaceData();
+            loadMediaData();
+            setupEventListeners();
+            
+            populateAvatarGrid();
+            toggleGridView(true);
+            
+            document.getElementById('loading-overlay').style.display = 'none';
+            
+            const filteredSpaces = activeCollection === 'ALL' ? [...SpaceData] : SpaceData.filter(space => space.collection === activeCollection);
+            if (filteredSpaces.length > 0) {
+                activeSpace = filteredSpaces[0];
+                activeSpaceIndex = 0;
+                updateAvatarDetails(activeSpace);
+                updateActionButtons(activeSpace);
+                document.getElementById('avatar-details').style.display = 'none';
+                updateAvatarCarousel();
+            }
+            
+            document.getElementById('viewer-canvas').style.display = 'none';
+        }
+
+        function initScene() {
+            scene = new THREE.Scene();
+            scene.background = null;
+            
+            const canvasContainer = document.querySelector('.viewer-container');
+            const width = canvasContainer.clientWidth;
+            const height = canvasContainer.clientHeight;
+            const aspect = width / height;
+            
+            // Orthographic Camera Setup
+            const orthoSize = CONFIG.viewer.camera.orthoSize;
+            camera = new THREE.OrthographicCamera(
+                -orthoSize * aspect, // left
+                orthoSize * aspect,  // right
+                orthoSize,           // top
+                -orthoSize,          // bottom
+                0.1,                 // near
+                1000                 // far
+            );
+            camera.position.set(
+                CONFIG.viewer.camera.position.x,
+                CONFIG.viewer.camera.position.y,
+                CONFIG.viewer.camera.position.z
+            );
+            camera.lookAt(
+                CONFIG.viewer.camera.target.x,
+                CONFIG.viewer.camera.target.y,
+                CONFIG.viewer.camera.target.z
+            );
+            
+            renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('viewer-canvas'),
+                antialias: true, alpha: true, powerPreference: 'high-performance'
+            });
+            renderer.setSize(width, height);
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            renderer.physicallyCorrectLights = true;
+            
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.enablePan = true;
+            controls.enableRotate = true; // Rotasyon özelliğini geri ekledik
+            controls.enableZoom = true;
+            controls.minZoom = 0.5;
+            controls.maxZoom = 20;
+            controls.target.set(
+                CONFIG.viewer.camera.target.x,
+                CONFIG.viewer.camera.target.y,
+                CONFIG.viewer.camera.target.z
+            );
+            controls.update();
+            
+            document.querySelector('.viewer-container').classList.add('active');
+            
+            window.addEventListener('resize', onWindowResize);
+            setupHDRIEnvironment(activeHdriIndex);
+            addBasicLighting();
+            animate();
+        }
+
+        function setupHDRIEnvironment(hdriIndex = 0) {
+            updateLoadingProgress(10, 'Loading environment...');
+            const pmremGenerator = new THREE.PMREMGenerator(renderer);
+            pmremGenerator.compileEquirectangularShader();
+            new THREE.RGBELoader().load(hdriPaths[hdriIndex], texture => {
+                const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+                scene.environment = envMap;
+                texture.dispose();
+                pmremGenerator.dispose();
+                updateLoadingProgress(20, 'Environment loaded');
+            });
+        }
+
+        function changeHDRIEnvironment(index) {
+            if (index === activeHdriIndex) return;
+            activeHdriIndex = index;
+            updateLoadingProgress(10, 'Changing lighting...');
+            const pmremGenerator = new THREE.PMREMGenerator(renderer);
+            pmremGenerator.compileEquirectangularShader();
+            new THREE.RGBELoader().load(hdriPaths[index], texture => {
+                const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+                scene.environment = envMap;
+                texture.dispose();
+                pmremGenerator.dispose();
+                updateLoadingProgress(100, 'Lighting updated');
+            });
+            document.querySelectorAll('.light-btn').forEach((btn, i) => btn.classList.toggle('active', i === index));
+        }
+
+        function addBasicLighting() {
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+            scene.add(ambientLight);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.1);
+            dirLight.position.set(5, 5, 5);
+            scene.add(dirLight);
+        }
+
+        function onWindowResize() {
+            const canvasContainer = document.querySelector('.viewer-container');
+            const width = canvasContainer.clientWidth;
+            const height = canvasContainer.clientHeight;
+            const aspect = width / height;
+            
+            // Update orthographic camera
+            const orthoSize = CONFIG.viewer.camera.orthoSize;
+            camera.left = -orthoSize * aspect;
+            camera.right = orthoSize * aspect;
+            camera.top = orthoSize;
+            camera.bottom = -orthoSize;
+            camera.updateProjectionMatrix();
+            
+            renderer.setSize(width, height);
+            if (isMediaMode) updateMediaCarousel();
+            else updateAvatarCarousel();
+        }
+
+        function animate() {
+            if (!isMediaMode) {
+                requestAnimationFrame(animate);
+                if (controls && controls.enabled) controls.update();
+                if (mixer) mixer.update(clock.getDelta());
+                if (renderer) renderer.render(scene, camera);
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('media-btn').addEventListener('click', toggleMediaMode);
+            document.getElementById('runway-btn').addEventListener('click', () => window.open('https://hyperfy.io/scaffold', '_blank'));
+            document.getElementById('retail-btn').addEventListener('click', () => window.open('https://v2.oncyber.io/digitaltopographies', '_blank'));
+            document.getElementById('market-btn').addEventListener('click', () => window.open('https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/', '_blank'));
+            
+            document.querySelectorAll('.light-btn').forEach((btn, index) => {
+                btn.addEventListener('click', () => changeHDRIEnvironment(index));
+            });
+            
+            document.getElementById('buy-btn').addEventListener('click', () => {
+                if (activeSpace && activeSpace.buyLink && activeSpace.buyLink !== "null") window.open(activeSpace.buyLink, '_blank');
+            });
+            
+            document.querySelector('.avatar-selector').addEventListener('wheel', e => {
+                e.preventDefault();
+                const scrollDirection = e.deltaY > 0 ? 1 : -1;
+                if (isMediaMode) changeActiveMedia(scrollDirection);
+                else changeActiveSpace(scrollDirection);
+            }, { passive: false });
+            
+            document.addEventListener('keydown', e => {
+                if (isMediaMode) {
+                    if (e.key === 'ArrowLeft') changeActiveMedia(-1);
+                    else if (e.key === 'ArrowRight') changeActiveMedia(1);
+                    else if (e.key === 'Escape') toggleMediaMode();
+                } else {
+                    if (e.key === 'ArrowLeft') changeActiveSpace(-1);
+                    else if (e.key === 'ArrowRight') changeActiveSpace(1);
+                }
+            });
+            
+            let searchTimeout;
+            document.getElementById('search-input').addEventListener('input', e => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    const searchTerm = e.target.value;
+                    if (isMediaMode) filterMedia(searchTerm);
+                    else filterSpaces(searchTerm);
+                }, 300);
+            });
+            
+            document.addEventListener('click', e => {
+                if (e.target.classList.contains('collection-btn')) handleCollectionClick(e.target);
+            });
+
+            document.getElementById('grid-toggle-button').addEventListener('click', () => {
+                toggleGridView(!isGridView);
+            });
+        }
+
+        function toggleMediaMode() {
+            if (isMediaMode) {
+                exitMediaMode();
+                controls.enabled = true;
+                document.querySelector('.viewer-container').classList.add('active');
+                document.querySelector('.media-view').classList.remove('active');
+                populateAvatarItems();
+                document.querySelectorAll('.collection-btn').forEach(btn => btn.classList.toggle('active', btn.textContent === activeCollection));
+                
+                populateAvatarGrid();
+                toggleGridView(true);
+                
+                document.getElementById('grid-toggle-button').style.display = 'flex';
+                
+                const filteredSpaces = activeCollection === 'ALL' ? [...SpaceData] : SpaceData.filter(space => space.collection === activeCollection);
+                if (filteredSpaces.length > 0) {
+                    if (!hasSpaceBeenSelected || !activeSpace || !filteredSpaces.find(space => space.id === activeSpace.id)) {
+                        activeSpaceIndex = 0;
+                        activeSpace = filteredSpaces[0];
+                    } else {
+                        activeSpaceIndex = filteredSpaces.findIndex(space => space.id === activeSpace.id);
+                        if (activeSpaceIndex === -1) {
+                            activeSpaceIndex = 0;
+                            activeSpace = filteredSpaces[0];
+                        }
+                    }
+                    updateAvatarDetails(activeSpace);
+                    updateActionButtons(activeSpace);
+                    updateAvatarCarousel();
+                    document.getElementById('avatar-details').style.display = 'none';
+                }
+            } else {
+                isGridView = false;
+                toggleGridView(false);
+                
+                document.getElementById('grid-toggle-button').style.display = 'none';
+                
+                document.getElementById('avatar-details').style.display = 'none';
+                
+                clearScene();
+                scene.background = null;
+                renderer.clear();
+                cancelAnimationFrame(animate);
+                
+                isMediaMode = true;
+                document.getElementById('media-btn').classList.add('active');
+                document.getElementById('media-view').style.display = 'block';
+                document.getElementById('media-view').classList.add('active');
+                document.querySelector('.viewer-container').classList.remove('active');
+                document.getElementById('viewer-canvas').style.display = 'none';
+                document.getElementById('search-input').placeholder = "Search media...";
+                const bottomSection = document.getElementById('bottom-section');
+                bottomSection.style.bottom = `${CONFIG.sectionPositions.mediaBar.bottom}px`;
+                bottomSection.style.display = 'block';
+                document.querySelectorAll('.collection-btn').forEach(btn => btn.classList.remove('active'));
+                
+                populateMediaItems();
+                if (mediaData.length > 0) {
+                    activeMediaIndex = 0;
+                    updateMediaCarousel();
+                    displayMediaContent(mediaData[0]);
+                }
+                
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
+
+        function loadMediaData() {
+            mediaData = [
+                { 
+                    id: 1, 
+                    name: "Represent", 
+                    type: "video", 
+                    url: "https://video.wixstatic.com/video/54a996_a5d98402ce57459fa2c3448998051112/1080p/mp4/file.mp4", 
+                    thumbnailUrl: "https://i.ytimg.com/vi/aqz-KE-bpKQ/maxresdefault.jpg", 
+                    title: "C2W2 Represent", 
+                    description: "Sample video content showcasing the C2W2 project"
+                },
+                { 
+                    id: 2, 
+                    name: "Project Image 1", 
+                    type: "video", 
+                    url: "https://www.youtube.com/watch?v=h-tN1yCeiLs", 
+                    thumbnailUrl: "https://picsum.photos/seed/picsum1/300/200", 
+                    title: "C2W2 Featured Video", 
+                    description: "An overview of the C2W2 project and its impact"
+                },
+                { 
+                    id: 3, 
+                    name: "Project Information", 
+                    type: "text", 
+                    thumbnailUrl: "https://cdn-icons-png.flaticon.com/512/2911/2911228.png", 
+                    title: "C2W2 Project Overview", 
+                    description: "Detailed information about the C2W2 project.",
+                    content: "<h2>Tilda Preach</h2><p>Click to wear avatars...</p>"
+                },
+                { 
+                    id: 4, 
+                    name: "YouTube Sample", 
+                    type: "video", 
+                    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 
+                    thumbnailUrl: "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg", 
+                    title: "C2W2 Promotional Video", 
+                    description: "A promotional video about the C2W2 collection"
+                }
+            ];
+        }
+
+        function populateMediaItems() {
+            const carouselContainer = document.getElementById('avatar-carousel');
+            carouselContainer.innerHTML = '';
+            mediaData.forEach((media, index) => {
+                const mediaItem = document.createElement('div');
+                mediaItem.className = `media-item ${media.type}`;
+                mediaItem.dataset.id = media.id;
+                mediaItem.dataset.index = index;
+                const thumbnailUrl = media.thumbnailUrl || getDefaultThumbnail(media.type);
+                mediaItem.innerHTML = `<img src="${thumbnailUrl}" class="media-item-thumbnail" alt="${media.name}"><div class="media-item-name">${media.name}</div>`;
+                mediaItem.addEventListener('click', () => {
+                    activeMediaIndex = index;
+                    updateMediaCarousel();
+                    displayMediaContent(media);
+                });
+                carouselContainer.appendChild(mediaItem);
+            });
+            updateMediaCarousel();
+        }
+
+        function getDefaultThumbnail(type) {
+            return {
+                'video': 'https://cdn-icons-png.flaticon.com/512/711/711245.png',
+                'image': 'https://cdn-icons-png.flaticon.com/512/1829/1829371.png',
+                'text': 'https://cdn-icons-png.flaticon.com/512/2911/2911228.png'
+            }[type] || 'https://cdn-icons-png.flaticon.com/512/831/831509.png';
+        }
+
+        function changeActiveMedia(direction) {
+            const numMedia = mediaData.length;
+            if (numMedia === 0) return;
+            activeMediaIndex = (activeMediaIndex + direction + numMedia) % numMedia;
+            updateMediaCarousel();
+            displayMediaContent(mediaData[activeMediaIndex]);
+        }
+
+        function updateMediaCarousel() {
+            const mediaItems = document.querySelectorAll('.media-item');
+            const numItems = mediaItems.length;
+            if (numItems === 0) return;
+            mediaItems.forEach(item => {
+                item.classList.remove('active');
+                item.style.display = 'none';
+            });
+            const windowWidth = window.innerWidth;
+            const itemWidth = CONFIG.thumbnails.size;
+            const spacing = CONFIG.thumbnails.spacing;
+            const minSideOffset = CONFIG.thumbnails.minSideOffset;
+            const availableWidth = windowWidth - (2 * minSideOffset);
+            const maxItemsVisible = Math.floor(availableWidth / (itemWidth + spacing));
+            const itemsPerSide = Math.floor(maxItemsVisible / 2);
+            const centerX = windowWidth / 2;
+            for (let i = 0; i < numItems; i++) {
+                let relativePos = ((i - activeMediaIndex) + numItems) % numItems;
+                if (relativePos > numItems / 2) relativePos -= numItems;
+                if (Math.abs(relativePos) <= itemsPerSide) {
+                    const item = mediaItems[i];
+                    item.style.display = '';
+                    const xPos = centerX - (itemWidth / 2) + (relativePos * (itemWidth + spacing));
+                    item.style.left = `${xPos}px`;
+                    item.style.top = '0px';
+                    item.style.opacity = relativePos === 0 ? '1' : '0.7';
+                    item.style.zIndex = 100 - Math.abs(relativePos);
+                    if (i === activeMediaIndex) item.classList.add('active');
+                }
+            }
+        }
+
+        function displayMediaContent(media) {
+            if (!media) return;
+            const mediaPreview = document.getElementById('media-preview');
+            mediaPreview.innerHTML = '';
+            
+            switch (media.type) {
+                case 'video':
+                    const videoContainer = document.createElement('div');
+                    videoContainer.className = 'media-video-container';
+                    
+                    const overlay = document.createElement('div');
+                    overlay.className = 'media-overlay';
+                    overlay.innerHTML = `
+                        <div class="media-overlay-title">${media.title || media.name}</div>
+                        <div class="media-overlay-description">${media.description || ''}</div>
+                    `;
+                    videoContainer.appendChild(overlay);
+                    
+                    if (media.url.includes('youtube.com') || media.url.includes('youtu.be')) {
+                        let videoId = media.url.includes('youtube.com') ? media.url.split('v=')[1]?.split('&')[0] : media.url.split('youtu.be/')[1]?.split('?')[0];
+                        const iframe = document.createElement('iframe');
+                        iframe.className = 'media-video';
+                        iframe.src = `https://www.youtube.com/embed/${videoId}?controls=1&rel=0`;
+                        iframe.allow = 'encrypted-media';
+                        iframe.allowFullscreen = true;
+                        videoContainer.appendChild(iframe);
+                        iframe.style.height = '100%';
+                        iframe.style.width = 'auto';
+                    } else {
+                        const video = document.createElement('video');
+                        video.className = 'media-video';
+                        video.src = media.url;
+                        video.controls = true;
+                        video.autoplay = false;
+                        videoContainer.appendChild(video);
+                    }
+                    mediaPreview.appendChild(videoContainer);
+                    break;
+                    
+                case 'image':
+                    const imgContainer = document.createElement('div');
+                    imgContainer.style.position = 'relative';
+                    imgContainer.style.width = '100%';
+                    imgContainer.style.height = '100%';
+                    imgContainer.style.display = 'flex';
+                    imgContainer.style.justifyContent = 'center';
+                    imgContainer.style.alignItems = 'center';
+                    
+                    const imgOverlay = document.createElement('div');
+                    imgOverlay.className = 'media-overlay';
+                    imgOverlay.innerHTML = `
+                        <div class="media-overlay-title">${media.title || media.name}</div>
+                        <div class="media-overlay-description">${media.description || ''}</div>
+                    `;
+                    imgContainer.appendChild(imgOverlay);
+                    
+                    const img = document.createElement('img');
+                    img.className = 'media-image';
+                    img.src = media.url;
+                    img.alt = media.name;
+                    imgContainer.appendChild(img);
+                    mediaPreview.appendChild(imgContainer);
+                    break;
+                    
+                case 'text':
+                    const textDiv = document.createElement('div');
+                    textDiv.className = 'media-text';
+                    textDiv.innerHTML = media.content || `
+                        <h2>${media.title || media.name}</h2>
+                        <p>${media.description || ''}</p>
+                    `;
+                    textDiv.style.overflowY = 'auto';
+                    textDiv.style.maxHeight = '100%';
+                    mediaPreview.appendChild(textDiv);
+                    break;
+            }
+            document.getElementById('bottom-section').style.display = 'block';
+        }
+
+        function filterMedia(searchTerm) {
+            searchTerm = searchTerm.toLowerCase().trim();
+            const filteredMedia = searchTerm ? mediaData.filter(media => 
+                media.name.toLowerCase().includes(searchTerm) || 
+                (media.description && media.description.toLowerCase().includes(searchTerm)) ||
+                (media.title && media.title.toLowerCase().includes(searchTerm))
+            ) : [...mediaData];
+            populateMediaItems(filteredMedia);
+            if (filteredMedia.length > 0) {
+                activeMediaIndex = 0;
+                updateMediaCarousel();
+                displayMediaContent(filteredMedia[0]);
+            } else {
+                document.getElementById('avatar-carousel').innerHTML = '';
+                document.getElementById('media-preview').innerHTML = '<div class="media-text">No media found matching your search.</div>';
+            }
+        }
+
+        function exitMediaMode() {
+            document.getElementById('media-btn').classList.remove('active');
+            isMediaMode = false;
+            document.getElementById('media-view').style.display = 'none';
+            document.getElementById('media-view').classList.remove('active');
+            document.querySelector('.viewer-container').classList.add('active');
+            document.getElementById('viewer-canvas').style.display = 'block';
+            document.getElementById('search-input').placeholder = "Search spaces...";
+            document.getElementById('media-preview').innerHTML = '';
+            const bottomSection = document.getElementById('bottom-section');
+            bottomSection.style.bottom = `${CONFIG.sectionPositions.avatarBar.bottom}px`;
+            bottomSection.style.display = 'block';
+            
+            document.getElementById('grid-toggle-button').style.display = 'flex';
+            
+            populateAvatarGrid();
+            toggleGridView(true);
+            
+            const filteredSpaces = activeCollection === 'ALL' ? [...SpaceData] : SpaceData.filter(space => space.collection === activeCollection);
+            if (filteredSpaces.length > 0) {
+                if (!hasSpaceBeenSelected || !activeSpace || !filteredSpaces.find(space => space.id === activeSpace.id)) {
+                    activeSpaceIndex = 0;
+                    activeSpace = filteredSpaces[0];
+                } else {
+                    activeSpaceIndex = filteredSpaces.findIndex(space => space.id === activeSpace.id);
+                    if (activeSpaceIndex === -1) {
+                        activeSpaceIndex = 0;
+                        activeSpace = filteredSpaces[0];
+                    }
+                }
+                updateAvatarDetails(activeSpace);
+                updateActionButtons(activeSpace);
+                updateAvatarCarousel();
+                document.getElementById('avatar-details').style.display = 'none';
+            } else {
+                document.getElementById('avatar-details').style.display = 'none';
+            }
+            
+            clearScene();
+            controls.enabled = true;
+            animate();
+        }
+
+        function handleCollectionClick(button) {
+            const collection = button.textContent;
+            if (activeCollection === collection && !isMediaMode) return;
+            
+            activeCollection = collection;
+            document.querySelectorAll('.collection-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            if (isMediaMode) {
+                exitMediaMode();
+            }
+            
+            clearScene();
+            cancelAnimationFrame(animate);
+            renderer.render(scene, camera);
+            
+            const filteredSpaces = collection === 'ALL' ? [...SpaceData] : SpaceData.filter(space => space.collection === activeCollection);
+            
+            populateAvatarItems(filteredSpaces);
+            populateAvatarGrid(filteredSpaces);
+            
+            toggleGridView(true);
+            
+            if (filteredSpaces.length > 0) {
+                activeSpaceIndex = 0;
+                activeSpace = filteredSpaces[0];
+                updateAvatarDetails(activeSpace);
+                updateActionButtons(activeSpace);
+                updateAvatarCarousel();
+                document.getElementById('avatar-details').style.display = 'none';
+                document.getElementById('viewer-canvas').style.display = 'none';
+            } else {
+                document.getElementById('avatar-carousel').innerHTML = '<div class="avatar-name">No spaces found in this collection</div>';
+                document.getElementById('avatar-grid').innerHTML = '<div class="no-results">No spaces found in this collection</div>';
+                document.getElementById('avatar-details').style.display = 'none';
+                document.getElementById('viewer-canvas').style.display = 'none';
+            }
+            
+            isModelLoading = false;
+        }
+               // KANKAAAA
+        function loadSpaceData() {
+          SpaceData = [
+    {
+        id: 0,
+        name: "Potbelly Q_Fu",
+        information: "As being the first design ever published by DFW, Potbelly Q-Fu is a pyramid shaped structural experiment.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/A0.jpg",
+        collection: "Gallery",
+        runwayPart: "Pyramide Facility/ Gallery",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/0-POTBELLYQ_FU-Digital_Topographies_00.glb",
+        date: "29.03.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/1",
+        dtNo: "00",
+        chain: "Base"
+    },
+    {
+        id: 1,
+        name: "Xhbtion_Spc",
+        information: "Xhbition_SPC is a futuristic exhibition space with interconnected cubic modules, intricate contour lines, and a polished gray interior, creating a visually dynamic and minimalist environment supported by columns and undulating roof structures.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/A1.jpg",
+        collection: "Gallery",
+        runwayPart: "Pyramide Facility/ Gallery",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/1-XHBTION_SPC-Digital_Topographies_01.glb",
+        date: "14.02.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/2",
+        dtNo: "01",
+        chain: "Base"
+    },
+    {
+        id: 2,
+        name: "Vegancell+Park",
+        information: "VeganCell+Park is a multi-layered, pizza-shaped space designed for hanging out and exhibiting works, featuring an upper terrace with ramp access for skybox experiences, and vegan cells on the ground creating abstract shadows and defining various utilities.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/A2.jpg",
+        collection: "Multi",
+        runwayPart: "Huge Multipurpose Complex",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/2-VEGANCELL+PARK-Digital_Topographies_02.glb",
+        date: "26.03.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/3",
+        dtNo: "02",
+        chain: "Base"
+    },
+    {
+        id: 3,
+        name: "Bureau+Theatre",
+        information: "Bureau + Theatre features a unique 3D void defined by contour pipes that balance direction and service, form action zones, enhance ground perception, and unite concrete and chrome with a sculptural staircase and minimalist materials for a visionary creation.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/A3.jpg",
+        collection: "HQ",
+        runwayPart: "Office Space",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/3-BUREAU+THEATRE-Digital_Topographies_03.glb",
+        date: "04.04.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/4",
+        dtNo: "03",
+        chain: "Base"
+    },
+    {
+        id: 4,
+        name: "Digital Expo Center",
+        information: "D.E.C, a digital island and virtual urban concept, features 18-floor towers, public spaces, 12 exhibition units with five artist slots each, an open concert hall in front of the tower's square, and Chrome Garden below the private area, aiming to serve as a temporary exhibition space that glorifies art, design, and friendship, and can easily fit into any multipurpose use.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/A4.jpg",
+        collection: "Multi",
+        runwayPart: "Urban Scaled Expo Design",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/4-DIGITALEXPOCENTER-Digital_Topographies_04.glb",
+        date: "08.04.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/5",
+        dtNo: "04",
+        chain: "Base"
+    },
+    {
+        id: 5,
+        name: "La Bibliothèque De L'École Polytechnique Fédérale De Metaverse",
+        information: "The open-planned, multi-functional virtual complex (education, exhibition, gathering, office) spans three floors (111x112x33m), is optimized to be platform-agnostic, and now features a v2 design with an additional entrance from ground zero.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/A5.jpg",
+        collection: "Multi",
+        runwayPart: "Open School",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/5-LA_BIBLIOTHÈQUE_DE_L-ÉCOLE_POLYTECHNIQUE_FÉDÉRALE_DE_METAVERSE-Digital_Topographies_05.glb",
+        date: "01.06.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/6",
+        dtNo: "05",
+        chain: "Base"
+    },
+    {
+        id: 6,
+        name: "Deconstructivist Eagle Nest",
+        information: "The 'Deconstructivist Eagle Nest Pavilion' is a metaverse design featuring an intricate network of intersecting contour pipes that create dynamic spaces and action zones, blending minimalist concrete and chrome materials to achieve an elegantly chaotic, high-tech aesthetic.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/A6.jpg",
+        collection: "Spatial",
+        runwayPart: "Sculptural Public Space",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/6-DECONSTRUCTIVIST_EAGLE_NEST-Digital_Topographies_06.glb",
+        date: "05.06.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/7",
+        dtNo: "06",
+        chain: "Base"
+    },
+    {
+        id: 7,
+        name: "Astral Egg Plant",
+        information: "The 46-meter high, 2-by-2 plot complex features two functional levels: a public ground floor and private floating egg-crack areas above, aiming for an elegantly absurd spatial design inspired by a child's crayon drawing and a dystopian world of giant chickens, blending primal forms with raw materials for a unique metaverse experience.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/A7.jpg",
+        collection: "HQ",
+        runwayPart: "HQ / Gathering Space",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/7-ASTRAL_EGG_PLANT-Digital_Topographies_07.glb",
+        date: "27.07.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/8",
+        dtNo: "07",
+        chain: "Base"
+    },
+    {
+        id: 8,
+        name: "The Finger Dome",
+        information: "Finger Dome, the Music Venue Winner of Creatorverse Buildathon by Parcel x PangeaDAO, is a semi-transparent, easily recognizable structure designed for fully open public use, allowing musicians and listeners to meet on equal terms without hierarchical elements, resembling a street performance with its simplicity and non-materialistic form.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/A8.jpg",
+        collection: "Event",
+        runwayPart: "Music Venue",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/8-THE_FINGER_DOME-Digital_Topographies_08.glb",
+        date: "30.07.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/9",
+        dtNo: "08",
+        chain: "Base"
+    },
+    {
+        id: 9,
+        name: "Ummuse",
+        information: "UMMUSE, designed during the Neon Build_athon for Neon DAO's Clone X Edits, juxtaposes an aggressive, deconstructivist metallic exterior with a minimalist interior, creating a paradoxical relationship between the chaotic facade and the calm, simple inner space.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/A9.jpg",
+        collection: "Gallery",
+        runwayPart: "Museum (Neon Buildathon)",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/9-UMMUSE-Digital_Topographies_09.glb",
+        date: "08.08.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/10",
+        dtNo: "09",
+        chain: "Base"
+    },
+    {
+        id: 10,
+        name: "#Np17658",
+        information: "created for Neon DAO's Buildathon, is a five-floor caged cylinder featuring concentric circular layers, an unconventional vertical circulation system, and a sleek, metallic facade adorned with CryptoPunks, blending abstract and digital aesthetics with a minimalist, flexible interior.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/A10.jpg",
+        collection: "Gallery",
+        runwayPart: "Museum (Neon Buildathon)",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/10-NP17658-(Digital_Topographies_10.glb",
+        date: "12.08.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/11",
+        dtNo: "10",
+        chain: "Base"
+    },
+    {
+        id: 11,
+        name: "Holy Shadow Hq",
+        information: "Holy Shadow HQ, winner of the Landworks Grant Program Sprint 2, is a black vertical pyramid with gothic pillars, designed as a striking antithesis to light architecture, featuring a central layout for gatherings and presentations, blending simple repetitive gestures with a bold geometric attitude using unique materials.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a11.jpg",
+        collection: "HQ",
+        runwayPart: "HQ / Gathering Space",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/11-HSHQ-Digital_Topographies_11.glb",
+        date: "29.08.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/12",
+        dtNo: "11",
+        chain: "Base"
+    },
+    {
+        id: 12,
+        name: "Techno Brutal Punk Fabrique",
+        information: "TBPF is a bold, geometric structure blending brutalism and high-tech aesthetics with repetitive horizontal slats and a dynamic interplay of light and shadow, embodying a rebellious, avant-garde spirit.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a12.jpg",
+        collection: "Event",
+        runwayPart: "Music / Gathering Space",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/12-TBPF-Digital_Topographies_12.glb",
+        date: "29.08.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/13",
+        dtNo: "12",
+        chain: "Base"
+    },
+    {
+        id: 13,
+        name: "K-Dociine Hq",
+        information: "The 4-story headquarters building (32x32m / 2x2 DCL) features diverse forms on each floor, defining public and private zones for working or communicating, and showcases various social and professional settings in softwarescape, reflecting a formal yet organic aesthetic while enabling unique gatherings in unconventional environments.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a13.jpg",
+        collection: "HQ",
+        runwayPart: "HQ",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/13-K-DOCIINE_HQ-Digital_Topographies_13.glb",
+        date: "03.09.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/14",
+        dtNo: "13",
+        chain: "Base"
+    },
+    {
+        id: 14,
+        name: "Poddio Verticale",
+        information: "Poddio Verticale is a vertical fashion runway podium with a looping ramp around its semi-transparent marble skin, featuring flexible spaces for offices, galleries, or leisure within a bright, open architecture.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a14.jpg",
+        collection: "Event",
+        runwayPart: "Fashion House / Runway Facility",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/14-PODDIO_VERTICALE_Digital_Topographies_14-v1.glb",
+        date: "08.09.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/15",
+        dtNo: "14",
+        chain: "Base"
+    },
+    {
+        id: 15,
+        name: "Poddio Dark Twisted Verticale",
+        information: "Poddio Dark Twisted Verticale is a 40-meter deformed cube with a swerving ramp around its semi-transparent black marble skin, featuring slabs for observation and pausing, creating a dynamic, open, and multifunctional space for offices, leisure, and fashion shows in the metaverse.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a15.jpg",
+        collection: "Event",
+        runwayPart: "Fashion House / Runway Facility",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/15-PODDIO_DARK_TWISTED_VERTICALE-Digital_Topographies_15.glb",
+        date: "13.10.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/16",
+        dtNo: "15",
+        chain: "Base"
+    },
+    {
+        id: 16,
+        name: "Space Time Rooms",
+        information: "The Moca Space Time Rooms are conceptual spaces that deconstruct traditional room boundaries, featuring flexible, paper-light floors that blend into each other, creating a dynamic and experimental form inspired by space-time relativity.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a16.jpg",
+        collection: "Gallery",
+        runwayPart: "MOCA ROOMS",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/16-SPACE_TIME_ROOMS-(Digital_Topographies_16.glb",
+        date: "08.11.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/17",
+        dtNo: "16",
+        chain: "Base"
+    },
+    {
+        id: 17,
+        name: "Matisse Time ChaipeL",
+        information: "Mid-scale Renaissance religious typologies are reimagined using modern technology, creating a nebulous chapel with a machinated ceiling for gatherings, concerts, or exhibitions, inspired by various artistic styles and time periods.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a17.jpg",
+        collection: "Spatial",
+        runwayPart: "Gathering Space",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/17-MATISSE_TIME_CHAIPEL_Digital_Topographies_17_.glb",
+        date: "22.10.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/18",
+        dtNo: "17",
+        chain: "Base"
+    },
+    {
+        id: 18,
+        name: "Matsouka Hills Mansion",
+        information: "Matsuoka Hills Mansion, reflecting late 21st-century architecture with its muscular, digital aesthetic, features a three-layered geometry with free-plan sub-spaces for specific functions, a central hill-like rise, and a skeleton-like three-tiered ladder for upper-floor access, blending domestic elements with a museum-like layout to explore privacy in open virtual environments.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a18.jpg",
+        collection: "HQ",
+        runwayPart: "House",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/18-MATSOUKA_HILLS_MANSION_Digital_Topographies_18_.glb",
+        date: "19.10.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/19",
+        dtNo: "18",
+        chain: "Base"
+    },
+    {
+        id: 19,
+        name: "Museum Of Unlimited Growth 2",
+        information: "Reimagination of Le Corbusier's sketch with transparent spiral corridors to test redefining spatial boundaries, by investigating a new concept that combines modernist dynamics with virtuality.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a19.jpg",
+        collection: "Gallery",
+        runwayPart: "MOCA ROOMS",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/19-MUOG2_Digital_Topographies_19.glb",
+        date: "18.11.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/20",
+        dtNo: "19",
+        chain: "Base"
+    },
+    {
+        id: 20,
+        name: "Spyder Mosk",
+        information: "An experimental museum design features a glass ramp that generates a spiral corridor, surrounded by a flexible network resembling a spider web, arranging artworks in a maze-like structure between columns, with volumes and arches derived from mosque typology, to frame dramatic openings.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a20.jpg",
+        collection: "Gallery",
+        runwayPart: "MOCA ROOMS",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/20-SPYDER_MOSK_Digital_Topographies_20_.glb",
+        date: "18.11.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/21",
+        dtNo: "20",
+        chain: "Base"
+    },
+    {
+        id: 21,
+        name: "Spyder Mosk Piccolo",
+        information: "'Spyder' represents a flexible network akin to a spider's craftsmanship, while the artwork placement creates a maze-like structure between villainous columns, defining walls with a nihilistic quality. The abstract system derived from mosque typology blossoms arches that frame dramatic openings.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a21.jpg",
+        collection: "Gallery",
+        runwayPart: "MOCA ROOMS",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/21-SPYDER_MOSK_PICCOLO_Digital_Topographies_21_.glb",
+        date: "18.11.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/22",
+        dtNo: "21",
+        chain: "Base"
+    },
+    {
+        id: 22,
+        name: "The Fly Club",
+        information: "Museum design that creatively combines arch-based structures inspired by Salvator Dali's elephants with a transparent vertical reproduction of Le Corbusier's Museum of Unlimited Growth, incorporating the use of pipes as a deliberate design choice.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a22.jpg",
+        collection: "Gallery",
+        runwayPart: "MOCA ROOMS",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/22-THE_FLY_CLUB_Digital_Topographies_22_.glb",
+        date: "18.11.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/23",
+        dtNo: "22",
+        chain: "Base"
+    },
+    {
+        id: 23,
+        name: "Beyond The Infinity",
+        information: "A tribute to 'Beyond the Infinity' reproduces a famous scene, reflecting Kubrick's precision and fake French architecture to evoke an artificial human feeling, influencing the design and exploring themes of space, creativity, and existential anxiety.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a23.jpg",
+        collection: "Spatial",
+        runwayPart: "Remake from 2001: A Space Odyssey",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/23-BEYOND%20THE%20INFINITY%20-cutt(Digital_Topographies_23).glb",
+        date: "08.12.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/24",
+        dtNo: "23",
+        chain: "Base"
+    },
+    {
+        id: 24,
+        name: "Atonal Veins",
+        information: "A pavilion created by six different pipelines twisting together, mimicking sound frequencies.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a24.jpg",
+        collection: "Event",
+        runwayPart: "Music Venue Pavillion",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/24.glb",
+        date: "14.12.22",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/25",
+        dtNo: "24",
+        chain: "Base"
+    },
+    {
+        id: 25,
+        name: "C2W R-V3-Rust",
+        information: "-",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a25-1.jpg",
+         collection: "Retail",
+        runwayPart: "Virtual Fashion Retail Store",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/25-1.glb",
+        date: "16.01.24",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/26",
+        dtNo: "25_1",
+        chain: "Base"
+    },
+    {
+        id: 26,
+        name: "C2W R-V3-Bauhouse",
+        information: "-",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a25-2.jpg",
+         collection: "Retail",
+        runwayPart: "Virtual Fashion Retail Store",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/25-2.glb",
+        date: "16.01.24",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/27",
+        dtNo: "25_2",
+        chain: "Base"
+    },
+    {
+        id: 27,
+        name: "C2W R-V3-Rabbit",
+        information: "-",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a25-3.jpg",
+        collection: "Retail",
+        runwayPart: "Virtual Fashion Retail Store",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/25-3.glb",
+        date: "16.01.24",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/28",
+        dtNo: "25_3",
+        chain: "Base"
+    },
+    {
+        id: 28,
+        name: "C2W R-V3-Nietzsc.",
+        information: "-",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a25-4.jpg",
+         collection: "Retail",
+        runwayPart: "Virtual Fashion Retail Store",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/25-4.glb",
+        date: "16.01.24",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/29",
+        dtNo: "25_4",
+        chain: "Base"
+    },
+    {
+        id: 29,
+        name: "Neue²Dojo",
+        information: "The virtual native gallerys design, rooted in Mies van der Rohe's minimalist principles, evolves from two-dimensional simplicity to three-dimensional complexity, using digital technology to transform structural lines into imaginative and immersive spaces, balancing order and creativity to create a pioneering digital architectural experience.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a26.jpg",
+        collection: "Gallery",
+        runwayPart: "Museum for decentralize* retrospective",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/26.glb",
+        date: "22.01.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/30",
+        dtNo: "26",
+        chain: "Base"
+    },
+    {
+        id: 30,
+        name: "DFWAM",
+        information: "Digital Forgery Workshop Architecture Museum",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a27.jpg",
+        collection: "Multi",
+        runwayPart: "Open Plan Museum",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/27.glb",
+        date: "17.11.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/31",
+        dtNo: "27",
+        chain: "Base"
+    },
+    {
+        id: 31,
+        name: "Promethade",
+        information: "Design features flowing, continuous forms with semi-transparent layers supported by slender columns, creating an airy, dynamic space that blends minimalism with a sense of infinite depth.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a28.jpg",
+        collection: "Gallery",
+        runwayPart: "Museum",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/28.glb",
+        date: "06.02.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/32",
+        dtNo: "28",
+        chain: "Base"
+    },
+    {
+        id: 32,
+        name: "Cave Design Store",
+        information: "The Cave Design Store combines organic and futuristic elements in a multi-level, stone-like structure with smooth forms, open interconnected chambers, and a striking blend of raw cave-like walls and sleek modern fixtures.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a29.jpg",
+        collection: "Retail",
+        runwayPart: "Pop-up Store",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/29.glb",
+        date: "15.02.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/33",
+        dtNo: "29",
+        chain: "Base"
+    },
+    {
+        id: 33,
+        name: "Pop-Yp",
+        information: "A small retail store to house virtual events, inspired by HOR Berlin.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a30.jpg",
+        collection: "Retail",
+        runwayPart: "Pop-up Store",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/30.glb",
+        date: "18.02.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/34",
+        dtNo: "30",
+        chain: "Base"
+    },
+    {
+        id: 34,
+        name: "C1Ty_V2",
+        information: "City Design for Context in Metaverse Worlds under 1 mb.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a31.jpg",
+        collection: "Multi",
+        runwayPart: "Urban Context for Metaverse Worlds",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/31.glb",
+        date: "21.02.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/35",
+        dtNo: "31",
+        chain: "Base"
+    },
+    {
+        id: 35,
+        name: "Museborough Pavs",
+        information: "A pavillion, designed for Moca ROOMS, exists as a compact small gallery with pop-culture inspirations, with an aim to discuss what are the galleries/museums in our life",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a32.jpg",
+        collection: "Gallery",
+        runwayPart: "MOCA ROOMS",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/32.glb",
+        date: "05.01.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/36",
+        dtNo: "32",
+        chain: "Base"
+    },
+    {
+        id: 36,
+        name: "Fight Arena",
+        information: "DFW Boxing Arena is a dynamic structure designed to host intense virtual fighting matches, blending sports and gaming with a facade that captures the sport's energy, defined by two different axes—x and y—that contour and playfully define the cage in the z-axis.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a33.jpg",
+        collection: "Event",
+        runwayPart: "Sports Facility",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/33.glb",
+        date: "15.01.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/37",
+        dtNo: "33",
+        chain: "Base"
+    },
+    {
+        id: 37,
+        name: "Mikado",
+        information: "-",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a34.jpg",
+        collection: "Spatial",
+        runwayPart: "Urban Interior",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/34.glb",
+        date: "06.10.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/38",
+        dtNo: "34",
+        chain: "Base"
+    },
+    {
+        id: 38,
+        name: "Potbelly QQ_Fu_V2",
+        information: "Potbelly QQ-Fuu [v2] features layered concentric circles and fluid curvilinear lines, creating a dynamic, organic structure with weathered textures and semi-transparent materials, supported by slender columns for an immersive architectural experience.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a35.jpg",
+        collection: "Multi",
+        runwayPart: "Deconstructed Pyramide Facility",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/35.glb",
+        date: "28.02.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/39",
+        dtNo: "35",
+        chain: "Base"
+    },
+    {
+        id: 39,
+        name: "Concept Furniture Store",
+        information: "A minimalist, transparent grid structure creates an open, airy space to showcase innovative furniture designs conceptualized with a uniform material.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a36.jpg",
+        collection: "Retail",
+        runwayPart: "Retail",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/36.glb",
+        date: "08.03.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/40",
+        dtNo: "36",
+        chain: "Base"
+    },
+    {
+        id: 40,
+        name: "Pokemuseum",
+        information: "A referential pop-up dedicated to children born in the '90s who fell in love with the Gameboy in the early 2000s, representing the first collectibles for some.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a37.jpg",
+        collection: "Gallery",
+        runwayPart: "Curated Conceptual Pop-up",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/37.glb",
+        date: "11.03.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/41",
+        dtNo: "37",
+        chain: "Base"
+    },
+    {
+        id: 41,
+        name: "The Constro",
+        information: "The design features three interconnected, rotating toruses with metallic surfaces and cyan lighting, creating a futuristic, dynamic space for Endangered Labs that combines exhibition areas, meeting zones, and interactive spaces, all connected by a central circulation axis",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a38.jpg",
+        collection: "HQ",
+        runwayPart: "Endangered Labs",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/38.glb",
+        date: "15.05.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/42",
+        dtNo: "38",
+        chain: "Base"
+    },
+    {
+        id: 42,
+        name: "Metaboilerism",
+        information: "The Music Collection (Metaboilerism), introduces a new tower, blending elements of the NY Guggenheim and Nagakin Capsule Tower, with modular listening hubs and vertical ramps guiding artwork visits. To avoid spatial audio interference, artworks are hosted via Webviewer, isolating music for individual users.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a39.jpg",
+        collection: "Gallery",
+        runwayPart: "Music NFT Museum, Noise DAO",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/39.glb",
+        date: "25.05.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/43",
+        dtNo: "39",
+        chain: "Base"
+    },
+    {
+        id: 43,
+        name: "Pxl Duomo",
+        information: "A cross-planned space with frosted glass skin designed to house virtual interactions.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a40.jpg",
+        collection: "Gallery",
+        runwayPart: "Exhibition / Gathering Space",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/40.glb",
+        date: "01.06.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/44",
+        dtNo: "40",
+        chain: "Base"
+    },
+    {
+        id: 44,
+        name: "Rotas Virgil",
+        information: "This futuristic design features a dynamic, semi-transparent mesh facade, fluid curved forms, and a lightweight metal framework; the interior balances solid and void spaces with intersecting planes, enhanced by an undulating roof and grand entrance.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a41.jpg",
+        collection: "Event",
+        runwayPart: "Concert Hall",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/41.glb",
+        date: "08.06.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/45",
+        dtNo: "41",
+        chain: "Base"
+    },
+    {
+        id: 45,
+        name: "Boxmate",
+        information: "A single corridor divided into 16 promenades features a complex lattice structure with staggered, intersecting planes and exposed framework, creating an intricate, multi-layered facade that combines open, dynamic spaces with geometric precision.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a42.jpg",
+        collection: "Spatial",
+        runwayPart: "Deconstructed Stair Pavillion",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/42.glb",
+        date: "16.06.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/46",
+        dtNo: "42",
+        chain: "Base"
+    },
+    {
+        id: 46,
+        name: "Carbine Wick",
+        information: "A futuristic transformation of a bare village square and seven village houses on different floors, with an exterior protected by bars, artificially providing a sense of security.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a43.jpg",
+        collection: "Multi",
+        runwayPart: "Vertical Village",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/43.glb",
+        date: "05.07.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/47",
+        dtNo: "43",
+        chain: "Base"
+    },
+    {
+        id: 47,
+        name: "0PP13",
+        information: "The Experimental Audio Museum (0PP13) adopts a metaversal approach, utilizing spheres to represent museum rooms, interconnected to a larger central sphere serving as the entrance and patio. This futuristic design, inspired by basic chemical shapes, accommodates ten sections of experimental audio.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a44.jpg",
+        collection: "Gallery",
+        runwayPart: "Experimental Audio Musuem",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/44.glb",
+        date: "06.09.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/48",
+        dtNo: "44",
+        chain: "Base"
+    },
+    {
+        id: 48,
+        name: "Stardem",
+        information: "Four intertwined structures rise from four different points, creating a dynamic central space that, with the help of the structures, is subdivided into hierarchical sub-space.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a45.jpg",
+        collection: "Spatial",
+        runwayPart: "Spatial Structure",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/45.glb",
+        date: "17.09.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/49",
+        dtNo: "45",
+        chain: "Base"
+    },
+    {
+        id: 49,
+        name: "Isola",
+        information: "A building designed with proper proportions bends and twists to create new forms and interesting interstitial spaces.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a46.jpg",
+        collection: "HQ",
+        runwayPart: "HQ",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/46.glb",
+        date: "19.09.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/50",
+        dtNo: "46",
+        chain: "Base"
+    },
+    {
+        id: 50,
+        name: "Alien Earthquake",
+        information: "A structural experiment with unlogical forms and meshes that implies a feeling of accident.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a47.jpg",
+        collection: "Spatial",
+        runwayPart: "Spatial Sculpture",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/47.glb",
+        date: "24.09.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/51",
+        dtNo: "47",
+        chain: "Base"
+    },
+    {
+        id: 51,
+        name: "Centipede",
+        information: "The High-Frequency Building (Centipede), features 16 listening hubs within a single structure, with potential expansion based on future publications. The design incorporates floating techno bungalows linked to a horizontally flowing structure, with hubs distinguished by frosted glass floors reflecting interior lighting.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a48.jpg",
+        collection: "Gallery",
+        runwayPart: "High Frequency Collection Display",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/48.glb",
+        date: "29.09.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/52",
+        dtNo: "48",
+        chain: "Base"
+    },
+    {
+        id: 52,
+        name: "Vertical Candy Bungalows",
+        information: "Abstract bungalows where adults can virtually play house.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a49.jpg",
+        collection: "Spatial",
+        runwayPart: "Spatial Sculpture",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/49.glb",
+        date: "09.12.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/53",
+        dtNo: "49",
+        chain: "Base"
+    },
+    {
+        id: 53,
+        name: "Mynhttnware",
+        information: "A distorted gathering/meeting space that blends various historical typologies, re-examining the sense of place and pure materiality in digital reality.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a50.jpg",
+        collection: "Spatial",
+        runwayPart: "Gathering / Public Space",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/50.glb",
+        date: "19.12.23",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/54",
+        dtNo: "50",
+        chain: "Base"
+    },
+    {
+        id: 54,
+        name: "JJ8",
+        information: "Retail in the metaverse bridges the gap between fashion and daily life, offering a unique platform for connection and innovation. The concept of retail extends beyond mere transactions; it serves as a vital link that introduces individuals to new cultures and innovations through fashion. As the digital and physical realms converge, especially in the metaverse, this connection evolves, presenting untapped potential for immersive brand experiences. The challenge lies in reimagining retail in a space where traditional physical interactions are absent, yet the opportunity to engage and educate remains paramount.",
+        thumbnailUrl: "https://raw.githubusercontent.com/decentralize-dfw/dt-thumb/refs/heads/main/a51.jpg",
+        collection: "Retail",
+        runwayPart: "Virtual Fashion Retail Store",
+        modelUrl: "https://raw.githubusercontent.com/decentralize-dfw/digitaltopographies/main/51.glb",
+        date: "10.04.24",
+        buyLink: "https://monaverse.com/collections/8453/0xc9ee3a17f48c61795711968eb774241b7a5e63d2/55",
+        dtNo: "51",
+        chain: "Base"
+    }
+];
+// bitti
+
+            collections = [...new Set(SpaceData.map(space => space.collection))];
+            activeCollection = "ALL";
+            populateCollections();
+            populateAvatarItems(SpaceData);
+            populateAvatarGrid(SpaceData);
+            
+            toggleGridView(true);
+        }
+
+        function populateCollections() {
+            const collectionsContainer = document.getElementById('collections');
+            collectionsContainer.innerHTML = '';
+            const allButton = document.createElement('button');
+            allButton.className = 'collection-btn all-btn' + (activeCollection === 'ALL' ? ' active' : '');
+            allButton.textContent = 'ALL';
+            allButton.style.fontWeight = 'bold';
+            collectionsContainer.appendChild(allButton);
+            collections.forEach(collection => {
+                const button = document.createElement('button');
+                button.className = 'collection-btn' + (collection === activeCollection ? ' active' : '');
+                button.textContent = collection;
+                collectionsContainer.appendChild(button);
+            });
+        }
+
+        function filterSpaces(searchTerm) {
+            searchTerm = searchTerm.toLowerCase().trim();
+            let filteredSpaces;
+            if (!searchTerm) {
+                filteredSpaces = activeCollection === 'ALL' ? [...SpaceData] : SpaceData.filter(space => space.collection === activeCollection);
+            } else {
+                filteredSpaces = (activeCollection === 'ALL' ? SpaceData : SpaceData.filter(space => space.collection === activeCollection))
+                    .filter(space => 
+                        (space.name && space.name.toLowerCase().includes(searchTerm)) ||
+                        (space.collection && space.collection.toLowerCase().includes(searchTerm)) ||
+                        (space.dtNo && space.dtNo.toLowerCase().includes(searchTerm)) ||
+                        (space.runwayPart && space.runwayPart.toLowerCase().includes(searchTerm)) ||
+                        (space.information && space.information.toLowerCase().includes(searchTerm))
+                    );
+            }
+            populateAvatarItems(filteredSpaces);
+            populateAvatarGrid(filteredSpaces);
+            
+            if (filteredSpaces.length > 0) {
+                activeSpaceIndex = 0;
+                updateAvatarCarousel();
+                toggleGridView(true);
+            } else {
+                document.getElementById('avatar-carousel').innerHTML = '<div class="avatar-name">No results found</div>';
+                document.getElementById('avatar-grid').innerHTML = '<div class="no-results">No spaces found matching your search.</div>';
+                if (!isGridView) {
+                    clearScene();
+                }
+            }
+        }
+
+        function populateAvatarGrid(spacesToShow) {
+            if (!spacesToShow) spacesToShow = activeCollection === 'ALL' ? [...SpaceData] : SpaceData.filter(space => space.collection === activeCollection);
+            const gridContainer = document.getElementById('avatar-grid');
+            gridContainer.innerHTML = '';
+            
+            if (spacesToShow.length === 0) {
+                gridContainer.innerHTML = '<div class="no-results">No spaces found</div>';
+                return;
+            }
+            
+            spacesToShow.forEach((space, index) => {
+                const gridItem = document.createElement('div');
+                gridItem.className = 'grid-item';
+                gridItem.dataset.id = space.id;
+                gridItem.dataset.index = index;
+                
+                const thumbnailUrl = space.thumbnailUrl || 'https://via.placeholder.com/120x120';
+                gridItem.innerHTML = `
+                    <img src="${thumbnailUrl}" alt="${space.name}" loading="lazy">
+                    <div class="grid-item-name">${space.name}</div>
+                `;
+                
+                gridItem.addEventListener('click', () => {
+                    hasSpaceBeenSelected = true;
+                    activeSpaceIndex = index;
+                    toggleGridView(false);
+                    updateAvatarCarousel();
+                    loadAndDisplaySpace(space);
+                });
+                
+                gridContainer.appendChild(gridItem);
+            });
+        }
+
+        function toggleGridView(show) {
+            const gridContainer = document.getElementById('avatar-grid-container');
+            const viewerContainer = document.getElementById('viewer-container');
+            const avatarDetails = document.getElementById('avatar-details');
+            const bottomSection = document.getElementById('bottom-section');
+            const toggleButton = document.getElementById('grid-toggle-button');
+            
+            isGridView = show;
+            
+            if (show) {
+                wasAutoRotateEnabled = controls.autoRotate;
+                if (controls) controls.autoRotate = false;
+                
+                gridContainer.style.display = 'block';
+                viewerContainer.style.opacity = '0.3';
+                avatarDetails.style.opacity = '0';
+                avatarDetails.style.display = 'none';
+                bottomSection.style.opacity = '0.3';
+                toggleButton.innerHTML = '<i class="fas fa-arrow-down"></i>';
+                clearScene();
+                
+                document.getElementById('viewer-canvas').style.display = 'none';
+                cancelAnimationFrame(animate);
+                
+                document.getElementById('loading-overlay').style.display = 'none';
+            } else {
+                gridContainer.style.display = 'none';
+                viewerContainer.style.opacity = '1';
+                
+                if (hasSpaceBeenSelected || activeSpace) {
+                    avatarDetails.style.opacity = '1';
+                    avatarDetails.style.display = 'block';
+                } else {
+                    const filteredSpaces = activeCollection === 'ALL' ? 
+                        [...SpaceData] : 
+                        SpaceData.filter(space => space.collection === activeCollection);
+                    if (filteredSpaces.length > 0) {
+                        activeSpaceIndex = 0;
+                        activeSpace = filteredSpaces[0];
+                        updateAvatarDetails(activeSpace);
+                        updateActionButtons(activeSpace);
+                        avatarDetails.style.opacity = '1';
+                        avatarDetails.style.display = 'block';
+                    }
+                }
+                
+                bottomSection.style.opacity = '1';
+                toggleButton.innerHTML = '<i class="fas fa-th-large"></i>';
+                
+                if (controls) controls.autoRotate = wasAutoRotateEnabled;
+                
+                document.getElementById('viewer-canvas').style.display = 'block';
+                viewerContainer.classList.add('active');
+                
+                if (activeSpaceIndex >= 0) {
+                    const filteredSpaces = activeCollection === 'ALL' ? 
+                        [...SpaceData] : 
+                        SpaceData.filter(space => space.collection === activeCollection);
+                    
+                    if (filteredSpaces.length > 0) {
+                        if (activeSpaceIndex >= filteredSpaces.length) {
+                            activeSpaceIndex = 0;
+                        }
+                        
+                        loadAndDisplaySpace(filteredSpaces[activeSpaceIndex]);
+                    }
+                }
+                
+                if (!isMediaMode) {
+                    animate();
+                }
+            }
+        }
+
+        function populateAvatarItems(spacesToShow) {
+            if (!spacesToShow) spacesToShow = activeCollection === 'ALL' ? [...SpaceData] : SpaceData.filter(space => space.collection === activeCollection);
+            const carouselContainer = document.getElementById('avatar-carousel');
+            carouselContainer.innerHTML = '';
+            spacesToShow.forEach((space, index) => {
+                const avatarItem = document.createElement('div');
+                avatarItem.className = 'avatar-item';
+                avatarItem.dataset.id = space.id;
+                avatarItem.dataset.index = index;
+                const thumbnailUrl = space.thumbnailUrl || 'https://via.placeholder.com/60x60';
+                avatarItem.innerHTML = `<img src="${thumbnailUrl}" class="avatar-thumbnail" alt="${space.name}"><div class="avatar-name">${space.name}</div>`;
+                avatarItem.addEventListener('click', () => {
+                    hasSpaceBeenSelected = true;
+                    activeSpaceIndex = index;
+                    updateAvatarCarousel();
+                    
+                    if (isGridView) {
+                        toggleGridView(false);
+                    }
+                    
+                    loadAndDisplaySpace(space);
+                });
+                carouselContainer.appendChild(avatarItem);
+            });
+            updateAvatarCarousel();
+        }
+
+        function changeActiveSpace(direction) {
+            const filteredSpaces = activeCollection === 'ALL' ? [...SpaceData] : SpaceData.filter(space => space.collection === activeCollection);
+            const numSpaces = filteredSpaces.length;
+            if (numSpaces === 0) return;
+            
+            if (isGridView) {
+                toggleGridView(false);
+            }
+            
+            activeSpaceIndex = (activeSpaceIndex + direction + numSpaces) % numSpaces;
+            updateAvatarCarousel();
+            hasSpaceBeenSelected = true;
+            loadAndDisplaySpace(filteredSpaces[activeSpaceIndex]);
+        }
+
+        function updateAvatarCarousel() {
+            const avatarItems = document.querySelectorAll('.avatar-item');
+            const numItems = avatarItems.length;
+            if (numItems === 0) return;
+            avatarItems.forEach(item => {
+                item.classList.remove('active');
+                item.style.display = 'none';
+            });
+            const windowWidth = window.innerWidth;
+            const itemWidth = CONFIG.thumbnails.size;
+            const spacing = CONFIG.thumbnails.spacing;
+            const minSideOffset = CONFIG.thumbnails.minSideOffset;
+            const availableWidth = windowWidth - (2 * minSideOffset);
+            const maxItemsVisible = Math.floor(availableWidth / (itemWidth + spacing));
+            const itemsPerSide = Math.floor(maxItemsVisible / 2);
+            const centerX = windowWidth / 2;
+            for (let i = 0; i < numItems; i++) {
+                let relativePos = ((i - activeSpaceIndex) + numItems) % numItems;
+                if (relativePos > numItems / 2) relativePos -= numItems;
+                if (Math.abs(relativePos) <= itemsPerSide) {
+                    const item = avatarItems[i];
+                    item.style.display = '';
+                    const xPos = centerX - (itemWidth / 2) + (relativePos * (itemWidth + spacing));
+                    item.style.left = `${xPos}px`;
+                    item.style.top = '0px';
+                    item.style.opacity = relativePos === 0 ? '1' : '0.7';
+                    item.style.zIndex = 100 - Math.abs(relativePos);
+                    if (i === activeSpaceIndex) item.classList.add('active');
+                }
+            }
+        }
+
+      function loadAndDisplaySpace(space) {
+    if (!space) return;
+
+    document.getElementById('avatar-details').style.display = 'block';
+    document.getElementById('viewer-canvas').style.display = 'block';
+    document.querySelector('.viewer-container').classList.add('active');
+
+    isModelLoading = true;
+    updateLoadingProgress(0, 'Forging...');
+    clearScene();
+    controls.enabled = true;
+    activeSpace = space;
+    updateAvatarDetails(space);
+    updateActionButtons(space);
+
+    // Reset camera before loading new model
+    resetCameraPosition();
+
+    if (!isMediaMode) {
+        animate();
+    }
+
+    setTimeout(() => loadModelForDisplay(space.modelUrl, space.id), 50);
+}
+
+        function updateAvatarDetails(space) {
+            const titleElement = document.getElementById('avatar-title');
+            const detailsInfo = document.getElementById('details-info');
+            const descriptionText = document.getElementById('description-text');
+            const collectionText = document.getElementById('collection-text');
+            titleElement.textContent = space.name;
+            let compactInfoHTML = '<div class="compact-info">';
+            if (space.runwayPart && space.runwayPart !== "null") compactInfoHTML += `<div class="info-pill">${space.runwayPart}</div>`;
+            if (space.date && space.date !== "null") compactInfoHTML += `<div class="info-pill">${space.date}</div>`;
+            if (space.dtNo && space.dtNo !== "null") compactInfoHTML += `<div class="info-pill">DT ${space.dtNo}</div>`;
+            if (space.chain && space.chain !== "null") compactInfoHTML += `<div class="info-pill">🔗 ${space.chain}</div>`;
+            compactInfoHTML += '</div>';
+            detailsInfo.innerHTML = compactInfoHTML;
+            descriptionText.textContent = space.information || `This is ${space.name}, a unique digital space from the ${space.collection} collection.`;
+            collectionText.textContent = collectionDescriptions[space.collection] || `The ${space.collection} collection represents innovative digital spaces.`;
+        }
+
+        function updateActionButtons(space) {
+            document.getElementById('buy-btn').style.display = (space.buyLink && space.buyLink !== "null") ? 'block' : 'none';
+        }
+
+        let currentLoadToken = 0;
+
+        function loadModelForDisplay(modelUrl, spaceId) {
+            if (!modelUrl) {
+                isModelLoading = false;
+                updateLoadingProgress(100, 'Complete!');
+                return;
+            }
+            updateLoadingProgress(0, 'Loading model...');
+            mixer = null;
+            controls.enabled = true;
+
+            const loadToken = ++currentLoadToken;
+
+            const gltfLoader = new THREE.GLTFLoader();
+            const dracoLoader = new THREE.DRACOLoader();
+            dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+            gltfLoader.setDRACOLoader(dracoLoader);
+            if (typeof MeshoptDecoder !== 'undefined') gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+            gltfLoader.load(
+                modelUrl,
+                gltf => {
+                    if (loadToken !== currentLoadToken) {
+                        console.log('Loading cancelled, new loading operation started.');
+                        return;
+                    }
+                    currentModel = gltf.scene;
+                    currentModel.userData.spaceId = spaceId;
+                    modelAnimations = gltf.animations || [];
+                    centerAndScaleModel(currentModel);
+                    setupAnimations(modelAnimations);
+                    scene.add(currentModel);
+                    resetCameraPosition();
+                    updateLoadingProgress(100, 'Complete!');
+                    setTimeout(() => isModelLoading = false, 500);
+                },
+                xhr => {
+                    if (loadToken !== currentLoadToken) return;
+                    if (xhr.lengthComputable) updateLoadingProgress(Math.min(95, (xhr.loaded / xhr.total) * 95), 'Loading model...');
+                },
+                error => {
+                    if (loadToken !== currentLoadToken) return;
+                    console.error('Error loading model:', error);
+                    updateLoadingProgress(100, 'Error loading model');
+                    isModelLoading = false;
+                }
+            );
+        }
+
+        function clearScene() {
+            if (mixer) {
+                mixer.stopAllAction();
+                mixer.uncacheRoot(mixer.getRoot());
+                mixer = null;
+            }
+
+            while (scene.children.length > 0) {
+                const object = scene.children[0];
+                scene.remove(object);
+                disposeObject(object);
+            }
+
+            currentModel = null;
+            addBasicLighting();
+            clock = new THREE.Clock();
+            if (controls) controls.enabled = true;
+            if (renderer) renderer.render(scene, camera);
+        }
+
+        function disposeObject(obj) {
+            if (!obj) return;
+            if (obj.geometry) obj.geometry.dispose();
+            if (obj.material) {
+                if (Array.isArray(obj.material)) obj.material.forEach(material => disposeMaterial(material));
+                else disposeMaterial(obj.material);
+            }
+            if (obj.children && obj.children.length > 0) {
+                for (let i = obj.children.length - 1; i >= 0; i--) disposeObject(obj.children[i]);
+            }
+        }
+
+        function disposeMaterial(material) {
+            if (!material) return;
+            for (const prop in material) {
+                if (material[prop] && typeof material[prop].dispose === 'function') material[prop].dispose();
+            }
+            material.dispose();
+        }
+
+        function centerAndScaleModel(model) {
+            if (!model) return;
+            const bbox = new THREE.Box3().setFromObject(model);
+            const size = bbox.getSize(new THREE.Vector3());
+            const center = bbox.getCenter(new THREE.Vector3());
+            model.position.x = -center.x;
+            model.position.z = -center.z;
+            model.position.y = -center.y;
+            
+            // Adjust model scale to fit 25% of the screen
+            const modelWidth = size.x;
+            const targetScreenWidth = 0.25; // 25% of screen
+            const canvasContainer = document.querySelector('.viewer-container');
+            const screenWidth = canvasContainer.clientWidth;
+            const screenHeight = canvasContainer.clientHeight;
+            const aspect = screenWidth / screenHeight;
+            const orthoSize = CONFIG.viewer.camera.orthoSize;
+            const orthoWidth = orthoSize * aspect * 2; // Full width in world units
+            const targetWidthInWorldUnits = orthoWidth * targetScreenWidth;
+            const scaleFactor = targetWidthInWorldUnits / modelWidth;
+            model.scale.set(scaleFactor, scaleFactor, scaleFactor);
+            
+            return { size, center, scale: scaleFactor };
+        }
+
+       function resetCameraPosition() {
+    // Reset camera position
+    camera.position.set(
+        CONFIG.viewer.camera.position.x,
+        CONFIG.viewer.camera.position.y,
+        CONFIG.viewer.camera.position.z
+    );
+    
+    // Reset camera zoom (for orthographic camera, adjust zoom level)
+    camera.zoom = 1; // Reset to default zoom level
+    camera.updateProjectionMatrix();
+
+    // Reset camera look-at target
+    camera.lookAt(
+        CONFIG.viewer.camera.target.x,
+        CONFIG.viewer.camera.target.y,
+        CONFIG.viewer.camera.target.z
+    );
+
+    if (controls) {
+        // Reset OrbitControls target
+        controls.target.set(
+            CONFIG.viewer.camera.target.x,
+            CONFIG.viewer.camera.target.y,
+            CONFIG.viewer.camera.target.z
+        );
+
+        // Reset zoom and rotation in controls
+        controls.zoom = 1;
+        controls.reset(); // Reset controls to initial state
+        controls.update();
+    }
+}
+        function setupAnimations(animations) {
+            if (!animations || animations.length === 0 || !currentModel) return;
+            mixer = new THREE.AnimationMixer(currentModel);
+            clock = new THREE.Clock();
+            clock.start();
+            animations.forEach(clip => {
+                const action = mixer.clipAction(clip);
+                action.setLoop(THREE.LoopRepeat);
+                action.play();
+            });
+            mixer.update(0);
+        }
+
+        function updateLoadingProgress(percent, message = 'Forging...') {
+            const progressBar = document.getElementById('progress-bar');
+            const loadingPercentage = document.getElementById('loading-percentage');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (progressBar && loadingPercentage) {
+                progressBar.style.width = `${percent}%`;
+                loadingPercentage.textContent = `${Math.round(percent)}%`;
+                loadingOverlay.style.display = percent >= 100 ? 'none' : 'flex';
+            }
+        }
+    </script>
+</body>
+</html>
