@@ -450,48 +450,6 @@
             z-index: 5;
             fill: white;
         }
-        
-        .fullscreen-image-btn {
-    padding: 8px 0;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-    background-color: rgba(255, 255, 255, 0.5);
-    color: #000;
-    cursor: pointer;
-    font-size: 9px;
-    transition: all 0.2s;
-    text-align: center;
-    width: 100px;
-    margin-top: 10px;
-    box-sizing: border-box;
-}
-
-.fullscreen-image-btn:hover {
-    background-color: rgba(220, 220, 220, 0.9);
-}
-
-.fullscreen-image-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.9);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    overflow: hidden;
-}
-
-.fullscreen-image {
-    transform-origin: top left;
-    transform: scale(3); /* 3x zoom */
-    cursor: move;
-    max-width: none;
-    max-height: none;
-    user-select: none;
-}
     </style>
 </head>
 <body>
@@ -500,7 +458,7 @@
             <div class="top-controls">
                 <div class="menu-btn-container">
                     <button class="menu-btn active" id="info-btn">Info</button>
-                    <button class="menu-btn" id="experience-btn">Experience Now</button>
+                    <button class="menu-btn" id="experience-btn">Visit</button>
                     <button class="menu-btn" id="recording-btn">Recording</button>
                     <button class="menu-btn" id="media-btn">Media</button>
                 </div>
@@ -526,9 +484,9 @@
                 <div class="text-content">
                     <div class="text-title">WHY WE EXIST?, VIRTUAL THEATER NO:1, 11.23</div>
                     <div class="text-subtitle text-italic">"Why We Exist" emerges as an innovative virtual theater experience, marking a pioneering venture into the realm of digital performance art. This concept, the first of its kind in based civilization, pushes the boundaries of digital creativity and immersive storytelling through two distinct modes: Cinematic and Immersive. Please click VISIT to see the play directly, (PC / VR)</div>
-                    
+                    <div class="text-body">Journey and Inspiration</div>
                     <div class="text-body">The project was conceived out of a desire to explore the creative potential of digital assets. The limitless possibilities these 3D assets offer, thanks to their intricate design and three-dimensional nature, inspired the creation of a space where these elements could be brought to life in a virtual theater setting. This endeavor celebrates open-ended creativity, blending elements of fashion, design, architecture, sound, light, and the metaverse into a cohesive and immersive experience.</div>
-                    
+                    <div class="text-body">Concept Behind the Virtual Theater</div>
                     <div class="text-body">The idea of a theater within the metaverse has been a long-standing fascination, with the traditional theater's inherent ambiguity, the spontaneity of live performances, and the occasional imperfections that add depth to the experience being translated into a digital medium. Avatar bodies serve as a canvas in this project, creating a silent yet profound dialogue about our digital and 3D NFT heritage.</div>
                     <div class="text-body">The Murakami Pill serves as a theoretical foundation for this project, symbolizing the journey of digital "actors" striving to reconnect with their creator. This metaphor explores themes of existence, belief, and identity within the digital realm, inviting contemplation on the essence of digital entities and their parallels to human consciousness.</div>
                     <div class="text-body">In "Why We Exist," viewers become an integral part of the unfolding narrative. By choosing from one of three Clone remixes upon respawning, participants directly influence the perspective and outcome of the story. The two modes of engagement—Cinematic and Immersive—offer different vantage points, with the Immersive mode allowing for a free-roaming exploration of the virtual set, highlighting the dynamic interplay of smart objects and the environment.</div>
@@ -910,132 +868,49 @@
         }
 
         function displayMediaContent(media) {
-    if (!media) return;
-    const mediaPreview = document.createElement('div');
-    mediaPreview.className = 'media-preview';
-    mediaPreview.id = 'media-preview';
-    const viewerContent = document.getElementById('viewer-content');
-    viewerContent.innerHTML = '';
-    viewerContent.appendChild(mediaPreview);
-    updateMediaDetails(media);
+            if (!media) return;
+            const mediaPreview = document.createElement('div');
+            mediaPreview.className = 'media-preview';
+            mediaPreview.id = 'media-preview';
+            const viewerContent = document.getElementById('viewer-content');
+            viewerContent.innerHTML = '';
+            viewerContent.appendChild(mediaPreview);
+            updateMediaDetails(media);
 
-    if (media.type === 'image') {
-        const imgContainer = document.createElement('div');
-        imgContainer.style.display = 'flex';
-        imgContainer.style.flexDirection = 'column';
-        imgContainer.style.alignItems = 'center';
+            if (media.type === 'image') {
+                const img = document.createElement('img');
+                img.src = media.url;
+                img.style.maxWidth = '70%';
+                img.style.maxHeight = '70%';
+                img.style.objectFit = 'contain';
+                mediaPreview.appendChild(img);
+            } else if (media.type === 'video' && media.url.includes('youtube.com')) {
+                const videoContainer = document.createElement('div');
+                videoContainer.className = 'media-video-container';
+                const iframe = document.createElement('iframe');
+                iframe.className = 'youtube-iframe';
+                iframe.src = media.url;
+                iframe.frameBorder = '0';
+                iframe.allow = 'accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                iframe.allowFullscreen = true;
+                videoContainer.appendChild(iframe);
+                mediaPreview.appendChild(videoContainer);
+            } else if (media.type === 'video') {
+                const videoContainer = document.createElement('div');
+                videoContainer.className = 'media-video-container';
+                const video = document.createElement('video');
+                video.className = 'media-video';
+                video.src = media.url;
+                video.controls = true;
+                video.autoplay = false;
+                videoContainer.appendChild(video);
+                mediaPreview.appendChild(videoContainer);
+            }
 
-        const img = document.createElement('img');
-        img.src = media.url;
-        img.style.maxWidth = '70%';
-        img.style.maxHeight = '70%';
-        img.style.objectFit = 'contain';
-        imgContainer.appendChild(img);
-
-        const fullscreenBtn = document.createElement('button');
-        fullscreenBtn.className = 'fullscreen-image-btn';
-        fullscreenBtn.textContent = 'View Fullscreen';
-        fullscreenBtn.addEventListener('click', () => enterImageFullscreen(media.url));
-        imgContainer.appendChild(fullscreenBtn);
-
-        mediaPreview.appendChild(imgContainer);
-    } else if (media.type === 'video' && media.url.includes('youtube.com')) {
-        const videoContainer = document.createElement('div');
-        videoContainer.className = 'media-video-container';
-        const iframe = document.createElement('iframe');
-        iframe.className = 'youtube-iframe';
-        iframe.src = media.url;
-        iframe.frameBorder = '0';
-        iframe.allow = 'accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-        iframe.allowFullscreen = true;
-        videoContainer.appendChild(iframe);
-        mediaPreview.appendChild(videoContainer);
-    } else if (media.type === 'video') {
-        const videoContainer = document.createElement('div');
-        videoContainer.className = 'media-video-container';
-        const video = document.createElement('video');
-        video.className = 'media-video';
-        video.src = media.url;
-        video.controls = true;
-        video.autoplay = false;
-        videoContainer.appendChild(video);
-        mediaPreview.appendChild(videoContainer);
-    }
-
-    document.getElementById('bottom-section').style.display = 'block';
-    document.getElementById('bottom-section').style.opacity = '1';
-    document.getElementById('media-details').style.display = 'block';
-}
-
-function enterImageFullscreen(imageUrl) {
-    const container = document.createElement('div');
-    container.className = 'fullscreen-image-container';
-
-    const img = document.createElement('img');
-    img.src = imageUrl;
-    img.className = 'fullscreen-image';
-    container.appendChild(img);
-
-    document.body.appendChild(container);
-
-    let isDragging = false;
-    let startX, startY, translateX = 0, translateY = 0;
-
-    img.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        startX = e.clientX - translateX;
-        startY = e.clientY - translateY;
-        img.style.cursor = 'grabbing';
-        e.preventDefault();
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        translateX = e.clientX - startX;
-        translateY = e.clientY - startY;
-        img.style.transform = `scale(3) translate(${translateX}px, ${translateY}px)`;
-    });
-
-    document.addEventListener('mouseup', () => {
-        isDragging = false;
-        img.style.cursor = 'move';
-    });
-
-    img.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 1) {
-            isDragging = true;
-            startX = e.touches[0].clientX - translateX;
-            startY = e.touches[0].clientY - translateY;
-            e.preventDefault();
+            document.getElementById('bottom-section').style.display = 'block';
+            document.getElementById('bottom-section').style.opacity = '1';
+            document.getElementById('media-details').style.display = 'block';
         }
-    }, { passive: false });
-
-    img.addEventListener('touchmove', (e) => {
-        if (isDragging && e.touches.length === 1) {
-            translateX = e.touches[0].clientX - startX;
-            translateY = e.touches[0].clientY - startY;
-            img.style.transform = `scale(3) translate(${translateX}px, ${translateY}px)`;
-            e.preventDefault();
-        }
-    }, { passive: false });
-
-    img.addEventListener('touchend', () => {
-        isDragging = false;
-    });
-
-    container.addEventListener('click', (e) => {
-        if (e.target === container) {
-            document.body.removeChild(container);
-        }
-    });
-
-    document.addEventListener('keydown', function exitOnEsc(e) {
-        if (e.key === 'Escape') {
-            document.body.removeChild(container);
-            document.removeEventListener('keydown', exitOnEsc);
-        }
-    });
-}
 
         function updateMediaDetails(media) {
             const titleElement = document.getElementById('media-title');
