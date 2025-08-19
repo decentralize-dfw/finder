@@ -5,6 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Wix HTML — Dikey Galeri + Carousel + Experience</title>
 <style>
+
+  .media-details {
+  /* mevcut kodun üstüne gelecek */
+  overflow-y: auto;
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(255,255,255,0.6) transparent; /* Firefox */
+}
+
+/* WebKit tarayıcılar */
+.media-details::-webkit-scrollbar {
+  width: 3px;
+}
+.media-details::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 1px 0; /* üst-alt boşluk */
+}
+.media-details::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.6);
+  border-radius: 2px;
+  border: 1px solid transparent; /* sağ-sol boşluk için */
+}
+
   :root{
     --max-h: 800px;
     --side-pad: 16px;
@@ -15,6 +37,7 @@
     --carousel-offset: 50px;
     --enter-offset: 70px;   /* ENTER, carousel'den 70px yukarıda */
     --details-top: 100px;
+     --details-bottom-gap: 120px; /* ENTER üstü boşluk */
   }
 
   html,body{margin:0;padding:0;height:100%;background:#000;color:#fff;font-family:Arial,Helvetica,sans-serif}
@@ -42,7 +65,7 @@
   /* Text box */
   .media-details{
     position:absolute;top:var(--details-top);left:var(--side-pad);width:var(--text-w);z-index:20;
-    background:rgba(0,0,0,0.15);color:#fff;padding:15px;border-radius:8px;transition:opacity .3s ease;pointer-events:auto;overflow:auto
+    background:rgba(0,0,0,0.45);color:#fff;padding:15px;border-radius:8px;transition:opacity .3s ease;pointer-events:auto;overflow:auto
   }
   .media-title{font-size:24px;font-weight:bold;margin-bottom:10px}
   .media-description{font-size:16px;line-height:1.5;opacity:.95}
@@ -130,7 +153,7 @@
   <!-- ENTER -->
   <div class="enter-wrap" id="enter-wrap">
     <div class="enter-btn" id="enter-btn">ENTER</div>
-    <div class="enter-hint">Press Enter / Enter tuşu ile de başlayabilirsin</div>
+    <div class="enter-hint">Press Enter to start the experience</div>
   </div>
 
   <!-- Play/Stop -->
@@ -163,7 +186,7 @@ const MEDIA = [
     id: 'hatch',
     name: 'HATCH, VIRTUAL THEATER NO:3, 07.24',
     description: 'In a nihilistic virtual setup, two digital beings and an external entity explore existence, freedom, and control. Their journey leads them to question the nature of their reality and dimensions, uncovering deeper truths that challenge their roles. The external entity faces a pivotal choice that could redefine their understanding of existence.',
-    subtext: 'Virtual Theater · 2024',
+    subtext: 'Explore all the theaters from the top menu.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_657bbf289a904a829b19a01fc2acbbb2~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_26886a672f784198b9f8af4c4c93a5b9~mv2.jpg',
     link: 'https://hyperfy.io/hatch'
@@ -172,7 +195,7 @@ const MEDIA = [
     id: 'balloon',
     name: 'BALLOON, VIRTUAL THEATER NO: 2, 05.24',
     description: 'Balloon No. 2 is a 10-minute WebXR theater piece exploring the absurdity and depth of digital identity in metaverse culture. Accessible via Hyperfy, it places the audience in a surreal environment through VR or desktop, blending architecture, fashion, and AI-driven dialogue. With three seamless acts triggered by interactive visuals, the experience offers a dynamic and personal journey through 32 choreographed camera angles or free exploration in VR. It requires no login or downloads—just a link. A new form of digital performance born for the screen.',
-    subtext: 'Virtual Theater · 2024',
+    subtext: 'Explore all the theaters from the top menu.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_55d49a9e02b74a76bca4a0177a9fa5df~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_c9415cfa41d943a7ae7ec18cc8a81a63~mv2.png',
     link: 'https://hyperfy.io/balloon'
@@ -181,16 +204,16 @@ const MEDIA = [
     id: 'wwe',
     name: 'WHY WE EXIST?, VIRTUAL THEATER NO:1, 11.23',
     description: '"Why We Exist" emerges as an innovative virtual theater experience, marking a pioneering venture into the realm of digital performance art. This concept, the first of its kind in based civilization, pushes the boundaries of digital creativity and immersive storytelling through two distinct modes: Cinematic and Immersive. Please click "Experience Now" to see the play directly, (PC / VR)',
-    subtext: 'Virtual Theater · 2023',
+    subtext: 'Explore all the theaters from the top menu.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_8362a66b73ca47bd92c9ed90eef359ba~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_ba80e31fd25540a5b648f40640b7eaae~mv2.jpg',
     link: 'https://hyperfy.io/pill'
   },
   {
     id: 'c2w2_avatars',
-    name: 'C2W2 vrm Collrction for Virtual Net Runners',
+    name: 'C2W2 VRM Collection for Virtual Net Runners 2025',
     description: 'The C2W2 virtual runway on Hyperfy, accessible via VR or PC through the link hyperfy.io/c2w2, is a 30-minute metaverse event showcasing nearly 50 AI-designed avatars across six thematic parts, blending traditional art, virtual fashion, NFTs, and transhumanism. Through dramatic lighting and a minimalist setting, it explores identity, technology, and belonging in a fragmented, three-dimensional narrative.',
-    subtext: 'Virtual Runway · 2023',
+    subtext: 's00n.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_8ea705af2b04470db99ed4122b5bbb5a~mv2.jpg',
     link: 'https://hyperfy.io/c2w2'
@@ -199,7 +222,7 @@ const MEDIA = [
     id: 'c2w_runway',
     name: 'C2W, METAVERSE RUNWAY EVENT, 2023',
     description: 'The C2W Metaverse Runway event, held on 9.11.23 and was accessible through a $20 ticket purchased between 1-2.11.23 following the Digital Fashion Showcase at New Codes in London by VCA x Draup, showcased a distinctive digital fashion collection. This event provided attendees with an immersive virtual fashion show experience directly from their browsers without the need for downloads, marking a significant step in exploring and redefining personal expression in digital realms. Alongside their ticket, attendees received a complimentary avatar, The Viewer, which they showcased during this token-gated event. The show is available for free to anyone now.',
-    subtext: 'Metaverse Runway · 2023',
+    subtext: 'Explore the runway from the top menu.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_8b9ecdfee9b0416497b06cd601c515df~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_e049a6653d214b2f9237891d21fb05af~mv2.jpg',
     link: 'https://hyperfy.io/c2w'
@@ -208,16 +231,16 @@ const MEDIA = [
     id: 'c2w_avatar_collection',
     name: 'C2W, vrm avatars, 2023',
     description: '-',
-    subtext: 'Avatar Collection · 2023',
+    subtext: 'Explore the collection from the top menu.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_8b9ecdfee9b0416497b06cd601c515df~mv2.png',
-    imageUrl: 'https://static.wixstatic.com/media/54a996_7aa7db3ccbdd4ee5ad6d75b2ff77a8db~mv2.jpg',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_081da7a3d0b74b85919e3e6db5325420~mv2.jpg',
     link: ''
   },
   {
     id: 'scaffold',
     name: 'SCAFFOLD, 3D Architectural Browser',
     description: 'A silent structure that is built around architectural smart objects. Explore all 50 digital topographies with a single click, or experiment with guided tours via NPCs.',
-    subtext: 'Architectural Browser · 2023',
+    subtext: 'Explore other galleries, or all of the spaces from the top menu.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_610326d29cfd4daa96db8c86d1cb033b~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_a4275b8206ae43d3ae134f283411acf2~mv2.jpg',
     link: 'https://hyperfy.io/scaffold'
@@ -226,7 +249,7 @@ const MEDIA = [
     id: 'retail',
     name: 'RETAIL, 3d beings shop for c2w2.vrm, 2025',
     description: 'Retail in the metaverse bridges the gap between fashion and daily life, offering a unique platform for connection and innovation.',
-    subtext: 'Metaverse Retail · 2025',
+    subtext: 'Explore all the theaters from the top menu.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_3a566c9262264a2490ba38ecba6e65b5~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_09c1a68b1dff4c168445589c079c6596~mv2.jpg',
     link: 'https://hyperfy.io/retail'
@@ -235,7 +258,7 @@ const MEDIA = [
     id: 'neue2dojo',
     name: 'NEUE² DOJO GALLERY',
     description: 'Neue² Dojo Gallery stands at the forefront of a cultural revolution, exemplifying how art and technology can coalesce to create entirely new paradigms for cultural expression and engagement.',
-    subtext: 'Virtual Gallery · 2023',
+    subtext: 'Explore all the theaters from the top menu.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_e2b6353a23e14e489ee6ee3d341fdd80~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_ee82c356be104c3ebf5d6df4156b1abd~mv2.jpg',
     link: 'https://hyperfy.io/neue2dojo'
@@ -243,8 +266,8 @@ const MEDIA = [
   {
     id: 'elements_store',
     name: 'ELEMENTS STORE',
-    description: 'Virtual Furniture Gallery for DFW Designs',
-    subtext: 'Virtual Furniture Gallery · 2023',
+    description: 'The Elements Store in Hyperfy is a futuristic, minimalist three-floor gallery showcasing DFW’s design legacy (from the iconic Mermaid Chair to furniture, sculptures, and vehicles) offering 15,625 unique spatial variations through customizable layouts, materials, and colors. Inspired by the “sampling and chopping” techniques of experimental music, the environment itself becomes an evolving composition, blending collage and surreal overlays to shift perception in real time. More than a showroom, it functions as a spatial instrument where users explore works from 2021 onward and experience digital design through play, layering, and choice.',
+    subtext: 'Explore all the theaters from the top menu.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_2da52be408d042ce87f0ffde7f3dc15c~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_249824f6849b4fd78d4ac6b9691b226e~mv2.jpg',
     link: 'https://hyperfy.io/dfw'
@@ -253,7 +276,7 @@ const MEDIA = [
     id: 'blackcity',
     name: 'BLACK CITY, Decentralized Virtual Roomscape',
     description: 'A virtual city with 8 independent museums (MOCA ROOMS), designed by DFW and curated on-chain by their citizens, 2023',
-    subtext: 'Virtual City · 2023',
+    subtext: 'Explore all the theaters from the top menu.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_bfaf132093d2475f9cd8da1247292760~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_14468231d8754e88bdd561ac1721b3e6~mv2.jpg',
     link: 'https://hyperfy.io/blackcity'
@@ -262,7 +285,7 @@ const MEDIA = [
     id: 'forge',
     name: 'FORGE, NoiseDao',
     description: 'NoiseDAO World Design: A Decentralized Approach to Music and Art',
-    subtext: 'Decentralized Art · 2023',
+    subtext: 'Explore all the theaters from the top menu.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_5ad4cee848d04581a96d2762fd1ca332~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_3e3a8b5e493a43f1b40c296812393a7e~mv2.jpg',
     link: 'https://hyperfy.io/noise'
@@ -271,7 +294,7 @@ const MEDIA = [
     id: 'c2w2_runway',
     name: 'C2W2, METAVERSE RUNWAY EVENT, 2025 (TBA)',
     description: 'The C2W2 virtual runway on Hyperfy, accessible via VR or PC through the link, is a 30-minute metaverse event showcasing nearly 50 AI-designed avatars across six thematic parts, blending traditional art, virtual fashion, NFTs, and transhumanism. Through dramatic lighting and a minimalist setting, it explores identity, technology, and belonging in a fragmented, three-dimensional narrative.',
-    subtext: 'Metaverse Runway · 2025',
+    subtext: 's00n.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_0dcf9180991d4e49942304a01f9224c5~mv2.jpg',
     link: ''
@@ -280,7 +303,7 @@ const MEDIA = [
     id: 'digital_topographies',
     name: 'Digital Topographies',
     description: 'Architectural Works',
-    subtext: 'Architectural Works · 2023',
+    subtext: 'Explore all the on-chain spaces from the top menu.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_8a3d96c1923642aa871699aa3c7b2b9d~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_58bcc0469f6e47b3a7665de8224e2da1~mv2.jpg',
     link: 'https://v2.oncyber.io/digitaltopographies'
@@ -289,16 +312,16 @@ const MEDIA = [
     id: 'dfw_design_market',
     name: 'DFW Design Market',
     description: '',
-    subtext: 'Design Market · 2023',
+    subtext: 'Mint your furniture today',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_a2215b83bd6344f39ad76c5ac0707eef~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_2598bd0a3bab4c419b1939d8cee8b485~mv2.png',
     link: 'https://opensea.io/collection/dfw-design'
   },
   {
     id: 'dfw_who',
-    name: 'DFW Who',
-    description: '',
-    subtext: 'Digital Art · 2023',
+    name: 'DFW?',
+    description: 'Digital Forgery Workshop is a design practice founded in Milan, operating at the critical intersection of architecture, fashion, art, and technology. Emerging from architectural roots, the workshop has evolved into a defining voice in virtual spatial design, challenging traditional disciplinary boundaries and creating new paradigms for digital experience. Our practice approaches virtual space as an autonomous domain with its own logic and possibilities, rather than a simulation of physical reality. Through groundbreaking innovations like Virtual Theater—a revolutionary format synthesizing performance, space, and interaction—and advanced browser-based architectural systems, DFW is establishing the fundamental framework for virtual living. interact with virtual reality. Our comprehensive practice spans multiple dimensions of virtual existence: from dynamic museum architectures and spatial retail experiences to interactive gallery systems and fashion runways, each project pushes the boundaries of what is possible in digital space. As creators of complete virtual worlds and blockchain-authenticated digital assets, we maintain unwavering commitment to spatial excellence and technical innovation. Our work transcends conventional limitations through browser-based deployment, real-time file management, and blockchain integration, while our research initiatives continuously explore virtual materiality, digital spatial psychology, and temporal design systems. DFW does not just design spaces—we are architecting the future of digital existence, creating environments and experiences that fundamentally reshape how we interact with virtual reality.',
+    subtext: 'Explore more  at Info from the top menu, or talk with the agent from right below.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_5a17303dc4d246f1818591922f059ebe~mv2.png',
     imageUrl: 'https://static.wixstatic.com/media/54a996_c4c2d6de38af47b099a5042ebeb14dbd~mv2.png',
     link: ''
@@ -342,7 +365,8 @@ function hasLink(m){ return !!(m && m.link && m.link !== 'null' && m.link !== ''
 function computeDetailsMaxHeight(){
   const appH = appEl.clientHeight;
   const detailsTop = pxNum(cssVar('--details-top'));
-  const bottomReserved = pxNum(cssVar('--carousel-offset')) + pxNum(cssVar('--enter-offset')) + 10;
+  const bottomReserved = pxNum(cssVar('--carousel-offset')) + pxNum(cssVar('--enter-offset')) + pxNum(cssVar('--details-bottom-gap'));
+
   const maxH = Math.max(120, appH - bottomReserved - detailsTop);
   detailsEl.style.maxHeight = maxH + 'px';
 }
