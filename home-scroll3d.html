@@ -63,11 +63,13 @@
   .exp-overlay{position:absolute;left:0;right:0;top:0;bottom:0;z-index:40;background:#000;display:none}
   .exp-overlay.active{display:block}
   .exp-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
-  .exp-controls{position:absolute;top:12px;right:12px;display:flex;gap:var(--controls-gap);z-index:41}
+  .exp-controls{position:absolute;top:16px;right:12px;display:flex;gap:var(--controls-gap);z-index:41}
  .exp-ctl-btn {
     font-size: 10px;
+    font-weight: bold;
+    font-style: italic;
     padding: 5px 6px;
-    height: 32px;
+    height: 21px;
     line-height: 32px;
     border-radius: 6px;
     background: rgba(255,255,255,0.8);
@@ -79,6 +81,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+.media-btn-container {
+    position: absolute;
+    top: 32px;   /* yukarıdan mesafe */
+    right: 20px; /* sağdan mesafe */
+    height: 32px;
+    display: flex;
+    gap: 8px;
 }
 
   /* Carousel */
@@ -132,9 +142,9 @@
   <div class="exp-overlay" id="exp">
     <iframe id="expFrame" class="exp-frame" allow="autoplay; fullscreen; xr-spatial-tracking; microphone; camera; gamepad; vr" allowfullscreen referrerpolicy="no-referrer"></iframe>
     <div class="exp-controls">
-      <div class="exp-ctl-btn" id="expOpenBtn">OPEN IN NEW TAB</div>
-      <div class="exp-ctl-btn" id="expFullBtn">FULL SCREEN</div>
-      <div class="exp-ctl-btn" id="expQuitBtn">QUIT EXPERIENCE</div>
+      <div class="exp-ctl-btn" id="expOpenBtn">Open in a new tab</div>
+      <div class="exp-ctl-btn" id="expFullBtn">Full Screen</div>
+      <div class="exp-ctl-btn" id="expQuitBtn">Quit Experience</div>
     </div>
   </div>
 
