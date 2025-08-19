@@ -12,7 +12,7 @@
     --enter-h: 44px;
     --controls-gap: 10px;
     --fade-ms: 250ms;
-    --carousel-offset: 50px; /* ⬅️ carousel (ve ENTER) 100px yukarı taşındı */
+    --carousel-offset: 100px; /* ⬅️ carousel (ve ENTER) 100px yukarı taşındı */
   }
   html,body{margin:0;padding:0;height:100%;background:#000;color:#fff;font-family:Arial,Helvetica,sans-serif}
   .app{position:relative;width:100%;height:min(100vh,var(--max-h));overflow:hidden;background:#000;opacity:0;transition:opacity .25s ease}
@@ -34,7 +34,7 @@
   /* Metin bloğu (opacity %15) */
   .media-details{
     position:absolute;top:100px;left:var(--side-pad);width:var(--text-w);z-index:20;
-    background-color:rgba(0,0,0,0.15); /* ⬅️ %15 opaklık */
+    background-color:rgba(0,0,0,0.55); /* ⬅️ %15 opaklık */
     color:#fff;padding:15px;border-radius:8px;transition:opacity .3s ease;pointer-events:auto
   }
   .media-title{font-size:24px;font-weight:bold;margin-bottom:10px}
@@ -43,7 +43,7 @@
   /* ENTER: carousel hizasında, solda */
   .enter-wrap{
     position:absolute;left:var(--side-pad);
-    bottom:calc(var(--carousel-offset) + 18px); /* 80px yüksekliğin ortasına yakın */
+    bottom:calc(var(--carousel-offset) + 110px); /* 80px yüksekliğin ortasına yakın */
     z-index:21
   }
   .enter-btn{
@@ -52,7 +52,7 @@
     cursor:pointer;user-select:none;transition:transform .1s ease,opacity .2s ease
   }
   .enter-btn:active{transform:translateY(1px) scale(.99)}
-  .enter-hint{margin-top:6px;font-size:12px;opacity:.8}
+  .enter-hint{margin-top:6px;font-size:12px;opacity:.8;font-weight:700}
 
   /* Play/Stop (sol orta) */
   .playstop{position:absolute;left:12px;top:50%;transform:translateY(-50%);z-index:30}
@@ -68,7 +68,7 @@
   .exp-overlay.active{display:block}
   .exp-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
   .exp-controls{position:absolute;top:12px;right:12px;display:flex;gap:var(--controls-gap);z-index:41}
-  .exp-ctl-btn{background:rgba(255,255,255,.9);color:#000;border-radius:8px;height:36px;padding:0 10px;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer}
+  .exp-ctl-btn{background:rgba(255,255,255,.6);color:#000;border-radius:8px;height:20px;padding:0 15px;display:flex;align-items:center;justify-content:center;font-weight:0;cursor:pointer}
 
   /* Carousel (80px yüksekliğinde, 100px yukarıda) */
   .bottom-section{
@@ -120,7 +120,7 @@
   <!-- ENTER (carousel hizası, solda) -->
   <div class="enter-wrap" id="enter-wrap">
     <div class="enter-btn" id="enter-btn">ENTER</div>
-    <div class="enter-hint">Press Enter / Enter tuşu ile de başlayabilirsin</div>
+    <div class="enter-hint">Press ENTER to start the Experience</div>
   </div>
 
   <!-- Stop/Play -->
@@ -134,8 +134,8 @@
       allow="autoplay; fullscreen; xr-spatial-tracking; microphone; camera; gamepad; vr"
       allowfullscreen referrerpolicy="no-referrer"></iframe>
     <div class="exp-controls">
-      <div class="exp-ctl-btn" id="expFullBtn">FULL SCREEN</div>
-      <div class="exp-ctl-btn" id="expQuitBtn">QUIT EXPERIENCE</div>
+      <div class="exp-ctl-btn" id="expFullBtn">Fullscreen</div>
+      <div class="exp-ctl-btn" id="expQuitBtn">Quit Experience</div>
     </div>
   </div>
 
@@ -156,16 +156,48 @@ const MEDIA = [
     name: 'HATCH, VIRTUAL THEATER NO:3, 07.24',
     description: 'In a nihilistic virtual setup, two digital beings and an external entity explore existence, freedom, and control. Their journey leads them to question the nature of their reality and dimensions, uncovering deeper truths that challenge their roles. The external entity faces a pivotal choice that could redefine their understanding of existence.',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_657bbf289a904a829b19a01fc2acbbb2~mv2.png',
-    imageUrl: 'https://static.wixstatic.com/media/54a996_9999fff50f5a46799bfa5f28860119ae~mv2.png',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_26886a672f784198b9f8af4c4c93a5b9~mv2.jpg',
     link: 'https://hyperfy.io/hatch'
+  },
+  {
+    id: 'balloon',
+    name: 'BALLOON, VIRTUAL THEATER NO: 2, 05.24',
+    description: 'Balloon No. 2 is a 10-minute WebXR theater piece exploring the absurdity and depth of digital identity in metaverse culture. Accessible via Hyperfy, it places the audience in a surreal environment through VR or desktop, blending architecture, fashion, and AI-driven dialogue. With three seamless acts triggered by interactive visuals, the experience offers a dynamic and personal journey through 32 choreographed camera angles or free exploration in VR. It requires no login or downloads—just a link. A new form of digital performance born for the screen.',
+    thumbnailUrl: 'https://static.wixstatic.com/media/54a996_55d49a9e02b74a76bca4a0177a9fa5df~mv2.png',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_c9415cfa41d943a7ae7ec18cc8a81a63~mv2.png',
+    link: 'https://hyperfy.io/balloon'
   },
   {
     id: 'wwe',
     name: 'WHY WE EXIST?, VIRTUAL THEATER NO:1, 11.23',
     description: '"Why We Exist" emerges as an innovative virtual theater experience, marking a pioneering venture into the realm of digital performance art. This concept, the first of its kind in based civilization, pushes the boundaries of digital creativity and immersive storytelling through two distinct modes: Cinematic and Immersive. Please click "Experience Now" to see the play directly, (PC / VR)',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_8362a66b73ca47bd92c9ed90eef359ba~mv2.png',
-    imageUrl: 'https://static.wixstatic.com/media/54a996_902846939c494b1685817fb01c63d314~mv2.jpg',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_ba80e31fd25540a5b648f40640b7eaae~mv2.jpg',
     link: 'https://hyperfy.io/pill'
+  },
+  {
+    id: 'c2w2_avatars',
+    name: 'C2W2 vrm Collrction for Virtual Net Runners',
+    description: 'The C2W2 virtual runway on Hyperfy, accessible via VR or PC through the link hyperfy.io/c2w2, is a 30-minute metaverse event showcasing nearly 50 AI-designed avatars across six thematic parts, blending traditional art, virtual fashion, NFTs, and transhumanism. Through dramatic lighting and a minimalist setting, it explores identity, technology, and belonging in a fragmented, three-dimensional narrative.',
+    thumbnailUrl: 'https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_8ea705af2b04470db99ed4122b5bbb5a~mv2.jpg',
+    link: 'https://hyperfy.io/c2w2'
+  },
+  {
+    id: 'c2w_runway',
+    name: 'C2W, METAVERSE RUNWAY EVENT, 2023',
+    description: 'The C2W Metaverse Runway event, held on 9.11.23 and was accessible through a $20 ticket purchased between 1-2.11.23 following the Digital Fashion Showcase at New Codes in London by VCA x Draup, showcased a distinctive digital fashion collection. This event provided attendees with an immersive virtual fashion show experience directly from their browsers without the need for downloads, marking a significant step in exploring and redefining personal expression in digital realms. Alongside their ticket, attendees received a complimentary avatar, The Viewer, which they showcased during this token-gated event. The show is available for free to anyone now.',
+    thumbnailUrl: 'https://static.wixstatic.com/media/54a996_8b9ecdfee9b0416497b06cd601c515df~mv2.png',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_e049a6653d214b2f9237891d21fb05af~mv2.jpg',
+    link: 'https://hyperfy.io/c2w'
+  },
+  {
+    id: 'c2w_avatar_collection',
+    name: 'C2W, vrm avatars, 2023',
+    description: '-',
+    thumbnailUrl: 'https://static.wixstatic.com/media/54a996_8b9ecdfee9b0416497b06cd601c515df~mv2.png',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_7aa7db3ccbdd4ee5ad6d75b2ff77a8db~mv2.jpg',
+    link: ''
   },
   {
     id: 'scaffold',
@@ -176,12 +208,76 @@ const MEDIA = [
     link: 'https://hyperfy.io/scaffold'
   },
   {
+    id: 'retail',
+    name: 'RETAIL, 3d beings shop for c2w2.vrm, 2025',
+    description: 'Retail in the metaverse bridges the gap between fashion and daily life, offering a unique platform for connection and innovation.',
+    thumbnailUrl: 'https://static.wixstatic.com/media/54a996_3a566c9262264a2490ba38ecba6e65b5~mv2.png',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_09c1a68b1dff4c168445589c079c6596~mv2.jpg',
+    link: 'https://hyperfy.io/retail'
+  },
+  {
+    id: 'neue2dojo',
+    name: 'NEUE² DOJO GALLERY',
+    description: 'Neue² Dojo Gallery stands at the forefront of a cultural revolution, exemplifying how art and technology can coalesce to create entirely new paradigms for cultural expression and engagement.',
+    thumbnailUrl: 'https://static.wixstatic.com/media/54a996_e2b6353a23e14e489ee6ee3d341fdd80~mv2.png',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_ee82c356be104c3ebf5d6df4156b1abd~mv2.jpg',
+    link: 'https://hyperfy.io/neue2dojo'
+  },
+  {
+    id: 'elements_store',
+    name: 'ELEMENTS STORE',
+    description: 'Virtual Furniture Gallery for DFW Designs',
+    thumbnailUrl: 'https://static.wixstatic.com/media/54a996_2da52be408d042ce87f0ffde7f3dc15c~mv2.png',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_249824f6849b4fd78d4ac6b9691b226e~mv2.jpg',
+    link: 'https://hyperfy.io/dfw'
+  },
+  {
     id: 'blackcity',
     name: 'BLACK CITY, Decentralized Virtual Roomscape',
     description: 'A virtual city with 8 independent museums (MOCA ROOMS), designed by DFW and curated on-chain by their citizens, 2023',
     thumbnailUrl: 'https://static.wixstatic.com/media/54a996_bfaf132093d2475f9cd8da1247292760~mv2.png',
-    imageUrl: 'https://static.wixstatic.com/media/54a996_e47bf1eca5034af1ba5a8902ac4d98d7~mv2.jpg',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_14468231d8754e88bdd561ac1721b3e6~mv2.jpg',
     link: 'https://hyperfy.io/blackcity'
+  },
+  {
+    id: 'forge',
+    name: 'FORGE, NoiseDao',
+    description: 'NoiseDAO World Design: A Decentralized Approach to Music and Art',
+    thumbnailUrl: 'https://static.wixstatic.com/media/54a996_5ad4cee848d04581a96d2762fd1ca332~mv2.png',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_3e3a8b5e493a43f1b40c296812393a7e~mv2.jpg',
+    link: 'https://hyperfy.io/noise'
+  },
+  {
+    id: 'c2w2_runway',
+    name: 'C2W2, METAVERSE RUNWAY EVENT, 2025 (TBA)',
+    description: 'The C2W2 virtual runway on Hyperfy, accessible via VR or PC through the link, is a 30-minute metaverse event showcasing nearly 50 AI-designed avatars across six thematic parts, blending traditional art, virtual fashion, NFTs, and transhumanism. Through dramatic lighting and a minimalist setting, it explores identity, technology, and belonging in a fragmented, three-dimensional narrative.',
+    thumbnailUrl: 'https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_0dcf9180991d4e49942304a01f9224c5~mv2.jpg',
+    link: ''
+  },
+  {
+    id: 'digital_topographies',
+    name: 'Digital Topographies',
+    description: 'Architectural Works',
+    thumbnailUrl: 'https://static.wixstatic.com/media/54a996_8a3d96c1923642aa871699aa3c7b2b9d~mv2.png',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_58bcc0469f6e47b3a7665de8224e2da1~mv2.jpg',
+    link: 'https://v2.oncyber.io/digitaltopographies'
+  },
+  {
+    id: 'dfw_design_market',
+    name: 'DFW Design Market',
+    description: '',
+    thumbnailUrl: 'https://static.wixstatic.com/media/54a996_a2215b83bd6344f39ad76c5ac0707eef~mv2.png',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_2598bd0a3bab4c419b1939d8cee8b485~mv2.png',
+    link: 'https://opensea.io/collection/dfw-design'
+  },
+  {
+    id: 'dfw_who',
+    name: 'DFW Who',
+    description: '',
+    thumbnailUrl: 'https://static.wixstatic.com/media/54a996_5a17303dc4d246f1818591922f059ebe~mv2.png',
+    imageUrl: 'https://static.wixstatic.com/media/54a996_c4c2d6de38af47b099a5042ebeb14dbd~mv2.png',
+    link: ''
   }
 ];
 
