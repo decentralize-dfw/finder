@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        * {
+            font-family: "Helvetica", monospace; /* General font */
+            box-sizing: border-box; /* Ensure consistent sizing */
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff; /* White background */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Horizontal centering */
+            justify-content: center; /* Vertical centering */
+            width: 100vhx; /* Match iframe width */
+            height: 100vh; /* Full viewport height */
+            overflow: hidden;
+        }
+        #pdfViewer {
+            border: 1px solid #ddd;
+            
+            background-color: white;
+            position: relative;
+            width: 850px; /* Scaled A3 width */
+            height: 800px; /* Scaled A3 height */
+            overflow: hidden;
+            margin: 100px auto; /* 100px top/bottom, centered horizontally */
+          box-shadow: 0 12px 8px rgba(0, 0, 0, 0.2); /* Smooth shadow */
+        }
+        #pdfCanvas {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            max-height: 100%;
+        }
+        #pdfCanvas:fullscreen {
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain; /* Maintain aspect ratio */
+            background-color: #000000; /* Black background to avoid gaps */
+            border: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        #controls {
+            height: 32px;
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            background-color: rgba(255, 255, 255, 0); /* Transparent */
+            z-index: 10;
+            position: absolute;
+            bottom: 15px; /* Keep original position */
+            left: 39%; /* 15px margin from left */
+        }
+        #navButtons {
+            display: flex;
+            width: 400px;
+            gap: 8px;
+            align-items: center; /* Ensure vertical alignment */
+        }
+        #navButtons button, #fullscreenBtn {
+            padding: 5px 4px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 9px;
+            transition: all 0.2s;
+            color: #000;
+            box-shadow: none;
+            text-shadow: none;
+            height: 32px;
+            line-height: 20px;
+            flex: 1;
+            outline: none;
+        }
+        #navButtons button:hover, #fullscreenBtn:hover {
+            background-color: rgba(240, 240, 240, 0.9);
+        }
+        #navButtons button:disabled {
+            background-color: rgba(60, 60, 60, 0.9);
+            color: white;
+        }
+        #pageInput {
+            padding: 5px 4px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.7);
+            font-size: 9px;
+            transition: all 0.2s;
+            color: #000;
+            box-shadow: none;
+            text-shadow: none;
+            height: 32px;
+            line-height: 20px;
+            flex: 1;
+            outline: none;
+            text-align: center;
+            width: 50px; /* Fixed width for input */
+        }
+        #pageInput:hover {
+            background-color: rgba(240, 240, 240, 0.9);
+        }
+        #pageInfo {
+            padding: 5px 4px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.7);
+            font-size: 9px;
+            transition: all 0.2s;
+            color: #000;
+            box-shadow: none;
+            text-shadow: none;
+            height: 32px;
+            line-height: 20px;
+            flex: 1;
+            text-align: center;
+        }
+        #pageInfo:hover {
+            background-color: rgba(240, 240, 240, 0.9);
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #666;
+        }
+        #error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            color: #d00;
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="pdfViewer">
+        <canvas id="pdfCanvas"></canvas>
+        <div id="loading">Loading PDF...</div>
+        <div id="error" style="display: none;">Error loading PDF. Check if the file exists and is accessible.</div>
+    </div>
+    <div id="controls">
+        <div id="navButtons">
+            <button id="prevBtn" onclick="prevPage()">← Prev</button>
+            <input type="number" id="pageInput" min="1" placeholder="Page" onkeypress="if(event.key==='Enter') goToPage()">
+            <span id="pageInfo">Page 1 of 1</span>
+            <button id="nextBtn" onclick="nextPage()">Next →</button>
+            <button id="fullscreenBtn" onclick="toggleFullScreen()">Full Screen</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const pdfUrl = 'https://54a996c1-da67-48e4-abe3-b352dceb63bf.usrfiles.com/ugd/54a996_2c534b4433b34d0f98dc7902ea5ec811.pdf';
+        const scale = 0.95; // Slight scaling to fit 800px width
+        let pdfDoc = null;
+        let pageNum = 1;
+        let pageCount = 0;
+        const canvas = document.getElementById('pdfCanvas');
+        const ctx = canvas.getContext('2d');
+        const loading = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+        const pageInput = document.getElementById('pageInput');
+        const pageInfo = document.getElementById('pageInfo');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const pdfViewer = document.getElementById('pdfViewer');
+
+        // Load PDF
+        pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+            pdfDoc = pdf;
+            pageCount = pdf.numPages;
+            loading.style.display = 'none';
+            errorDiv.style.display = 'none';
+            updatePageInfo();
+            renderPage(pageNum);
+        }).catch(function(error) {
+            console.error('Error loading PDF:', error);
+            loading.style.display = 'none';
+            errorDiv.style.display = 'block';
+        });
+
+        function renderPage(num) {
+            pdfDoc.getPage(num).then(function(page) {
+                const viewport = page.getViewport({ scale: scale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+                page.render(renderContext).promise.then(function() {
+                    updatePageInfo();
+                    updateButtons();
+                });
+            });
+        }
+
+        function updatePageInfo() {
+            pageInfo.textContent = `Page ${pageNum} of ${pageCount}`;
+            pageInput.value = pageNum;
+        }
+
+        function updateButtons() {
+            prevBtn.disabled = (pageNum <= 1);
+            nextBtn.disabled = (pageNum >= pageCount);
+            fullscreenBtn.textContent = document.fullscreenElement ? 'Exit Full Screen' : 'Full Screen';
+        }
+
+        function nextPage() {
+            if (pageNum < pageCount) {
+                pageNum++;
+                renderPage(pageNum);
+            }
+        }
+
+        function prevPage() {
+            if (pageNum > 1) {
+                pageNum--;
+                renderPage(pageNum);
+            }
+        }
+
+        function goToPage() {
+            const inputPage = parseInt(pageInput.value);
+            if (inputPage >= 1 && inputPage <= pageCount && inputPage !== pageNum) {
+                pageNum = inputPage;
+                renderPage(pageNum);
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                canvas.requestFullscreen().catch(err => {
+                    console.error('Fullscreen error:', err);
+                    alert('Fullscreen mode could not be activated. Your browser may not support it.');
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Hide UI elements in full-screen
+        document.addEventListener('fullscreenchange', function() {
+            if (document.fullscreenElement) {
+                pdfViewer.style.border = 'none'; // Remove border
+                controls.style.display = 'none'; // Hide controls
+                document.body.style.backgroundColor = '#000000'; // Black background
+            } else {
+                pdfViewer.style.border = '1px solid #ddd'; // Restore border
+                controls.style.display = 'flex'; // Show controls
+                document.body.style.backgroundColor = '#ffffff'; // White background
+            }
+            updateButtons();
+        });
+
+        // Scroll wheel navigation with throttling
+        let lastScroll = 0;
+        const throttleDelay = 200; // 200ms throttle
+        pdfViewer.addEventListener('wheel', function(e) {
+            e.preventDefault(); // Prevent default scrolling
+            const now = Date.now();
+            if (now - lastScroll < throttleDelay) return; // Skip if within throttle
+            lastScroll = now;
+            if (e.deltaY > 0) {
+                nextPage(); // Scroll down = next page
+            } else if (e.deltaY < 0) {
+                prevPage(); // Scroll up = previous page
+            }
+        });
+        // Also attach to canvas for direct interaction
+        canvas.addEventListener('wheel', function(e) {
+            e.preventDefault(); // Prevent default scrolling
+            const now = Date.now();
+            if (now - lastScroll < throttleDelay) return; // Skip if within throttle
+            lastScroll = now;
+            if (e.deltaY > 0) {
+                nextPage(); // Scroll down = next page
+            } else if (e.deltaY < 0) {
+                prevPage(); // Scroll up = previous page
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') prevPage();
+            if (e.key === 'ArrowRight') nextPage();
+            if (e.key === 'Enter' && document.activeElement === pageInput) goToPage();
+        });
+    </script>
+</body>
+</html>
