@@ -72,7 +72,7 @@
  background-color: rgba(255, 255, 255, 0);
  z-index: 10;
  position: absolute;
- margin-top: 43px; 
+ margin-top: 43px; /* Adds 35px space above the section */
  left: 15px;
  top: 15px;
  }
@@ -647,7 +647,7 @@
 function initApp() {
     loadMediaData();
     setupEventListeners();
-    activeCollection = 'Featured';
+    activeCollection = 'ALL'; // Set default to ALL
     const filteredMedia = getFilteredMedia();
     populateCollections();
     populateMediaItems(filteredMedia);
@@ -658,15 +658,12 @@ function initApp() {
         updateMediaDetails(filteredMedia[0]);
         updateActionButtons(filteredMedia[0]);
         updateMediaCarousel();
-        // Remove: const avatarDetails = document.getElementById('avatar-details');
-        // Remove: if (avatarDetails) avatarDetails.style.display = 'none';
     }
 }
 
 
- function getFilteredMedia() {
+function getFilteredMedia() {
     return activeCollection === 'ALL' ? [...mediaData] 
-        : activeCollection === 'Featured' ? mediaData.filter(media => media.tag === 'Featured') 
         : mediaData.filter(media => media.collection === activeCollection);
 }
 
@@ -743,7 +740,7 @@ function setupEventListeners() {
             tag: null,
             collection: "C2W2",
             url: "https://video.wixstatic.com/video/54a996_7f4f6350ae5b453690337f0beef40204/1080p/mp4/file.mp4",
-            thumbnailUrl: "https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png",
+            thumbnailUrl: "https://static.wixstatic.com/media/54a996_05023d2bcc35475e81a7db0ac85de42c~mv2.jpg",
             title: "memelegance - c2w2 early demo",
             description: "Elegance born from memes",
             openInNewTab: false,
@@ -762,7 +759,7 @@ function setupEventListeners() {
             tag: null,
             collection: "C2W2",
             url: "https://video.wixstatic.com/video/54a996_ea3130e79d884a37b2a82059a2663325/1080p/mp4/file.mp4",
-            thumbnailUrl: "https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png",
+            thumbnailUrl: "https://static.wixstatic.com/media/54a996_f0e9777a9506435c9f0fac3890074c71~mv2.jpg",
             title: "memelegance - c2w2 early demo",
             description: "Elegance born from memes",
             openInNewTab: false,
@@ -779,7 +776,7 @@ function setupEventListeners() {
             tag: null,
             collection: "C2W2",
             url: "https://www.youtube.com/embed/KeH--53RYxA",
-            thumbnailUrl: "https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png",
+            thumbnailUrl: "https://static.wixstatic.com/media/54a996_2c88a74269b344d6b9481a4381487ff9~mv2.png",
             title: "memelegance - c2w2 early demo",
             description: "Elegance born from memes",
             openInNewTab: false,
@@ -797,7 +794,7 @@ function setupEventListeners() {
             tag: null,
             collection: "C2W2",
             url: "https://www.youtube.com/embed/FJeMDH-w7PA",
-            thumbnailUrl: "https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png",
+            thumbnailUrl: "https://static.wixstatic.com/media/54a996_d907f0f9d7114c9aad3e67ecdc6162ec~mv2.jpg",
             title: "memelegance - c2w2 early demo",
             description: "Elegance born from memes",
             openInNewTab: false,
@@ -813,7 +810,7 @@ function setupEventListeners() {
             tag: null,
             collection: "C2W2",
             url: "https://www.youtube.com/embed/nyEjJ9KvnQc",
-            thumbnailUrl: "https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png",
+            thumbnailUrl: "https://static.wixstatic.com/media/54a996_afb636799cc04acabb635a8a01091267~mv2.jpg",
             title: "memelegance - c2w2 early demo",
             description: "Elegance born from memes",
             openInNewTab: false,
@@ -829,7 +826,7 @@ function setupEventListeners() {
             tag: null,
             collection: "C2W2",
             url: "https://www.youtube.com/embed/nEvDjGkuvnk",
-            thumbnailUrl: "https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png",
+            thumbnailUrl: "https://static.wixstatic.com/media/54a996_f19beb328e9a4a669be9efb3a4128f09~mv2.png",
             title: "memelegance - c2w2 early demo",
             description: "Elegance born from memes",
             openInNewTab: false,
@@ -842,11 +839,11 @@ function setupEventListeners() {
 
 {
     id: 87,
-    name: "C2w2- Aiatars",
+    name: "REVOFEV Song",
     tag: null,
     collection: "C2W2",
     url: "https://video.wixstatic.com/video/54a996_a5d98402ce57459fa2c3448998051112/1080p/mp4/file.mp4",
-    thumbnailUrl: "https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png",
+    thumbnailUrl: "https://static.wixstatic.com/media/54a996_ce08ea97df9f49138633fa425027d51c~mv2.png",
     title: "C2w2- Aiatars",
     description: "Follow the white.",
      openInNewTab: false,
@@ -863,7 +860,7 @@ function setupEventListeners() {
     tag: null,
     collection: "C2W2",
     url: "https://video.wixstatic.com/video/54a996_f6c39e0aa5294454af870e5ee275f942/1080p/mp4/file.mp4",
-    thumbnailUrl: "https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png",
+    thumbnailUrl: "https://static.wixstatic.com/media/54a996_5405006d9a5f4764b3ca6dc6a95beaf9~mv2.png",
     title: "Fund Me Song",
     description: "Fund me, hey VCs, don't be shy!",
      openInNewTab: false,
@@ -879,7 +876,7 @@ function setupEventListeners() {
     tag: null,
     collection: "C2W2",
     url: "https://video.wixstatic.com/video/54a996_2aaaafa5eaaa45db90f654f6266f3520/1080p/mp4/file.mp4",
-    thumbnailUrl: "https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png",
+    thumbnailUrl: "https://static.wixstatic.com/media/54a996_618ba9dea2e64786857c190f6d44f013~mv2.jpg",
     title: "ClictoBe",
     description: "Standing tall across carbons!",
      openInNewTab: false,
@@ -896,7 +893,7 @@ function setupEventListeners() {
             tag: "Featured",
             collection: "C2W2",
             url: "https://video.wixstatic.com/video/54a996_029c9577e1d245f386a0ebe2c64a9b6e/1080p/mp4/file.mp4",
-            thumbnailUrl: "https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png",
+            thumbnailUrl: "https://static.wixstatic.com/media/54a996_f0e9777a9506435c9f0fac3890074c71~mv2.jpg",
             title: "c2w2 Runway Trailer",
             description: "The C2W2 virtual runway on Hyperfy, accessible via VR or PC through the link hyperfy.io/c2w2, is a 30-minute metaverse event showcasing nearly 50 AI-designed avatars across six thematic parts, blending traditional art, virtual fashion, NFTs, and transhumanism. Through dramatic lighting and a minimalist setting, it explores identity, technology, and belonging in a fragmented, three-dimensional narrative.",
              openInNewTab: false,
@@ -912,7 +909,7 @@ function setupEventListeners() {
             tag: null,
             collection: "C2W2",
             url: "https://video.wixstatic.com/video/54a996_18ce69160dc64eaa88c1343afa08cd43/1080p/mp4/file.mp4",
-            thumbnailUrl: "https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png",
+            thumbnailUrl: "https://static.wixstatic.com/media/54a996_41f56c4ddbae480b96f5521508a4f7a3~mv2.jpg",
             title: "memelegance - c2w2 early demo",
             description: "Elegance born from memes",
             openInNewTab: false,
@@ -928,7 +925,7 @@ function setupEventListeners() {
     tag: null,
     collection: "C2W2",
     url: "https://video.wixstatic.com/video/54a996_716b93f1589a442fb9d65b8ed68aa803/1080p/mp4/file.mp4",
-    thumbnailUrl: "https://static.wixstatic.com/media/54a996_488091e2766a49f084a279c37d8017c5~mv2.png",
+    thumbnailUrl: "https://static.wixstatic.com/media/54a996_41f56c4ddbae480b96f5521508a4f7a3~mv2.jpg",
     title: "memelegance - c2w2 remixx",
     description: "Elegance born from memes",
      openInNewTab: false,
@@ -1853,7 +1850,7 @@ function setupEventListeners() {
             buyLink: null,
             orderLink:null,
             content: null
-        },
+        }, 
         {
             id: 2,
             name: "steve jobs explaining dfw",
@@ -1904,32 +1901,26 @@ function populateCollections() {
     if (!collectionsContainer) return;
     collectionsContainer.innerHTML = '';
 
-    // Create ALL button (leftmost)
-    const allButton = document.createElement('button');
-    allButton.className = 'collection-btn' + (activeCollection === 'ALL' ? ' active' : '');
-    allButton.textContent = 'ALL';
-    collectionsContainer.appendChild(allButton);
-
-    // Create Featured button (first on the right)
-    const featuredButton = document.createElement('button');
-    featuredButton.className = 'collection-btn' + (activeCollection === 'Featured' ? ' active' : '');
-    featuredButton.textContent = 'Featured';
-    collectionsContainer.appendChild(featuredButton);
-
-    // Create other collection buttons
+    // Create collection buttons first
     collections.forEach(collection => {
         const button = document.createElement('button');
         button.className = 'collection-btn' + (collection === activeCollection ? ' active' : '');
         button.textContent = collection;
         collectionsContainer.appendChild(button);
     });
+
+    // Create ALL button (last)
+    const allButton = document.createElement('button');
+    allButton.className = 'collection-btn all-btn' + (activeCollection === 'ALL' ? ' active' : '');
+    allButton.textContent = 'ALL';
+    collectionsContainer.appendChild(allButton);
 }
 
 function handleCollectionClick(button) {
     const collection = button.textContent;
     if (activeCollection === collection) return;
 
-    activeCollection = collection; // Fixed typo
+    activeCollection = collection;
     document.querySelectorAll('.collection-btn').forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');
 
