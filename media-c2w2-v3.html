@@ -610,11 +610,11 @@
  let collections = [];
 
  const collectionDescriptions = {
- "Experience": "EXPERIENCE: Fully immersive on-chain stories in metaverse that explores this new medium in multiple layers",
- "Gallery": "GALLERY: Professional-grade virtual spaces",
- "Architecture": "ARCHITECTURE: Digital Topographies collection that features on-chain interoperatable glb files as virtual spaces.",
- "Avatar": "AVATAR: 3D-Beings designed in VRM avatar format, under the C2W2 collections, C2W, and legacy",
- "Design": "DESIGN: On-chain glb designs of furniture, sculpture, automobile."
+ "C2W2": "Click to Wear season 2, 2025 Visual Materials",
+ "Avatars": "Designed Identities of C2W2",
+ "C2W (2023)": "First Season, 2023, made during VCA x Draup Virtual Fashion Residency.",
+ "DFW": "Digital Forgery Workshop, Milan based design practice for virtual habitats and beings."
+ 
  };
 
  document.addEventListener('DOMContentLoaded', () => {
@@ -647,7 +647,7 @@
 function initApp() {
     loadMediaData();
     setupEventListeners();
-    activeCollection = 'ALL'; // Set default to ALL
+    activeCollection = collections[0] || 'C2W2'; // Set default to the first collection (C2W2)
     const filteredMedia = getFilteredMedia();
     populateCollections();
     populateMediaItems(filteredMedia);
@@ -663,8 +663,7 @@ function initApp() {
 
 
 function getFilteredMedia() {
-    return activeCollection === 'ALL' ? [...mediaData] 
-        : mediaData.filter(media => media.collection === activeCollection);
+    return mediaData.filter(media => media.collection === activeCollection);
 }
 
 
@@ -872,7 +871,7 @@ function setupEventListeners() {
 },
 {
     id: 86,
-    name: "ClictoBe",
+    name: "ClicctoBe Song",
     tag: null,
     collection: "C2W2",
     url: "https://video.wixstatic.com/video/54a996_2aaaafa5eaaa45db90f654f6266f3520/1080p/mp4/file.mp4",
@@ -887,7 +886,26 @@ function setupEventListeners() {
             content: null
 },
 
+       
+
         {
+            id: 30,
+            name: "Retail Song 2",
+            tag: null,
+            collection: "C2W2",
+            url: "https://video.wixstatic.com/video/54a996_e0ba18b9aa464e099a55f3518072ebbc/1080p/mp4/file.mp4",
+            thumbnailUrl: "https://static.wixstatic.com/media/54a996_3a566c9262264a2490ba38ecba6e65b5~mv2.png",
+            title: "Retail",
+            description: "Retail in the metaverse bridges the gap between fashion and daily life, offering a unique platform for connection and innovation. The concept of retail extends beyond mere transactions; it serves as a vital link that introduces individuals to new cultures and innovations through fashion. As the digital and physical realms converge, especially in the metaverse, this connection evolves, presenting untapped potential for immersive brand experiences. The challenge lies in reimagining retail in a space where traditional physical interactions are absent, yet the opportunity to engage and educate remains paramount.",
+             openInNewTab: false,
+            pageLink: null,
+            tweetLink: null,
+            buyLink: null,
+            orderLink:null,
+            content: null
+        },
+
+ {
             id: 27,
             name: "C2W2 Runway Trailer 2",
             tag: "Featured",
@@ -903,6 +921,7 @@ function setupEventListeners() {
             orderLink:null,
             content: null
         },
+
 {
             id: 83,
             name: "memelegance - c2w2 early demo",
@@ -935,6 +954,8 @@ function setupEventListeners() {
             orderLink:null,
             content: null
 },
+
+ 
 
 // avatarsss
 {
@@ -1653,7 +1674,7 @@ function setupEventListeners() {
             id: 28,
             name: "c2w Runway Ticket Artwork",
             tag: null,
-            collection: "C2W",
+            collection: "C2W (2023)",
             url: "https://video.wixstatic.com/video/54a996_008a92463e2c490bae5c5176ccd0fa13/1080p/mp4/file.mp4",
             thumbnailUrl: "https://static.wixstatic.com/media/54a996_8b9ecdfee9b0416497b06cd601c515df~mv2.png",
             title: "c2w Runway Ticket Artwork",
@@ -1666,15 +1687,31 @@ function setupEventListeners() {
             content: null
         },
         
-        {
-            id: 30,
-            name: "Retail",
+       {
+            id: 49,
+            name: "Click-to-B Hyperfy Video Clip @ Retail_v4, C2W",
             tag: null,
-            collection: "C2W",
-            url: "https://video.wixstatic.com/video/54a996_e0ba18b9aa464e099a55f3518072ebbc/1080p/mp4/file.mp4",
-            thumbnailUrl: "https://static.wixstatic.com/media/54a996_3a566c9262264a2490ba38ecba6e65b5~mv2.png",
-            title: "Retail",
-            description: "Retail in the metaverse bridges the gap between fashion and daily life, offering a unique platform for connection and innovation. The concept of retail extends beyond mere transactions; it serves as a vital link that introduces individuals to new cultures and innovations through fashion. As the digital and physical realms converge, especially in the metaverse, this connection evolves, presenting untapped potential for immersive brand experiences. The challenge lies in reimagining retail in a space where traditional physical interactions are absent, yet the opportunity to engage and educate remains paramount.",
+            collection: "C2W (2023)",
+            url: "https://video.wixstatic.com/video/54a996_21a2c46e200b4c8d872f84bc1ae72f48/1080p/mp4/file.mp4",
+            thumbnailUrl: "https://static.wixstatic.com/media/54a996_8b9ecdfee9b0416497b06cd601c515df~mv2.png",
+            title: "Click-to-B Hyperfy Video Clip @ Retail_v4, C2W",
+            description: "The C2W Metaverse Runway event, held on 9.11.23 and was accessible through a $20 ticket purchased between 1-2.11.23 following the Digital Fashion Showcase at New Codes in London by VCA x Draup, showcased a distinctive digital fashion collection. This event provided attendees with an immersive virtual fashion show experience directly from their browsers without the need for downloads, marking a significant step in exploring and redefining personal expression in digital realms. Alongside their ticket, attendees received a complimentary avatar, The Viewer, which they showcased during this token-gated event. The show is available for free to anyone now.",
+            openInNewTab: true,
+            pageLink: null,
+            tweetLink: null,
+            buyLink: null,
+            orderLink: null,
+            content: null
+        },
+        {
+            id: 48,
+            name: "C2W New Codes Exhibition",
+            tag: null,
+            collection: "C2W (2023)",
+            url: "https://video.wixstatic.com/video/54a996_0232a6790a7647ef862d91e3f8e7a223/1080p/mp4/file.mp4",
+            thumbnailUrl: "https://static.wixstatic.com/media/54a996_8b9ecdfee9b0416497b06cd601c515df~mv2.png",
+            title: "C2W New Codes Exhibition",
+            description: "The C2W Metaverse Runway event, held on 9.11.23 and was accessible through a $20 ticket purchased between 1-2.11.23 following the Digital Fashion Showcase at New Codes in London by VCA x Draup, showcased a distinctive digital fashion collection. This event provided attendees with an immersive virtual fashion show experience directly from their browsers without the need for downloads, marking a significant step in exploring and redefining personal expression in digital realms. Alongside their ticket, attendees received a complimentary avatar, The Viewer, which they showcased during this token-gated event. The show is available for free to anyone now.",
              openInNewTab: false,
             pageLink: null,
             tweetLink: null,
@@ -1687,7 +1724,7 @@ function setupEventListeners() {
             id: 34,
             name: "Afterparty",
            tag: null,
-            collection: "C2W",
+            collection: "C2W (2023)",
             url: "https://video.wixstatic.com/video/54a996_b120f236c9854ed1a890426666252145/1080p/mp4/file.mp4",
             thumbnailUrl: "https://static.wixstatic.com/media/54a996_1a93147f925a464d8068faf9b6888895~mv2.png",
             title: "Afterparty",
@@ -1706,7 +1743,7 @@ function setupEventListeners() {
             id: 47,
             name: "C2W Collection Promo 1",
             tag: null,
-            collection: "C2W",
+            collection: "C2W (2023)",
             url: "https://video.wixstatic.com/video/54a996_ec462c493fd541a6801a7b1e1ccd59fb/1080p/mp4/file.mp4",
             thumbnailUrl: "https://static.wixstatic.com/media/54a996_8b9ecdfee9b0416497b06cd601c515df~mv2.png",
             title: "C2W Collection Promo 1",
@@ -1718,43 +1755,13 @@ function setupEventListeners() {
             orderLink:null,
             content: null
         },
-        {
-            id: 48,
-            name: "C2W New Codes Exhibition",
-            tag: null,
-            collection: "C2W",
-            url: "https://video.wixstatic.com/video/54a996_0232a6790a7647ef862d91e3f8e7a223/1080p/mp4/file.mp4",
-            thumbnailUrl: "https://static.wixstatic.com/media/54a996_8b9ecdfee9b0416497b06cd601c515df~mv2.png",
-            title: "C2W New Codes Exhibition",
-            description: "The C2W Metaverse Runway event, held on 9.11.23 and was accessible through a $20 ticket purchased between 1-2.11.23 following the Digital Fashion Showcase at New Codes in London by VCA x Draup, showcased a distinctive digital fashion collection. This event provided attendees with an immersive virtual fashion show experience directly from their browsers without the need for downloads, marking a significant step in exploring and redefining personal expression in digital realms. Alongside their ticket, attendees received a complimentary avatar, The Viewer, which they showcased during this token-gated event. The show is available for free to anyone now.",
-             openInNewTab: false,
-            pageLink: null,
-            tweetLink: null,
-            buyLink: null,
-            orderLink:null,
-            content: null
-        },
-        {
-            id: 49,
-            name: "Click-to-B Hyperfy Video Clip @ Retail_v4, C2W",
-            tag: null,
-            collection: "C2W",
-            url: "https://video.wixstatic.com/video/54a996_21a2c46e200b4c8d872f84bc1ae72f48/1080p/mp4/file.mp4",
-            thumbnailUrl: "https://static.wixstatic.com/media/54a996_8b9ecdfee9b0416497b06cd601c515df~mv2.png",
-            title: "Click-to-B Hyperfy Video Clip @ Retail_v4, C2W",
-            description: "The C2W Metaverse Runway event, held on 9.11.23 and was accessible through a $20 ticket purchased between 1-2.11.23 following the Digital Fashion Showcase at New Codes in London by VCA x Draup, showcased a distinctive digital fashion collection. This event provided attendees with an immersive virtual fashion show experience directly from their browsers without the need for downloads, marking a significant step in exploring and redefining personal expression in digital realms. Alongside their ticket, attendees received a complimentary avatar, The Viewer, which they showcased during this token-gated event. The show is available for free to anyone now.",
-            openInNewTab: true,
-            pageLink: null,
-            tweetLink: null,
-            buyLink: null,
-            orderLink: null,
-            content: null
-        },
+        
+        
         {
             id: 50,
             name: "C2W Polaroid Shots",
             tag: null,
-           collection: "C2W",
+           collection: "C2W (2023)",
             url: "https://video.wixstatic.com/video/54a996_06faa3498bf146b5aa739b4c1012aadd/1080p/mp4/file.mp4",
             thumbnailUrl: "https://static.wixstatic.com/media/54a996_8b9ecdfee9b0416497b06cd601c515df~mv2.png",
             title: "C2W Polaroid Shots",
@@ -1770,7 +1777,7 @@ function setupEventListeners() {
             id: 51,
             name: "CYNNX Live Recording of C2W Event",
             tag: null,
-            collection: "C2W", 
+            collection: "C2W (2023)", 
             url: "https://www.youtube.com/embed/Ougtz4jod9c?t=1112s",
             thumbnailUrl: "https://static.wixstatic.com/media/54a996_8b9ecdfee9b0416497b06cd601c515df~mv2.png",
             title: "CYNNX Live Recording of C2W Event",
@@ -1786,7 +1793,7 @@ function setupEventListeners() {
             id: 52,
             name: "C2W, Afterparty Recording Voxvienne",
             tag: null,
-            collection: "C2W",
+            collection: "C2W (2023)",
             url: "https://video.wixstatic.com/video/54a996_99bf250049af451596a557301c399b48/1080p/mp4/file.mp4",
             thumbnailUrl: "https://static.wixstatic.com/media/54a996_1a93147f925a464d8068faf9b6888895~mv2.png",
             title: "C2W, Afterparty Recording Voxvienne",
@@ -1803,7 +1810,7 @@ function setupEventListeners() {
             id: 74,
             name: "c2w event -promo 5",
             tag: null,
-            collection: "C2W",
+            collection: "C2W (2023)",
             url: "https://video.wixstatic.com/video/54a996_da9bac51d12f425182b687f06b6452a5/1080p/mp4/file.mp4",
             thumbnailUrl: "https://static.wixstatic.com/media/54a996_8b9ecdfee9b0416497b06cd601c515df~mv2.png",
             title: "c2w event -promo 5",
@@ -1820,7 +1827,7 @@ function setupEventListeners() {
             id: 77,
             name: "retail biggie song",
             tag: null,
-           collection: "C2W",
+            collection: "C2W (2023)",
             url: "https://video.wixstatic.com/video/54a996_2b529cb35fda488f8486f0a11871ee5c/1080p/mp4/file.mp4",
             thumbnailUrl: "https://static.wixstatic.com/media/54a996_3a566c9262264a2490ba38ecba6e65b5~mv2.png",
             title: "retail biggie song",
@@ -1901,19 +1908,13 @@ function populateCollections() {
     if (!collectionsContainer) return;
     collectionsContainer.innerHTML = '';
 
-    // Create collection buttons first
-    collections.forEach(collection => {
+    // Create collection buttons
+    collections.forEach((collection, index) => {
         const button = document.createElement('button');
-        button.className = 'collection-btn' + (collection === activeCollection ? ' active' : '');
+        button.className = 'collection-btn' + (index === 0 && activeCollection === collection ? ' active' : '');
         button.textContent = collection;
         collectionsContainer.appendChild(button);
     });
-
-    // Create ALL button (last)
-    const allButton = document.createElement('button');
-    allButton.className = 'collection-btn all-btn' + (activeCollection === 'ALL' ? ' active' : '');
-    allButton.textContent = 'ALL';
-    collectionsContainer.appendChild(allButton);
 }
 
 function handleCollectionClick(button) {
@@ -2147,7 +2148,7 @@ function displayMediaContent(media) {
  compactInfoHTML += '</div>';
  detailsInfo.innerHTML = compactInfoHTML;
  descriptionText.textContent = media.description || `This is ${media.name}, a ${media.tag} media from the ${media.collection} collection.`;
- collectionText.textContent = collectionDescriptions[media.collection] || `The ${media.collection} collection represents a unique approach to digital media.`;
+ collectionText.textContent = collectionDescriptions[media.collection] || `The ${media.collection}  Click to wear 2..`;
  }
 
 // Replace the setupEventListeners function
