@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Displayer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff; /* Blank white background */
+            font-family: 'Helvetica', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 800px; /* General frame height */
+            width: 100%; /* General frame width */
+            overflow: auto; /* Handle overflow if needed */
+            position: relative; /* Added to position rectangle absolutely */
+        }
+        .text-container {
+            width: 500px; /* Text area width */
+            margin: 100px auto; /* 100px margin top and bottom, auto for horizontal centering */
+            text-align: justify; /* Justify text */
+            font-size: 12px; /* General font size */
+            letter-spacing: -0.5px; /* -0.5 letter spacing */
+            line-height: 1; /* Improved readability */
+            letter-spacing: -1px;
+        }
+        .text-container p {
+            margin: 0 0 2em 0; /* Spacing between paragraphs */
+            text-align: justify; /* Justify text */
+            text-align-last: left; /* Last line aligned left */
+        }
+        .h1 {
+            font-family: 'Helvetica', Arial, sans-serif;
+            font-weight: 700; /* Helvetica Bold */
+            color: #000000; /* Black */
+            font-size: 1px; /* Inherit from general font size */
+            margin: -0.5em 0; /* Spacing for h1 */
+        }
+        .t1 {
+            font-family: 'Helvetica', Arial, sans-serif;
+            font-weight: 600; /* Helvetica Semi Bold */
+            color: #818181; /* Black */
+            font-size: 15px; /* Inherit from general font size */
+            letter-spacing: -0.5px;
+            margin: -2em 0; /* Spacing for t1 */
+        }
+        .q1 {
+            font-family: 'Helvetica', Arial, sans-serif;
+            font-weight: 800; /* Helvetica Semi Bold */
+            color: #a1ff00; /* Black */
+            font-size: 20px; /* Inherit from general font size */
+            letter-spacing: -0.5px;
+            margin: -2em 0; /* Spacing for t1 */
+        }
+        .exp {
+            font-family: 'Helvetica', Arial, sans-serif;
+            font-weight: 500; /* Helvetica Light */
+            font-style: italic; /* Italic */
+            font-size: 15px; /* Specific size for exp */
+            color: #b8b8b8; /* Black */
+            letter-spacing: 0.5px;
+            margin: -0.1em 0; /* Spacing for exp */
+        }
+        .inline-h1 {
+            display: inline; /* For h1 parts like AVATARS: */
+            font-family: 'Helvetica', Arial, sans-serif;
+            font-weight: 800; /* Helvetica Bold */
+            color: #000000; /* Black */
+            font-size: 18px; /* General font size */
+        }
+        .inline-t1 {
+            display: inline; /* For t1 parts next to h1 labels */
+            font-family: 'Helvetica', Arial, sans-serif;
+            font-weight: 600; /* Helvetica Semi Bold */
+            color: #000000; /* Black */
+        }
+        .rectangle {
+            position: absolute; /* Position relative to the body */
+            width: 426px; /* Default width, adjustable */
+            height: 58px; /* Default height, adjustable */
+            background-color: #a1ff00; /* Default hex color (red) */
+            top: 0px; /* Default distance from top */
+            left: 0px; /* Default distance from left */
+        }
+    </style>
+</head>
+<body>
+    <div class="rectangle"></div> <!-- Added rectangle div -->
+    <div class="text-container">
+        <p><span class="inline-h1">c2w2 virtual runway, 2025<br>for 60+ VRM Avatars, 30 MIN<br>Browser-based, on-chain<br></span> <span class="exp">Redefining Digital Art, Fashion, and the Metaverse by DFW</span></p>
+        
+        <p><span class="inline-h1">AVATARS:</span> <span class="t1">Display all the C2W2 avatars in motion and T-pose.</span></p>
+        <p><span class="inline-h1">RUNWAY:</span> <span class="t1">A 30-minute immersive runway experience on the Metaverse browser Hyperfy V1.</span></p>
+        <p><span class="inline-h1">FITTING GALLERY:</span> <span class="t1">A virtual gallery to try all the designs on the Metaverse browser Hyperfy V1.</span></p>
+        <p><span class="inline-h1">MEDIA:</span> <span class="t1">A bundle of visual materials, including presentations, recordings, video songs, and more.</span></p>
+        <p><span class="inline-h1">PDF INFO:</span> <span class="t1">A vertical A4 sheet that explains the runway and the collection.</span></p>
+        
+        <p class="inline-h1">Tips:</p>
+        <p class="exp">1. In Avatars, select any avatar from the grid interface or carousel; use the mouse to pan, zoom, or rotate.<br>2. In Runway and Fitting Gallery, explore walkable on-browser Metaverse worlds. Use W, A, S, D to move around and the mouse to navigate directions and zoom in or out. In Runway, left-click the cube to start the show upon landing.<br>3. The full recording of the show and its commercial version can be found in Media, along with C2W2, the first avatar collection of 16 VRMs from 2023.<br>4. To communicate, please write to main@d--f--w.com or DM on X.</p>
+
+        <p><span class="q1">CLICK ANY ON MENU TO START</span></p>
+    </div>
+</body>
+</html>
