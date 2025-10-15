@@ -19,8 +19,8 @@
             position: relative; /* Added to position rectangle absolutely */
         }
         .text-container {
-            width: 500px; /* Text area width */
-            margin: 100px auto; /* 100px margin top and bottom, auto for horizontal centering */
+            width: 400px; /* Text area width */
+            margin: 100px auto 50px 10px; /* 100px top, auto right, 100px bottom, 20px left */
             text-align: justify; /* Justify text */
             font-size: 12px; /* General font size */
             letter-spacing: -0.5px; /* -0.5 letter spacing */
@@ -39,10 +39,19 @@
             font-size: 1px; /* Inherit from general font size */
             margin: -0.5em 0; /* Spacing for h1 */
         }
+        
         .t1 {
             font-family: 'Helvetica', Arial, sans-serif;
-            font-weight: 600; /* Helvetica Semi Bold */
+            font-weight: 500; /* Helvetica Semi Bold */
             color: #818181; /* Black */
+            font-size: 15px; /* Inherit from general font size */
+            letter-spacing: -0.5px;
+            margin: -2em 0; /* Spacing for t1 */
+        }
+        .k1 {
+            font-family: 'Helvetica', Arial, sans-serif;
+            font-weight: 700; /* Helvetica Semi Bold */
+            color: #000000; /* Black */
             font-size: 15px; /* Inherit from general font size */
             letter-spacing: -0.5px;
             margin: -2em 0; /* Spacing for t1 */
@@ -56,13 +65,37 @@
             margin: -2em 0; /* Spacing for t1 */
         }
         .exp {
+    font-family: 'Helvetica', Arial, sans-serif;
+    font-weight: 500; /* Helvetica Light */
+    font-style: italic; /* Italic */
+    font-size: 13px; /* Specific size for exp */
+    color: #979797; /* Black */
+    letter-spacing: 0.5px;
+    margin: -0.1em 0; /* Spacing for exp */
+    line-height: 1.5; /* Adjust line spacing (e.g., 1.5 for more spacing) */
+}
+        .exp2 {
             font-family: 'Helvetica', Arial, sans-serif;
             font-weight: 500; /* Helvetica Light */
             font-style: italic; /* Italic */
             font-size: 15px; /* Specific size for exp */
-            color: #b8b8b8; /* Black */
-            letter-spacing: 0.5px;
+            color: #000000; /* Black */
+            letter-spacing: 2px;
             margin: -0.1em 0; /* Spacing for exp */
+
+            
+        }
+
+        .exp3 {
+            font-family: 'Helvetica', Arial, sans-serif;
+            font-weight: 500; /* Helvetica Light */
+            font-style: italic; /* Italic */
+            font-size: 15px; /* Specific size for exp */
+            color: #000000; /* Black */
+            letter-spacing: 0px;
+            margin: -0.1em 0; /* Spacing for exp */
+
+            
         }
         .inline-h1 {
             display: inline; /* For h1 parts like AVATARS: */
@@ -79,7 +112,7 @@
         }
         .rectangle {
             position: absolute; /* Position relative to the body */
-            width: 426px; /* Default width, adjustable */
+            width: 436px; /* Default width, adjustable */
             height: 58px; /* Default height, adjustable */
             background-color: #a1ff00; /* Default hex color (red) */
             top: 0px; /* Default distance from top */
@@ -90,17 +123,22 @@
 <body>
     <div class="rectangle"></div> <!-- Added rectangle div -->
     <div class="text-container">
-        <p><span class="inline-h1">c2w2 virtual runway, 2025<br>for 60+ VRM Avatars, 30 MIN<br>Browser-based, on-chain<br></span> <span class="exp">Redefining Digital Art, Fashion, and the Metaverse by DFW</span></p>
+        <p><span class="inline-h1">c2w2 virtual runway, 2025<br>for 60+ VRM Avatars, 30 min.<br>browser-based, on-chain<br></span> <span class="exp">no login, no download, just click </span><br> <span class="exp3">Redefining Digital Art, Fashion, and the Metaverse by DFW</span></p>
         
-        <p><span class="inline-h1">AVATARS:</span> <span class="t1">Display all the C2W2 avatars in motion and T-pose.</span></p>
-        <p><span class="inline-h1">RUNWAY:</span> <span class="t1">A 30-minute immersive runway experience on the Metaverse browser Hyperfy V1.</span></p>
-        <p><span class="inline-h1">FITTING GALLERY:</span> <span class="t1">A virtual gallery to try all the designs on the Metaverse browser Hyperfy V1.</span></p>
-        <p><span class="inline-h1">MEDIA:</span> <span class="t1">A bundle of visual materials, including presentations, recordings, video songs, and more.</span></p>
-        <p><span class="inline-h1">PDF INFO:</span> <span class="t1">A vertical A4 sheet that explains the runway and the collection.</span></p>
+        <p><span class="k1">AVATARS:</span> <span class="t1">Display all the C2W2 avatars in motion and T-pose.</span></p>
+        <p><span class="k1">RUNWAY:</span> <span class="t1">A 30-minute immersive runway experience on the Metaverse browser Hyperfy V1.</span></p>
+        <p><span class="k1">FITTING GALLERY:</span> <span class="t1">A virtual gallery to try all the designs on the Metaverse browser Hyperfy V1.</span></p>
+        <p><span class="k1">MEDIA:</span> <span class="t1">A bundle of visual materials, including presentations, recordings, video songs, and more.</span></p>
+        <p><span class="k1">PDF INFO:</span> <span class="t1">A vertical A4 sheet that explains the runway and the collection.</span></p>
         
-        <p class="inline-h1">Tips:</p>
-        <p class="exp">1. In Avatars, select any avatar from the grid interface or carousel; use the mouse to pan, zoom, or rotate.<br>2. In Runway and Fitting Gallery, explore walkable on-browser Metaverse worlds. Use W, A, S, D to move around and the mouse to navigate directions and zoom in or out. In Runway, left-click the cube to start the show upon landing.<br>3. The full recording of the show and its commercial version can be found in Media, along with C2W2, the first avatar collection of 16 VRMs from 2023.<br>4. To communicate, please write to main@d--f--w.com or DM on X.</p>
-
+<p><span class="exp2">Tips:</span><br> 
+    <span class="exp">
+        <span class="exp2">1-</span> In Avatars, select any avatar from the grid interface or carousel; use the mouse to pan, zoom, or rotate.<br>
+        <span class="exp2">2-</span> In Runway and Fitting Gallery, explore walkable on-browser Metaverse worlds. Use W, A, S, D to move around and the mouse to navigate directions and zoom in or out. In Runway, left-click the cube to start the show upon landing.<br>
+        <span class="exp2">3-</span> The full recording of the show and its commercial version can be found in Media, along with C2W2, the first avatar collection of 16 VRMs from 2023.<br>
+        <span class="exp2">4-</span> To communicate, please write to main@d--f--w.com or DM on X.
+    </span>
+</p>
         <p><span class="q1">CLICK ANY ON MENU TO START</span></p>
     </div>
 </body>
