@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFWy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Helvetica", monospace;
+        }
+        
+        body {
+            background-color: transparent;
+            overflow: hidden;
+            color: #000;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .top-section {
+            position: absolute;
+            top: 4px; /* Adjusted top position */
+            right: 210px; /* Start 10px from the right */
+            width: 220px; /* Total menu width */
+            display: flex;
+            flex-direction: column;
+            padding: 10px 15px 15px 15px;
+            background-color: rgba(255, 255, 255, 0); /* Transparent background */
+            z-index: 10; /* Ensure menus are on top */
+            gap: 10px;
+        }
+
+        .collections-row {
+            display: flex;
+            width: 400px; /* Match total width */
+            padding-left: 0;
+            padding-right: 0;
+            gap: 6px;
+            z-index: 11;
+        }
+
+        .collections {
+            display: flex;
+            gap: 6px;
+            z-index: 11;
+            height: 32px;
+            width: 100%;
+            white-space: nowrap;
+        }
+
+        .collection-btn {
+            padding: 5px 4px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 9px;
+            transition: all 0.2s;
+            color: #000;
+            box-shadow: none;
+            text-shadow: none;
+            height: 32px;
+            line-height: 20px;
+            flex: 1;
+            outline: none;
+            letter-spacing: 0px;
+            white-space: nowrap; /* Prevent text wrapping */
+            overflow: hidden; /* Hide overflow text */
+            text-overflow: ellipsis; /* Add ellipsis for overflow */
+        }
+
+        .all-btn {
+            font-weight: bolder !important;
+            background-color: rgba(240, 240, 240, 0.9) !important;
+        }
+        
+        .collection-btn:hover {
+            background-color: rgba(240, 240, 240, 0.9);
+        }
+
+        /* Active state for buttons (collection buttons) */
+        .collection-btn.active {
+            background-color: rgba(0, 0, 0, 0.8); /* Dark background for active state */
+            color: white; /* White text for active state */
+            opacity: 1;
+        }
+
+        /* Viewer styles */
+        #viewerContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 1; /* Behind the menu */
+        }
+
+        #contentViewer,
+        #htmlViewer {
+            width: 100%;
+            height: 100vh; /* Full height */
+            border: none;
+            position: absolute;
+            top: 0; /* Align to top */
+            left: 50%;
+            transform: translate(-50%, 0); /* Center horizontally, no vertical shift */
+            transition: opacity 0.3s ease;
+        }
+
+        #htmlViewer {
+            display: none;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-section">
+            <div class="collections-row">
+                <div class="collections">
+                    <button class="collection-btn" id="scaffold-btn">Scaffold</button>
+                    <button class="collection-btn" id="retail-btn">Retail</button>
+                    <button class="collection-btn" id="neue2dojo-btn">Neue²Dojo</button>
+                    <button class="collection-btn" id="elements-btn">DesignStore</button>
+                    <button class="collection-btn" id="blackcity-btn">Black City</button>
+                    <button class="collection-btn" id="forge-btn">Forge</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Viewer container -->
+        <div id="viewerContainer">
+            <iframe id="contentViewer" src="about:blank"></iframe>
+            <iframe id="htmlViewer" src="about:blank"></iframe>
+        </div>
+    </div>
+    
+    <script>
+        // Cache DOM elements
+        const dom = {
+            viewer: {
+                container: document.getElementById('viewerContainer'),
+                content: document.getElementById('contentViewer'),
+                html: document.getElementById('htmlViewer')
+            }
+        };
+
+        // Function to set active state on a button
+        function setActiveButton(button, buttonType) {
+            // Determine which set of buttons to target (collection)
+            const selector = '.collection-btn';
+            // Remove active class from all buttons of the same type
+            document.querySelectorAll(selector).forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Add active class to the clicked button
+            if (button) {
+                button.classList.add('active');
+            }
+        }
+
+        // Load content function
+        async function loadContent(url, type) {
+            const contentViewer = dom.viewer.content;
+            const htmlViewer = dom.viewer.html;
+
+            // Kill existing content
+            if (type === 'html') {
+                contentViewer.src = 'about:blank';
+                htmlViewer.srcdoc = '';
+                contentViewer.style.display = 'none';
+                htmlViewer.style.display = 'block';
+            } else {
+                htmlViewer.srcdoc = '';
+                contentViewer.src = 'about:blank';
+                htmlViewer.style.display = 'none';
+                contentViewer.style.display = 'block';
+            }
+
+            // Brief delay to ensure clean slate
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            // Load new content
+            try {
+                if (type === 'html') {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    const html = await response.text();
+                    htmlViewer.srcdoc = html;
+                } else {
+                    contentViewer.src = url;
+                }
+
+                // Wait for load completion
+                await new Promise((resolve, reject) => {
+                    const activeViewer = type === 'html' ? htmlViewer : contentViewer;
+                    activeViewer.onload = resolve;
+                    activeViewer.onerror = reject;
+                });
+            } catch (error) {
+                console.error('Loading error:', error);
+                htmlViewer.srcdoc = `<p>Error loading content: ${error.message}</p>`;
+            }
+        }
+
+        function setupEventListeners() {
+            const scaffoldBtn = document.getElementById('scaffold-btn');
+            const retailBtn = document.getElementById('retail-btn');
+            const neue2dojoBtn = document.getElementById('neue2dojo-btn');
+            const elementsBtn = document.getElementById('elements-btn');
+            const blackcityBtn = document.getElementById('blackcity-btn');
+            const forgeBtn = document.getElementById('forge-btn');
+
+            if (scaffoldBtn) {
+                scaffoldBtn.addEventListener('click', () => {
+                    console.log('Scaffold button clicked');
+                    setActiveButton(scaffoldBtn, 'collection');
+                    loadContent('https://raw.githubusercontent.com/decentralize-dfw/finder/main/scaffold.html', 'html');
+                });
+            }
+            if (retailBtn) {
+                retailBtn.addEventListener('click', () => {
+                    console.log('Retail button clicked');
+                    setActiveButton(retailBtn, 'collection');
+                    loadContent('https://raw.githubusercontent.com/decentralize-dfw/finder/main/retailv6.html', 'html');
+                });
+            }
+            if (neue2dojoBtn) {
+                neue2dojoBtn.addEventListener('click', () => {
+                    console.log('Neue²Dojo button clicked');
+                    setActiveButton(neue2dojoBtn, 'collection');
+                    loadContent('https://raw.githubusercontent.com/decentralize-dfw/finder/main/neue2dojogallery.html', 'html');
+                });
+            }
+            if (elementsBtn) {
+                elementsBtn.addEventListener('click', () => {
+                    console.log('Elements Store button clicked');
+                    setActiveButton(elementsBtn, 'collection');
+                    loadContent('https://raw.githubusercontent.com/decentralize-dfw/finder/main/elementstore.html', 'html');
+                });
+            }
+            if (blackcityBtn) {
+                blackcityBtn.addEventListener('click', () => {
+                    console.log('Black City button clicked');
+                    setActiveButton(blackcityBtn, 'collection');
+                    loadContent('https://raw.githubusercontent.com/decentralize-dfw/finder/main/blackcity.html', 'html');
+                });
+            }
+            if (forgeBtn) {
+                forgeBtn.addEventListener('click', () => {
+                    console.log('Forge button clicked');
+                    setActiveButton(forgeBtn, 'collection');
+                    loadContent('https://raw.githubusercontent.com/decentralize-dfw/finder/main/forge.html', 'html');
+                });
+            }
+
+            // Automatically load Neue²Dojo on page load
+            if (neue2dojoBtn) {
+                console.log('Page loaded, triggering Neue²Dojo button click');
+                neue2dojoBtn.click();
+            } else {
+                console.error('Neue²Dojo button not found on page load');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM fully loaded, setting up event listeners');
+            setupEventListeners();
+        });
+    </script>
+</body>
+</html>
