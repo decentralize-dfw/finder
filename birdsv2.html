@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spectral Point Cloud v17 (Deterministic Cents)</title>
+    <title>Spectral Point Cloud v18 (Harmonic)</title>
     <!-- FONT: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -154,13 +154,14 @@
             color: var(--text-primary);
             margin-bottom: 0;
         }
+        /* GÜNCELLENDİ: Bilgi ikonu CSS'i ortalama için düzeltildi */
         .info-icon {
             position: relative;
-            display: inline-block;
+            display: flex; /* Flex kullan */
+            align-items: center; /* Dikey ortala */
+            justify-content: center; /* Yatay ortala */
             width: 14px;
             height: 14px;
-            line-height: 14px;
-            text-align: center;
             border-radius: 50%;
             background: var(--slider-track);
             color: var(--text-secondary);
@@ -168,6 +169,7 @@
             font-weight: bold;
             font-style: italic;
             cursor: help;
+            padding-bottom: 1px; /* Görsel ince ayar */
         }
         .tooltip {
             visibility: hidden;
@@ -305,7 +307,7 @@
 <body>
     <div id="container"></div>
 
-    <!-- BİLGİ KUTUSU (Pitch artık oktav gösterecek) -->
+    <!-- BİLGİ KUTUSU -->
     <div id="infoBox" class="panel">
         <strong>X-Axis:</strong> Frequency <span id="infoFreq">--</span><br>
         <strong>Y-Axis:</strong> Amplitude <span id="infoAmp">--</span><br>
@@ -333,13 +335,19 @@
         <div id="status">Load a file or paste a URL</div>
     </div>
 
-    <!-- AYARLAR (YENİ Z-EKSENİ KONTROLLERİ) -->
+    <!-- AYARLAR (Etiketler ve Tooltipler GÜNCELLENDİ) -->
     <div id="settings" class="panel">
         <!-- Temel Ayarlar -->
         <div class="setting-group">
             <div class="label-wrapper">
+                <label>X-Axis (Frequency) Settings</label>
+                <span class="info-icon">i<span class="tooltip">The X-Axis (width) is controlled by the frequency filters and color settings below.</span></span>
+            </div>
+        </div>
+        <div class="setting-group">
+            <div class="label-wrapper">
                 <label for="minFreqSlider">Min Frequency (Hz):</label>
-                <span class="info-icon">i<span class="tooltip">FİLTRE: Görselleştirilecek en düşük frekans sınırı.</span></span>
+                <span class="info-icon">i<span class="tooltip">FILTER: The lowest frequency to visualize (X-Axis left limit).</span></span>
             </div>
             <input type="range" id="minFreqSlider" min="20" max="5000" value="200" step="10">
             <span id="minFreqValue">200 Hz</span>
@@ -347,7 +355,7 @@
         <div class="setting-group">
             <div class="label-wrapper">
                 <label for="maxFreqSlider">Max Frequency (Hz):</label>
-                <span class="info-icon">i<span class="tooltip">FİLTRE: Görselleştirilecek en yüksek frekans sınırı.</span></span>
+                <span class="info-icon">i<span class="tooltip">FILTER: The highest frequency to visualize (X-Axis right limit).</span></span>
             </div>
             <input type="range" id="maxFreqSlider" min="5000" max="20000" value="10000" step="100">
             <span id="maxFreqValue">10000 Hz</span>
@@ -355,7 +363,7 @@
         <div class="setting-group">
             <div class="label-wrapper">
                 <label for="colorMaxFreqSlider">Color Max Frequency (Hz):</label>
-                <span class="info-icon">i<span class="tooltip">GÖRSEL: 'Kırmızı' rengin hangi frekansta olacağını belirler. Renk çeşitliliği için 'Max Frequency' filtresinden düşük tutun.</span></span>
+                <span class="info-icon">i<span class="tooltip">VISUAL: Sets the frequency that maps to 'Red'. Set this lower than 'Max Frequency' to increase color diversity.</span></span>
             </div>
             <input type="range" id="colorMaxFreqSlider" min="1000" max="20000" value="4000" step="100">
             <span id="colorMaxFreqValue">4000 Hz</span>
@@ -363,7 +371,7 @@
         <div class="setting-group">
             <div class="label-wrapper">
                 <label for="amplitudeThresholdSlider">Amplitude Threshold:</label>
-                <span class="info-icon">i<span class="tooltip">FİLTRE: Bir noktanın oluşması için gereken minimum ses yüksekliği (0-1).</span></span>
+                <span class="info-icon">i<span class="tooltip">FILTER: The minimum volume (0-1) required to create a point.</span></span>
             </div>
             <input type="range" id="amplitudeThresholdSlider" min="0.01" max="0.5" value="0.25" step="0.01">
             <span id="amplitudeThresholdValue">25.0%</span>
@@ -371,62 +379,63 @@
         <div class="setting-group">
             <div class="label-wrapper">
                 <label for="maxPeaksSlider">Max Peaks per Sample:</label>
-                <span class="info-icon">i<span class="tooltip">FİLTRE: Her karede bulunacak maksimum nokta sayısı. Düşük tutmak gürültüyü azaltır.</span></span>
+                <span class="info-icon">i<span class="tooltip">FILTER: The maximum number of points to create per frame. Lower values reduce noise.</span></span>
             </div>
             <input type="range" id="maxPeaksSlider" min="1" max="20" value="3" step="1">
             <span id="maxPeaksValue">3</span>
         </div>
-        <div class="setting-group">
-            <div class="label-wrapper">
-                <label for="pointLifetimeSlider">Point Lifetime (seconds):</label>
-                <span class="info-icon">i<span class="tooltip">GÖRSEL: Bir noktanın ekranda kalma süresi (saniye).</span></span>
-            </div>
-            <input type="range" id="pointLifetimeSlider" min="5" max="60" value="8" step="1">
-            <span id="pointLifetimeValue">8 s</span>
-        </div>
+        
         
         <!-- Pozisyon & Hız Ayarları -->
         <div class="settings-divider"></div>
         <div class="setting-group">
             <div class="label-wrapper">
-                <label for="sampleFpsSlider">Sample Rate (FPS):</label>
-                <span class="info-icon">i<span class="tooltip">HIZ: Saniyede kaç kez sesin analiz edilip nokta oluşturulacağı.</span></span>
-            </div>
-            <input type="range" id="sampleFpsSlider" min="1" max="50" value="10" step="1">
-            <span id="sampleFpsValue">10 FPS</span>
-        </div>
-        <div class="setting-group">
-            <div class="label-wrapper">
-                <label for="verticalScaleSlider">Vertical Scale Multiplier:</label>
-                <span class="info-icon">i<span class="tooltip">GÖRSEL: Ses yüksekliğinin (Amplitüd) Y eksenindeki dikey etkisini çarpar.</span></span>
+                <!-- GÜNCELLENDİ: Etiket -->
+                <label for="verticalScaleSlider">Y-Axis Scale (Amplitude):</label>
+                <span class="info-icon">i<span class="tooltip">VISUAL: Multiplies the effect of volume (Amplitude) on the Y-Axis (height).</span></span>
             </div>
             <input type="range" id="verticalScaleSlider" min="0.1" max="10.0" value="1.0" step="0.1">
             <span id="verticalScaleValue">1.0x</span>
         </div>
         
-        <!-- YENİ Z-EKSENİ KONTROLLERİ -->
+        <!-- YENİ Z-EKSENİ KONTROLLERİ (Etiketler güncellendi) -->
         <div class="setting-group">
             <div class="label-wrapper">
-                <label for="noteSpacingSlider">Note Spacing (Z-Depth):</label>
-                <span class="info-icon">i<span class="tooltip">Z-EKSENİ: Notalar (C4, D4, E4) arasındaki ana derinlik mesafesini ayarlar. "Duvarların" Z eksenindeki yerini belirler.</span></span>
+                <label for="noteSpacingSlider">Z-Axis: Note Spacing</label>
+                <span class="info-icon">i<span class="tooltip">Z-AXIS: Sets the main distance between different notes (e.g., C4 vs D4). This controls the depth of the 'walls'.</span></span>
             </div>
             <input type="range" id="noteSpacingSlider" min="0.1" max="10.0" value="2.0" step="0.1">
             <span id="noteSpacingValue">2.0</span>
         </div>
         <div class="setting-group">
             <div class="label-wrapper">
-                <label for="centSensitivitySlider">Cent Sensitivity (Z-Thickness):</label>
-                <span class="info-icon">i<span class="tooltip">Z-EKSENİ: Bir notanın "alt notalarını" (cents) büyüterek "duvara" 3D kalınlık verir. 0 = Düz duvar.</span></span>
+                <label for="centSensitivitySlider">Z-Axis: Note Thickness</label>
+                <span class="info-icon">i<span class="tooltip">Z-AXIS: Magnifies the micro-tonal variations (cents) of a note, giving the 'wall' 3D thickness. 0 = Flat wall.</span></span>
             </div>
             <input type="range" id="centSensitivitySlider" min="0.0" max="50.0" value="20.0" step="1.0">
             <span id="centSensitivityValue">20.0</span>
         </div>
-        <!-- KALDIRILAN KONTROLLER -->
         
         <div class="setting-group">
             <div class="label-wrapper">
+                <label for="sampleFpsSlider">Sample Rate (FPS):</label>
+                <span class="info-icon">i<span class="tooltip">SPEED: How many times per second to sample the audio and create points.</span></span>
+            </div>
+            <input type="range" id="sampleFpsSlider" min="1" max="50" value="10" step="1">
+            <span id="sampleFpsValue">10 FPS</span>
+        </div>
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="pointLifetimeSlider">Point Lifetime (seconds):</label>
+                <span class="info-icon">i<span class="tooltip">VISUAL: How long a point stays on screen before fading out.</span></span>
+            </div>
+            <input type="range" id="pointLifetimeSlider" min="5" max="60" value="8" step="1">
+            <span id="pointLifetimeValue">8 s</span>
+        </div>
+        <div class="setting-group">
+            <div class="label-wrapper">
                 <label for="speedSlider">Playback Speed:</label>
-                <span class="info-icon">i<span class="tooltip">HIZ: Sesin oynatma hızı (1.0 = normal).</span></span>
+                <span class="info-icon">i<span class="tooltip">SPEED: The playback speed of the audio (1.0 = normal).</span></span>
             </div>
             <input type="range" id="speedSlider" min="0.1" max="5.0" value="1.0" step="0.1">
             <span id="speedValue">1.0x</span>
@@ -437,17 +446,35 @@
         <div class="checkbox-group">
             <div class="label-wrapper">
                 <label for="loopToggle">Loop Audio</label>
-                <span class="info-icon">i<span class="tooltip">Ses bittiğinde otomatik olarak yeniden başlatır.</span></span>
+                <span class="info-icon">i<span class="tooltip">Restarts the audio automatically when it ends.</span></span>
             </div>
             <input type="checkbox" id="loopToggle">
         </div>
         <div class="checkbox-group">
             <div class="label-wrapper">
-                <label for="linesToggle">Show Lines</label>
-                <span class="info-icon">i<span class="tooltip">Noktalar arasındaki bağlantı çizgilerini gösterir/gizler.</span></span>
+                <label for="linesToggle">Show Tracking Lines</label>
+                <span class="info-icon">i<span class="tooltip">Shows the (faint grey) lines that track a single note over time.</span></span>
             </div>
             <input type="checkbox" id="linesToggle" checked>
         </div>
+
+        <!-- YENİ: Frekanslar Arası Bağlantı -->
+        <div class="checkbox-group">
+            <div class="label-wrapper">
+                <label for="simultaneousToggle">Connect Simultaneous Peaks</label>
+                <span class="info-icon">i<span class="tooltip">Connects different notes that are played at the same time (e.g., chords). Creates colored horizontal lines.</span></span>
+            </div>
+            <input type="checkbox" id="simultaneousToggle">
+        </div>
+        <div class="setting-group" id="connectionDistanceGroup" style="display: none;"> <!-- Başlangıçta gizli -->
+            <div class="label-wrapper">
+                <label for="connectionDistanceSlider">Connection Distance:</label>
+                <span class="info-icon">i<span class="tooltip">The maximum 3D distance between two simultaneous notes to draw a line.</span></span>
+            </div>
+            <input type="range" id="connectionDistanceSlider" min="5" max="50" value="15" step="1">
+            <span id="connectionDistanceValue">15</span>
+        </div>
+
 
         <!-- Bloom Ayarları -->
         <div class="settings-divider"></div>
@@ -459,7 +486,7 @@
         <div class="setting-group">
             <div class="label-wrapper">
                 <label for="bloomThresholdSlider">Bloom Threshold:</label>
-                <span class="info-icon">i<span class="tooltip">Parlamanın (Bloom) başlaması için gereken minimum parlaklık.</span></span>
+                <span class="info-icon">i<span class="tooltip">The minimum brightness required for an object to start glowing.</span></span>
             </div>
             <input type="range" id="bloomThresholdSlider" min="0.0" max="1.0" value="0.1" step="0.01">
             <span id="bloomThresholdValue">0.1</span>
@@ -467,7 +494,7 @@
         <div class="setting-group">
             <div class="label-wrapper">
                 <label for="bloomStrengthSlider">Bloom Strength:</label>
-                <span class="info-icon">i<span class="tooltip">Parlamanın yoğunluğu ve gücü.</span></span>
+                <span class="info-icon">i<span class="tooltip">The intensity and power of the glow.</span></span>
             </div>
             <input type="range" id="bloomStrengthSlider" min="0.0" max="3.0" value="1.8" step="0.1">
             <span id="bloomStrengthValue">1.8</span>
@@ -475,7 +502,7 @@
         <div class="setting-group">
             <div class="label-wrapper">
                 <label for="bloomRadiusSlider">Bloom Radius:</label>
-                <span class="info-icon">i<span class="tooltip">Parlamanın etrafa ne kadar yayılacağı.</span></span>
+                <span class="info-icon">i<span class="tooltip">How far the glow spreads from the bright object.</span></span>
             </div>
             <input type="range" id="bloomRadiusSlider" min="0.0" max="2.0" value="0.5" step="0.1">
             <span id="bloomRadiusValue">0.5</span>
@@ -504,11 +531,13 @@
         let maxPeaks = 3;
         let pointLifetime = 8;
         let verticalScale = 1.0; 
-        let noteSpacing = 2.0; // YENİ
-        let centSensitivity = 20.0; // YENİ
+        let noteSpacing = 2.0;
+        let centSensitivity = 20.0;
         let loopAudio = false;
         let playbackSpeed = 1.0;
         let enableLines = true;
+        let enableSimultaneousConnections = false; // YENİ
+        let connectionDistance = 15; // YENİ
         let bloomPass; 
         let sampleRateFps = 10;
 
@@ -525,11 +554,14 @@
         const maxPeaksSlider = document.getElementById('maxPeaksSlider');
         const pointLifetimeSlider = document.getElementById('pointLifetimeSlider');
         const verticalScaleSlider = document.getElementById('verticalScaleSlider');
-        const noteSpacingSlider = document.getElementById('noteSpacingSlider'); // YENİ
-        const centSensitivitySlider = document.getElementById('centSensitivitySlider'); // YENİ
+        const noteSpacingSlider = document.getElementById('noteSpacingSlider');
+        const centSensitivitySlider = document.getElementById('centSensitivitySlider');
         const loopToggle = document.getElementById('loopToggle');
         const speedSlider = document.getElementById('speedSlider');
         const linesToggle = document.getElementById('linesToggle');
+        const simultaneousToggle = document.getElementById('simultaneousToggle'); // YENİ
+        const connectionDistanceGroup = document.getElementById('connectionDistanceGroup'); // YENİ
+        const connectionDistanceSlider = document.getElementById('connectionDistanceSlider'); // YENİ
         const bloomThresholdSlider = document.getElementById('bloomThresholdSlider');
         const bloomStrengthSlider = document.getElementById('bloomStrengthSlider');
         const bloomRadiusSlider = document.getElementById('bloomRadiusSlider');
@@ -543,8 +575,9 @@
         const maxPeaksValue = document.getElementById('maxPeaksValue');
         const pointLifetimeValue = document.getElementById('pointLifetimeValue');
         const verticalScaleValue = document.getElementById('verticalScaleValue');
-        const noteSpacingValue = document.getElementById('noteSpacingValue'); // YENİ
-        const centSensitivityValue = document.getElementById('centSensitivityValue'); // YENİ
+        const noteSpacingValue = document.getElementById('noteSpacingValue');
+        const centSensitivityValue = document.getElementById('centSensitivityValue');
+        const connectionDistanceValue = document.getElementById('connectionDistanceValue'); // YENİ
         const speedValue = document.getElementById('speedValue');
         const bloomThresholdValue = document.getElementById('bloomThresholdValue');
         const bloomStrengthValue = document.getElementById('bloomStrengthValue');
@@ -559,27 +592,15 @@
         minFreqSlider.addEventListener('input', () => {
             minFrequency = parseFloat(minFreqSlider.value);
             minFreqValue.textContent = `${minFrequency} Hz`;
-            if (maxFrequency < minFrequency) {
-                maxFrequency = minFrequency;
-                maxFreqSlider.value = minFrequency;
-                maxFreqValue.textContent = `${maxFrequency} Hz`;
-            }
         });
         maxFreqSlider.addEventListener('input', () => {
             maxFrequency = parseFloat(maxFreqSlider.value);
             maxFreqValue.textContent = `${maxFrequency} Hz`;
-            if (minFrequency > maxFrequency) {
-                minFrequency = maxFrequency;
-                minFreqSlider.value = maxFrequency;
-                minFreqValue.textContent = `${minFrequency} Hz`;
-            }
         });
-        
         colorMaxFreqSlider.addEventListener('input', () => {
             colorMaxFrequency = parseFloat(colorMaxFreqSlider.value);
             colorMaxFreqValue.textContent = `${colorMaxFrequency} Hz`;
         });
-        
         amplitudeThresholdSlider.addEventListener('input', () => {
             amplitudeThreshold = parseFloat(amplitudeThresholdSlider.value);
             amplitudeThresholdValue.textContent = `${(amplitudeThreshold * 100).toFixed(1)}%`;
@@ -596,8 +617,6 @@
             verticalScale = parseFloat(verticalScaleSlider.value);
             verticalScaleValue.textContent = `${verticalScale.toFixed(1)}x`;
         });
-        
-        // YENİ Z-EKSENİ SLIDERLARI
         noteSpacingSlider.addEventListener('input', () => {
             noteSpacing = parseFloat(noteSpacingSlider.value);
             noteSpacingValue.textContent = noteSpacing.toFixed(1);
@@ -606,7 +625,6 @@
             centSensitivity = parseFloat(centSensitivitySlider.value);
             centSensitivityValue.textContent = centSensitivity.toFixed(1);
         });
-        
         speedSlider.addEventListener('input', () => {
             playbackSpeed = parseFloat(speedSlider.value);
             speedValue.textContent = `${playbackSpeed.toFixed(1)}x`;
@@ -618,6 +636,11 @@
             sampleRateFps = parseInt(sampleFpsSlider.value);
             sampleFpsValue.textContent = `${sampleRateFps} FPS`;
         });
+        // YENİ: Connection Distance Slider
+        connectionDistanceSlider.addEventListener('input', () => {
+            connectionDistance = parseFloat(connectionDistanceSlider.value);
+            connectionDistanceValue.textContent = connectionDistance.toFixed(0);
+        });
         
         // Checkbox Event Listeners
         loopToggle.addEventListener('change', () => {
@@ -628,24 +651,37 @@
         });
         linesToggle.addEventListener('change', () => {
             enableLines = linesToggle.checked;
-            lines.forEach(l => l.line.visible = enableLines);
+            // Bu, sadece 'track' tipindeki çizgileri etkileyecek (aşağıda güncellendi)
+            lines.forEach(l => {
+                if (l.type === 'track') {
+                    l.line.visible = enableLines;
+                }
+            });
+        });
+        // YENİ: Simultaneous Connections Checkbox
+        simultaneousToggle.addEventListener('change', () => {
+            enableSimultaneousConnections = simultaneousToggle.checked;
+            connectionDistanceGroup.style.display = enableSimultaneousConnections ? 'flex' : 'none';
+            // Mevcut harmonik çizgileri göster/gizle
+            lines.forEach(l => {
+                if (l.type === 'harmonic') {
+                    l.line.visible = enableSimultaneousConnections;
+                }
+            });
         });
         
         // Bloom Slider Event Listeners
         bloomThresholdSlider.addEventListener('input', () => {
-            const value = parseFloat(bloomThresholdSlider.value);
-            if (bloomPass) bloomPass.threshold = value;
-            bloomThresholdValue.textContent = value.toFixed(2);
+            bloomPass.threshold = parseFloat(bloomThresholdSlider.value);
+            bloomThresholdValue.textContent = bloomThresholdSlider.value;
         });
         bloomStrengthSlider.addEventListener('input', () => {
-            const value = parseFloat(bloomStrengthSlider.value);
-            if (bloomPass) bloomPass.strength = value;
-            bloomStrengthValue.textContent = value.toFixed(1);
+            bloomPass.strength = parseFloat(bloomStrengthSlider.value);
+            bloomStrengthValue.textContent = bloomStrengthSlider.value;
         });
         bloomRadiusSlider.addEventListener('input', () => {
-            const value = parseFloat(bloomRadiusSlider.value);
-            if (bloomPass) bloomPass.radius = value;
-            bloomRadiusValue.textContent = value.toFixed(1);
+            bloomPass.radius = parseFloat(bloomRadiusSlider.value);
+            bloomRadiusValue.textContent = bloomRadiusSlider.value;
         });
 
         // Diğer UI Elemanları
@@ -745,7 +781,7 @@
                     frequency: preciseFrequency,
                     amplitude: amplitude,
                     bin: i,
-                    midiNote: midiNote, // Bu artık bir float (örn: 60.03)
+                    midiNote: midiNote, 
                     pitchClass: pitchClass
                 });
                 
@@ -808,34 +844,47 @@
             return point; 
         }
 
-        // Çizgi Oluşturma (Aynı)
-        function createLine(startPoint, endPoint, color) {
-            if (!enableLines) return; 
+        // GÜNCELLENDİ: Çizgi Oluşturma (İki farklı çizgi tipi)
+        function createLine(startPoint, endPoint, color, type = 'track') {
+            
+            let lineVisible, lineColor, lineOpacity;
+
+            if (type === 'track') {
+                // İz sürme çizgisi: Soluk, gri, ayara bağlı
+                lineVisible = enableLines;
+                lineColor = 0xAAAAAA;
+                lineOpacity = 0.5;
+            } else {
+                // Harmonik (Simultaneous) çizgi: Renkli, ayara bağlı
+                lineVisible = enableSimultaneousConnections;
+                lineColor = color;
+                lineOpacity = 0.7;
+            }
 
             const lineGeometry = new THREE.BufferGeometry().setFromPoints([
                 startPoint.position,
                 endPoint.position
             ]);
             const lineMaterial = new THREE.LineBasicMaterial({
-                color: color, 
+                color: lineColor, 
                 transparent: true,
-                opacity: 0.7,
+                opacity: lineOpacity,
                 linewidth: 2
             });
             
             const line = new THREE.Line(lineGeometry, lineMaterial);
-            line.visible = enableLines; 
+            line.visible = lineVisible; 
             scene.add(line);
             
             lines.push({
                 line: line,
-                tube: null,
                 startPoint: startPoint,
-                endPoint: endPoint
+                endPoint: endPoint,
+                type: type // YENİ: Çizgi tipini kaydet
             });
         }
 
-        // GÜNCELLENDİ: Ses Örnekleme (YENİ Z-EKSENİ FORMÜLÜ)
+        // GÜNCELLENDİ: Ses Örnekleme (Harmonik bağlantı eklendi)
         function sampleAudio() {
             if (!isPlaying || isPaused || !audioContext) return;
             
@@ -851,8 +900,6 @@
                     const mainPeak = allPeaks[0];
                     infoFreq.textContent = `${mainPeak.frequency.toFixed(0)} Hz`;
                     infoAmp.textContent = `${(mainPeak.amplitude * 100).toFixed(1)}%`;
-                    
-                    // GÜNCELLENDİ: InfoBox artık Oktavı gösteriyor (örn: C4)
                     const octave = Math.floor(mainPeak.midiNote / 12) - 1;
                     infoPitch.textContent = NOTE_NAMES[mainPeak.pitchClass] + octave;
                 } else {
@@ -862,36 +909,29 @@
                 }
 
                 allPeaks.forEach(data => {
-                    // 1. X ve Y Koordinatları (Deterministik)
+                    // 1. Koordinatları Hesapla
                     const logMinFreq = Math.log10(minFrequency > 0 ? minFrequency : 1);
                     const logMaxFreq = Math.log10(maxFrequency);
                     const logCurrentFreq = Math.log10(data.frequency);
                     let logNormalizedFreq = (logCurrentFreq - logMinFreq) / (logMaxFreq - logMinFreq);
                     logNormalizedFreq = Math.min(Math.max(logNormalizedFreq, 0), 1);
-                    
                     const x = (logNormalizedFreq * 60 - 30);
                     
                     const effectiveHeight = BASE_HEIGHT * verticalScale;
                     const y = (data.amplitude * effectiveHeight - (effectiveHeight / 2));
                     
-                    // 2. YENİ Z-EKSENİ HESAPLAMASI (Deterministik Cents)
-                    // Z eksenini iki parçaya ayır: Ana nota ve "alt nota" (cent) sapması
                     const integerNote = Math.round(data.midiNote);
-                    const centDeviation = data.midiNote - integerNote; // örn: -0.5 ile +0.5 arası
-                    
-                    // Ana nota (C4, D4...) 'noteSpacing' ile Z derinliğini belirler
-                    const z_base = (integerNote - 60) * noteSpacing; // 60 = Orta C
-                    // "Alt nota" sapması (C'nin C'den farkı) 'centSensitivity' ile "duvar kalınlığını" belirler
+                    const centDeviation = data.midiNote - integerNote;
+                    const z_base = (integerNote - 60) * noteSpacing;
                     const z_cents = centDeviation * centSensitivity;
-                    
                     const z = z_base + z_cents;
                     
                     const color = getSpectrumColor(data.frequency);
 
-                    // 3. Yeni Noktayı Oluştur
+                    // 2. Yeni Noktayı Oluştur
                     const newPoint = createPoint(x, y, z, color, data.amplitude, data.frequency, currentTime, data.midiNote);
                     
-                    // 4. Peak Tracking (Sadece Frekansa Göre)
+                    // 3. Peak Tracking (İz Sürme)
                     let bestMatch = null;
                     let minFreqDiff = peakTrackingTolerance;
                     let bestMatchIndex = -1;
@@ -899,9 +939,7 @@
                     for (let i = 0; i < previousPeaks.length; i++) {
                         const prevPeak = previousPeaks[i];
                         if (prevPeak.matched) continue; 
-                        
                         const freqDiff = Math.abs(data.frequency - prevPeak.frequency);
-                        
                         if (freqDiff < minFreqDiff) {
                             minFreqDiff = freqDiff;
                             bestMatch = prevPeak;
@@ -909,13 +947,13 @@
                         }
                     }
 
-                    // 5. Eşleşme varsa çizgi çiz
+                    // 4. İz Sürme Çizgisi Çiz
                     if (bestMatch) {
-                        createLine(bestMatch.point, newPoint, color);
+                        createLine(bestMatch.point, newPoint, color, 'track'); // Tip: track
                         previousPeaks[bestMatchIndex].matched = true; 
                     }
                     
-                    // 6. Bir sonraki kare için listeye ekle
+                    // 5. Bir sonraki kare için listeye ekle
                     newPeakData.push({ 
                         frequency: data.frequency, 
                         point: newPoint, 
@@ -923,11 +961,26 @@
                     });
                 });
                 
+                // 6. YENİ: Harmonik/Simultaneous Çizgiler Çiz
+                if (enableSimultaneousConnections) {
+                    for (let i = 0; i < newPeakData.length; i++) {
+                        for (let j = i + 1; j < newPeakData.length; j++) {
+                            const p1 = newPeakData[i].point;
+                            const p2 = newPeakData[j].point;
+                            const dist = p1.position.distanceTo(p2.position);
+                            
+                            if (dist < connectionDistance) {
+                                createLine(p1, p2, p1.color, 'harmonic'); // Tip: harmonic
+                            }
+                        }
+                    }
+                }
+                
                 previousPeaks = newPeakData;
             }
         }
 
-        // Güncellemeler (Aynı)
+        // Güncellemeler (Çizgi tipi ayrımı eklendi)
         function updatePointsAndLines(deltaTime) {
             for (let i = points.length - 1; i >= 0; i--) {
                 const point = points[i];
@@ -954,18 +1007,34 @@
             
             for (let i = lines.length - 1; i >= 0; i--) {
                 const lineInfo = lines[i];
-                lineInfo.line.visible = enableLines;
-                if (!points.includes(lineInfo.startPoint) || !points.includes(lineInfo.endPoint)) {
-                    scene.remove(lineInfo.line);
-                    lineInfo.line.geometry.dispose();
-                    lineInfo.line.material.dispose();
-                    lines.splice(i, 1);
-                } else if (enableLines) { 
+                
+                // Çizgiyi sadece bağlı olduğu noktalar hala varsa güncelle
+                if (points.includes(lineInfo.startPoint) && points.includes(lineInfo.endPoint)) {
+                    // Ayara göre görünürlüğü güncelle
+                    if (lineInfo.type === 'track') {
+                        lineInfo.line.visible = enableLines;
+                    } else if (lineInfo.type === 'harmonic') {
+                        lineInfo.line.visible = enableSimultaneousConnections;
+                    }
+
+                    // Opaklığı ayarla
                     const minOpacity = Math.min(
                         lineInfo.startPoint.mesh.material.opacity,
                         lineInfo.endPoint.mesh.material.opacity
                     );
-                    lineInfo.line.material.opacity = minOpacity * 0.7;
+                    
+                    if (lineInfo.type === 'track') {
+                        lineInfo.line.material.opacity = minOpacity * 0.5;
+                    } else {
+                        lineInfo.line.material.opacity = minOpacity * 0.7;
+                    }
+
+                } else {
+                    // Noktalardan biri silinmişse, çizgiyi de sil
+                    scene.remove(lineInfo.line);
+                    lineInfo.line.geometry.dispose();
+                    lineInfo.line.material.dispose();
+                    lines.splice(i, 1);
                 }
             }
         }
@@ -1227,7 +1296,8 @@
         [minFreqSlider, maxFreqSlider, colorMaxFreqSlider,
          amplitudeThresholdSlider, maxPeaksSlider, pointLifetimeSlider, 
          verticalScaleSlider, 
-         noteSpacingSlider, centSensitivitySlider, // YENİ
+         noteSpacingSlider, centSensitivitySlider,
+         connectionDistanceSlider, // YENİ
          speedSlider,
          bloomThresholdSlider, bloomStrengthSlider, bloomRadiusSlider,
          sampleFpsSlider 
@@ -1235,7 +1305,7 @@
             if(slider) slider.dispatchEvent(new Event('input'));
         });
         
-        [loopToggle, linesToggle
+        [loopToggle, linesToggle, simultaneousToggle // YENİ
         ].forEach(toggle => {
             if(toggle) toggle.dispatchEvent(new Event('change'));
         });
