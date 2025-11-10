@@ -1449,8 +1449,10 @@
             controlsPanel.style.display = displayValue;
             settingsPanel.style.display = displayValue;
             
-            // Küp etiketlerini de gizle/göster
+            // YENİ: Küp etiketlerini (HTML) VE küpün kendisini (WebGL) de gizle/göster
             axisLabels.visible = uiVisible;
+            parametricBox.visible = uiVisible;
+            labelRenderer.domElement.style.display = uiVisible ? 'block' : 'none'; // <-- EKLENEN SATIR
             
             toggleUiBtn.textContent = uiVisible ? 'Hide UI' : 'Show UI';
         });
