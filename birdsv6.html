@@ -386,35 +386,45 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            display: flex;
-            gap: 10px;
-            max-height: calc(100vh - 40px);
+            /* display: flex; // .settings-panel'e taşındı */
+            max-height: 700px; /* YENİ: Yükseklik Sınırı */
             z-index: 100;
-        }
-        .settings-panel {
-            position: relative;
-            width: 230px; /* Sabit genişlik */
-            display: flex;
-            flex-direction: row; /* Yatayda başla */
-            flex-wrap: wrap; /* Aşağı kaydır */
-            gap: 2px;
-            align-items: flex-start;
-            justify-content: center;
-            max-height: 100%;
+            /* YENİ: Arka plan, border vs kaldırıldı (artık .panel değil) */
+            width: 240px; /* 3 * 80px */
+            padding: 0;
+            
+            /* Kaydırma çubuğu için (ihtiyaç olursa) */
             overflow-y: auto;
-            font-family: '16Segments', sans-serif;
-            padding: 10px 5px;
-            /* Scrollbar Stilleri */
             scrollbar-width: thin;
             scrollbar-color: var(--highlight-color) rgba(0,0,0,0.3);
         }
-        .settings-panel::-webkit-scrollbar { width: 8px; }
-        .settings-panel::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
-        .settings-panel::-webkit-scrollbar-thumb {
+        #settingsContainer::-webkit-scrollbar { width: 8px; }
+        #settingsContainer::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
+        #settingsContainer::-webkit-scrollbar-thumb {
             background-color: var(--highlight-color);
             border-radius: 4px;
             border: 1px solid rgba(0,0,0,0.5);
         }
+        /* KALDIRILDI
+        #settingsContainer:hover {
+        ...
+        */
+        .settings-panel {
+            position: relative;
+            width: 100%; /* Konteynere uysun */
+            display: flex;
+            flex-direction: row; /* Yatayda başla */
+            flex-wrap: wrap; /* Aşağı kaydır */
+            gap: 0; /* YENİ: Boşluk sıfır, 80*3 tam sığsın */
+            align-items: flex-start;
+            justify-content: flex-start; /* YENİ: Soldan başla */
+            max-height: 100%;
+            /* overflow-y: auto; // Ana konteynere taşındı */
+            font-family: '16Segments', sans-serif;
+            padding: 0; /* YENİ: Padding kaldırıldı */
+            /* Scrollbar Stilleri // Ana konteynere taşındı */
+        }
+        /* .settings-panel::-webkit-scrollbar... (Ana konteynere taşındı) */
 
         /* YENİ: Dairesel Düğme (Knob) Stilleri */
         .knob-container {
@@ -459,7 +469,7 @@
         }
         .knob-label {
             font-family: '16Segments', sans-serif;
-            font-size: 8px;
+            font-size: 7px;
             text-transform: uppercase;
             color: var(--text-secondary);
             margin-top: 4px;
@@ -472,7 +482,7 @@
         }
         .knob-value {
             font-family: '16Segments', sans-serif;
-            font-size: 9px;
+            font-size: 8px;
             color: var(--text-primary);
             margin-top: 2px;
         }
@@ -485,13 +495,14 @@
             width: 100%;
             height: 0%; /* JS ile kontrol edilecek */
             background: var(--highlight-color);
-            opacity: 0.75;
+            opacity: 0.375;
             z-index: 1;
             /* transition: height 0.05s linear; // Sürüklerken takılma yapmaması için kaldırıldı */
             pointer-events: none;
         }
 
-        /* Ayırıcı Stili */
+        /* Ayırıcı Stili (KALDIRILDI) */
+        /*
         .settings-divider {
             height: 1px;
             width: 100%;
@@ -499,6 +510,7 @@
             margin: 5px 0;
             opacity: 0.5;
         }
+        */
         
         /* Checkbox Stilleri */
         .checkbox-group {
@@ -510,7 +522,7 @@
             padding: 3px 8px;
         }
         .checkbox-group label {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 500;
             color: var(--text-primary);
             margin-bottom: 0;
@@ -594,10 +606,10 @@
             border: 1px solid var(--panel-border);
             border-radius: 6px;
             box-shadow: 0 0 15px rgba(0,0,0,0.5);
-            padding: 8px 12px;
+            padding: 6px 10px;
             width: 200px;
             font-family: '16Segments', sans-serif;
-            font-size: 11px;
+            font-size: 10px;
             line-height: 1.5;
             color: var(--text-primary);
             display: none; /* JS ile gösterilecek */
@@ -641,17 +653,14 @@
     </div>
 
     <!-- YENİ: Ayarlar (Sağ Üst) - Dairesel Düğmelerle doldurulacak -->
-    <div id="settingsContainer">
-        
-        <!-- Sütun 1: Görsel Ayarlar -->
-        <div id="visualSettings" class="panel settings-panel">
-            <!-- Düğmeler JS ile buraya eklenecek -->
-        </div>
-
-        <!-- Sütun 2: Ses Ayarları -->
-        <div id="soundSettings" class="panel settings-panel">
-            <!-- Düğmeler JS ile buraya eklenecek -->
-        </div>
+    <!-- YENİ: .panel sınıfı kaldırıldı -->
+    <div id="settingsContainer" class="settings-panel">
+        <!-- Düğmeler JS ile buraya eklenecek -->
+        <!-- 
+            HTML'den kaldırıldı:
+            <div id="visualSettings" class="panel settings-panel"></div>
+            <div id="soundSettings" class="panel settings-panel"></div>
+        -->
     </div>
 
     <!-- Info Modal (Genel Bilgi) -->
@@ -727,7 +736,7 @@
         window.pointScale = 0.74;
         window.loopAudio = false;
         window.playbackSpeed = 1.0;
-        window.enableLines = false;
+        window.enableLines = true;
         window.enableSimultaneousConnections = false;
         window.connectionDistance = 457;
         window.sampleRateFps = 15;
@@ -735,7 +744,7 @@
         window.hueOffset = 0.0;
         window.saturation = 1.0;
         window.lightness = 0.6;
-        window.autoRotateSpeed = 2.0;
+        window.autoRotateSpeed = 0.0;
         window.bloomThreshold = 0.04;
         window.bloomStrength = 1.8;
         window.bloomRadius = 0.7;
@@ -770,39 +779,74 @@
             pointLifetime: `<circle cx="12" cy="12" r="8" stroke-width="1.5" fill="none"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6l4 2"/>`, // Saat
             sampleFps: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4h16v16H4V4zm0 6h16M0 10h4m16 0h4"/>`, // Film şeridi
             speed: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 18l6-6-6-6m7 12l6-6-6-6"/>`, // İleri sar
-            autoRotateSpeed: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4a8 8 0 106.364 3.636M12 4V0m0 4l4-4"/>` // Döndürme
+            autoRotateSpeed: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4a8 8 0 106.364 3.636M12 4V0m0 4l4-4"/>`, // Döndürme
+            loop: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h5M4 9a8 8 0 106.364 3.636M20 20v-5h-5M20 15a8 8 0 00-6.364-3.636"/>`, // Loop
+            connectionDistance: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 12h12M7 17l-4-5 4-5M17 17l4-5-4-5"/>` // Bağlantı
         };
 
-        // YENİ: Düğme Kontrol Konfigürasyonu
-        const CONTROLS_CONFIG = {
-            visual: [
-                { id: 'xAxisScale', min: -1, max: 1, value: 0.33, log: true, suffix: 'x', var: 'xAxisScale', label: 'X-Axis Scale', info: 'VISUAL: Stretches or compresses the horizontal (X-Axis) spread of frequencies.' },
-                { id: 'verticalScale', min: -1, max: 1, value: 0.45, log: true, suffix: 'x', var: 'verticalScale', label: 'Y-Axis Scale', info: 'VISUAL: Multiplies the effect of volume (Amplitude) on the Y-Axis (height).' },
-                { id: 'zAxisScale', min: -1, max: 1, value: 0.35, log: true, suffix: 'x', var: 'zAxisScale', label: 'Z-Axis Scale', info: 'VISUAL: Stretches or compresses the depth (Z-Axis) of the Timbre (Harmonic Richness).' },
-                { id: 'pointScale', min: -1, max: 1, value: -0.13, log: true, suffix: 'x', var: 'pointScale', label: 'Base Point Scale', info: 'VISUAL: Sets the base size of the points. Final size is (Base * Amplitude).' },
-                { id: 'xAxisSensibility', min: 0.1, max: 3.0, value: 1.0, log: false, suffix: '', step: 0.01, var: 'xAxisSensibility', label: 'X-Axis Sensibility', info: 'VISUAL: Controls the logarithmic mapping of frequency. <1 biases low, >1 biases high.' },
-                { id: 'yAxisSensibility', min: 0.1, max: 3.0, value: 1.0, log: false, suffix: '', step: 0.01, var: 'yAxisSensibility', label: 'Y-Axis Sensibility', info: 'VISUAL: Controls the power mapping of amplitude. <1 biases low, >1 biases high.' },
-                { id: 'hueOffset', min: -0.5, max: 0.5, value: 0.0, log: false, suffix: '', step: 0.01, var: 'hueOffset', label: 'Base Hue Offset', info: 'Shifts the entire color wheel. Default 0.' },
-                { id: 'saturation', min: 0.0, max: 1.0, value: 1.0, log: false, suffix: '', step: 0.01, var: 'saturation', label: 'Base Saturation', info: 'Controls the intensity of the color (0=grey, 1=full color).' },
-                { id: 'lightness', min: 0.0, max: 1.0, value: 0.6, log: false, suffix: '', step: 0.01, var: 'lightness', label: 'Base Lightness', info: 'Controls the brightness of the color (0=black, 0.5=pure color, 1=white).' },
-                { id: 'bloomThreshold', min: 0.0, max: 1.0, value: 0.04, log: false, suffix: '', step: 0.01, var: 'bloomThreshold', label: 'Bloom Threshold', info: 'The minimum brightness required for an object to start glowing.' },
-                { id: 'bloomStrength', min: 0.0, max: 3.0, value: 1.8, log: false, suffix: '', step: 0.1, var: 'bloomStrength', label: 'Bloom Strength', info: 'The intensity and power of the glow.' },
-                { id: 'bloomRadius', min: 0.0, max: 2.0, value: 0.7, log: false, suffix: '', step: 0.1, var: 'bloomRadius', label: 'Bloom Radius', info: 'How far the glow spreads from the bright object.' },
-                { id: 'autoRotateSpeed', min: -10.0, max: 10.0, value: 2.0, log: false, suffix: '', step: 0.1, var: 'autoRotateSpeed', label: 'Auto-Rotate Speed', info: 'VISUAL: Sets the speed of the auto-rotation.' }
-            ],
-            sound: [
-                { id: 'minFreq', min: 20, max: 5000, value: 20, log: false, suffix: ' Hz', step: 10, var: 'minFrequency', label: 'Min Frequency', info: 'FILTER: The lowest frequency to visualize (X-Axis left limit).' },
-                { id: 'maxFreq', min: 5000, max: 20000, value: 20000, log: false, suffix: ' Hz', step: 100, var: 'maxFrequency', label: 'Max Frequency', info: 'FILTER: The highest frequency to visualize (X-Axis right limit).' },
-                { id: 'amplitudeThreshold', min: 0.1, max: 0.5, value: 0.5, log: false, suffix: '%', step: 0.01, var: 'amplitudeThreshold', label: 'Amplitude Threshold', info: 'FILTER: The minimum volume (0-1) required to create a point (Y-Axis bottom limit).' },
-                { id: 'harmonicSensitivity', min: 0, max: 2, value: 0.31, log: false, suffix: '', step: 0.01, var: 'harmonicSensitivity', label: 'Timbre Sensitivity', info: 'VISUAL: How strongly harmonics (tını) affect the Z-Axis depth.' },
-                { id: 'pitchRangeMin', min: 21, max: 80, value: 21, log: false, suffix: '', step: 1, var: 'pitchRangeMin', label: 'Min Pitch Filter', info: 'FILTER: The lowest note (MIDI) to display (e.g., 21 = A0).' },
-                { id: 'pitchRangeMax', min: 81, max: 108, value: 96, log: false, suffix: '', step: 1, var: 'pitchRangeMax', label: 'Max Pitch Filter', info: 'FILTER: The highest note (MIDI) to display (e.g., 96 = C7).' },
-                { id: 'maxPeaks', min: 1, max: 20, value: 2, log: false, suffix: '', step: 1, var: 'maxPeaks', label: 'Max Peaks', info: 'FILTER: The maximum number of points to create per frame. Lower values reduce noise.' },
-                { id: 'pointLifetime', min: 5, max: 60, value: 10, log: false, suffix: ' s', step: 1, var: 'pointLifetime', label: 'Point Lifetime', info: 'VISUAL: How long a point stays on screen before fading out.' },
-                { id: 'sampleFps', min: 1, max: 50, value: 15, log: false, suffix: ' FPS', step: 1, var: 'sampleRateFps', label: 'Sample Rate', info: 'SPEED: How many times per second to sample the audio and create points.' },
-                { id: 'speed', min: 0.1, max: 5.0, value: 1.0, log: false, suffix: 'x', step: 0.1, var: 'playbackSpeed', label: 'Playback Speed', info: 'SPEED: The playback speed of the audio (1.0 = normal).' }
-            ]
-        };
+        // YENİ: Düğme Kontrol Konfigürasyonu (TEK LİSTE)
+        const ALL_CONTROLS_CONFIG = [
+            // Group 1: Scale
+            { type: 'knob', id: 'xAxisScale', min: -1, max: 1, value: 0.33, log: true, suffix: 'x', var: 'xAxisScale', label: 'X-Axis Scale', info: 'VISUAL: Stretches or compresses the horizontal (X-Axis) spread of frequencies.' },
+            { type: 'knob', id: 'verticalScale', min: -1, max: 1, value: 0.45, log: true, suffix: 'x', var: 'verticalScale', label: 'Y-Axis Scale', info: 'VISUAL: Multiplies the effect of volume (Amplitude) on the Y-Axis (height).' },
+            { type: 'knob', id: 'zAxisScale', min: -1, max: 1, value: 0.35, log: true, suffix: 'x', var: 'zAxisScale', label: 'Z-Axis Scale', info: 'VISUAL: Stretches or compresses the depth (Z-Axis) of the Timbre (Harmonic Richness).' },
+            { type: 'knob', id: 'pointScale', min: -1, max: 1, value: -0.13, log: true, suffix: 'x', var: 'pointScale', label: 'Base Point Scale', info: 'VISUAL: Sets the base size of the points. Final size is (Base * Amplitude).' },
+            
+            /* { type: 'divider' }, // KALDIRILDI */
+
+            // Group 2: Sensibility
+            { type: 'knob', id: 'xAxisSensibility', min: 0.1, max: 3.0, value: 1.0, log: false, suffix: '', step: 0.01, var: 'xAxisSensibility', label: 'X-Axis Sensibility', info: 'VISUAL: Controls the logarithmic mapping of frequency. <1 biases low, >1 biases high.' },
+            { type: 'knob', id: 'yAxisSensibility', min: 0.1, max: 3.0, value: 1.0, log: false, suffix: '', step: 0.01, var: 'yAxisSensibility', label: 'Y-Axis Sensibility', info: 'VISUAL: Controls the power mapping of amplitude. <1 biases low, >1 biases high.' },
+            { type: 'knob', id: 'harmonicSensitivity', min: 0, max: 2, value: 0.31, log: false, suffix: '', step: 0.01, var: 'harmonicSensitivity', label: 'Timbre Sensitivity', info: 'VISUAL: How strongly harmonics (tını) affect the Z-Axis depth.' },
+
+            /* { type: 'divider' }, // KALDIRILDI */
+
+            // Group 3: Freq/Amp Filters
+            { type: 'knob', id: 'minFreq', min: 20, max: 5000, value: 20, log: false, suffix: ' Hz', step: 10, var: 'minFrequency', label: 'Min Frequency', info: 'FILTER: The lowest frequency to visualize (X-Axis left limit).' },
+            { type: 'knob', id: 'maxFreq', min: 5000, max: 20000, value: 20000, log: false, suffix: ' Hz', step: 100, var: 'maxFrequency', label: 'Max Frequency', info: 'FILTER: The highest frequency to visualize (X-Axis right limit).' },
+            { type: 'knob', id: 'amplitudeThreshold', min: 0.1, max: 0.5, value: 0.5, log: false, suffix: '%', step: 0.01, var: 'amplitudeThreshold', label: 'Amplitude Threshold', info: 'FILTER: The minimum volume (0-1) required to create a point (Y-Axis bottom limit).' },
+            
+            /* { type: 'divider' }, // KALDIRILDI */
+
+            // Group 4: Pitch Filters
+            { type: 'knob', id: 'pitchRangeMin', min: 21, max: 80, value: 21, log: false, suffix: '', step: 1, var: 'pitchRangeMin', label: 'Min Pitch Filter', info: 'FILTER: The lowest note (MIDI) to display (e.g., 21 = A0).' },
+            { type: 'knob', id: 'pitchRangeMax', min: 81, max: 108, value: 96, log: false, suffix: '', step: 1, var: 'pitchRangeMax', label: 'Max Pitch Filter', info: 'FILTER: The highest note (MIDI) to display (e.g., 96 = C7).' },
+
+            /* { type: 'divider' }, // KALDIRILDI */
+
+            // Group 5: Point/Sample Logic
+            { type: 'knob', id: 'sampleFps', min: 1, max: 50, value: 15, log: false, suffix: ' FPS', step: 1, var: 'sampleRateFps', label: 'Sample Rate', info: 'SPEED: How many times per second to sample the audio and create points.' },
+            { type: 'knob', id: 'pointLifetime', min: 5, max: 60, value: 10, log: false, suffix: ' s', step: 1, var: 'pointLifetime', label: 'Point Lifetime', info: 'VISUAL: How long a point stays on screen before fading out.' },
+            { type: 'knob', id: 'maxPeaks', min: 1, max: 20, value: 2, log: false, suffix: '', step: 1, var: 'maxPeaks', label: 'Max Peaks', info: 'FILTER: The maximum number of points to create per frame. Lower values reduce noise.' },
+
+            /* { type: 'divider' }, // KALDIRILDI */
+
+            // Group 6: Playback
+            { type: 'knob', id: 'speed', min: 0.1, max: 5.0, value: 1.0, log: false, suffix: 'x', step: 0.1, var: 'playbackSpeed', label: 'Playback Speed', info: 'SPEED: The playback speed of the audio (1.0 = normal).' },
+            { type: 'toggleKnob', id: 'loop', var: 'loopAudio', label: 'Loop Audio', info: 'Restarts the audio automatically when it ends.', value: window.loopAudio },
+            { type: 'knob', id: 'autoRotateSpeed', min: -10.0, max: 10.0, value: 0.0, log: false, suffix: '', step: 0.1, var: 'autoRotateSpeed', label: 'Auto-Rotate Speed', info: 'VISUAL: Sets the speed of the auto-rotation. 0 = Off.' },
+
+            /* { type: 'divider' }, // KALDIRILDI */
+
+            // Group 7: Color
+            { type: 'knob', id: 'hueOffset', min: -0.5, max: 0.5, value: 0.0, log: false, suffix: '', step: 0.01, var: 'hueOffset', label: 'Base Hue Offset', info: 'Shifts the entire color wheel. Default 0.' },
+            { type: 'knob', id: 'saturation', min: 0.0, max: 1.0, value: 1.0, log: false, suffix: '', step: 0.01, var: 'saturation', label: 'Base Saturation', info: 'Controls the intensity of the color (0=grey, 1=full color).' },
+            { type: 'knob', id: 'lightness', min: 0.0, max: 1.0, value: 0.6, log: false, suffix: '', step: 0.01, var: 'lightness', label: 'Base Lightness', info: 'Controls the brightness of the color (0=black, 0.5=pure color, 1=white).' },
+
+            /* { type: 'divider' }, // KALDIRILDI */
+
+            // Group 8: Bloom
+            { type: 'knob', id: 'bloomThreshold', min: 0.0, max: 1.0, value: 0.04, log: false, suffix: '', step: 0.01, var: 'bloomThreshold', label: 'Bloom Threshold', info: 'The minimum brightness required for an object to start glowing.' },
+            { type: 'knob', id: 'bloomStrength', min: 0.0, max: 3.0, value: 1.8, log: false, suffix: '', step: 0.1, var: 'bloomStrength', label: 'Bloom Strength', info: 'The intensity and power of the glow.' },
+            { type: 'knob', id: 'bloomRadius', min: 0.0, max: 2.0, value: 0.7, log: false, suffix: '', step: 0.1, var: 'bloomRadius', label: 'Bloom Radius', info: 'How far the glow spreads from the bright object.' },
+
+            /* { type: 'divider' }, // KALDIRILDI */
+
+            // Group 9: Lines
+            { type: 'checkbox', id: 'linesToggle', label: 'Show Tracking Lines', info: 'Shows the (faint grey) lines that track a single note over time.', var: 'enableLines', value: window.enableLines },
+            { type: 'checkbox', id: 'simultaneousToggle', label: 'Connect Simultaneous Peaks', info: 'Connects different notes that are played at the same time (e.g., chords).', var: 'enableSimultaneousConnections', value: window.enableSimultaneousConnections },
+            { type: 'knob', id: 'connectionDistance', min: 5, max: 500, value: 457, log: false, suffix: '', step: 1, var: 'connectionDistance', label: 'Connection Distance', info: 'The maximum 3D distance between two simultaneous notes to draw a line.' }
+        ];
 
         // UI Elemanları
         const playBtn = document.getElementById('playBtn');
@@ -986,33 +1030,33 @@
             tooltip.style.top = (rect.top + (rect.height / 2) - (tooltip.offsetHeight / 2)) + 'px';
         }
 
+        // YENİ: Tooltip Gizleme Fonksiyonu (EKSİKTİ)
         function hideTooltip() {
-            tooltip.style.display = 'none';
+            if (tooltip) {
+                tooltip.style.display = 'none';
+            }
         }
 
-        // YENİ: Düğmeleri Dinamik Olarak Oluştur
+        // YENİ: Düğmeleri Dinamik Olarak Oluştur (Tek Panel)
         function createKnobs() {
-            const visualPanel = document.getElementById('visualSettings');
-            const soundPanel = document.getElementById('soundSettings');
-            
-            visualPanel.innerHTML = ''; // Temizle
-            soundPanel.innerHTML = ''; // Temizle
+            const panel = document.getElementById('settingsContainer');
+            panel.innerHTML = ''; // Paneli temizle
 
-            CONTROLS_CONFIG.visual.forEach(config => {
-                visualPanel.appendChild(createKnobElement(config));
+            ALL_CONTROLS_CONFIG.forEach(config => {
+                if (config.type === 'knob') {
+                    panel.appendChild(createKnobElement(config));
+                } else if (config.type === 'toggleKnob') {
+                    panel.appendChild(createToggleKnobElement(config));
+                } else if (config.type === 'checkbox') {
+                    panel.appendChild(createCheckboxElement(config));
+                } /* else if (config.type === 'divider') { // KALDIRILDI
+                    panel.appendChild(createDividerElement());
+                } */
             });
-            // Görsel panel checkbox'ları
-            visualPanel.appendChild(createCheckboxElement('linesToggle', 'Show Tracking Lines', 'Shows the (faint grey) lines that track a single note over time.', window.enableLines));
-            visualPanel.appendChild(createCheckboxElement('simultaneousToggle', 'Connect Simultaneous Peaks', 'Connects different notes that are played at the same time (e.g., chords).', window.enableSimultaneousConnections));
-            visualPanel.appendChild(createCheckboxElement('autoRotateToggle', 'Auto-Rotate Camera', 'Automatically rotates the camera around the center.', controls.autoRotate));
 
-
-            CONTROLS_CONFIG.sound.forEach(config => {
-                soundPanel.appendChild(createKnobElement(config));
-            });
-            // Ses panel checkbox'ları
-            soundPanel.appendChild(createCheckboxElement('loopToggle', 'Loop Audio', 'Restarts the audio automatically when it ends.', window.loopAudio));
-
+            // Olay dinleyicilerini global olarak ayarla
+            document.addEventListener('mousemove', onKnobMouseMove);
+            document.addEventListener('mouseup', onKnobMouseUp);
         }
 
         function createKnobElement(config) {
@@ -1067,7 +1111,77 @@
             return container;
         }
 
-        function createCheckboxElement(id, label, info, isChecked) {
+        // YENİ: Dairesel Toggle Düğmesi Oluşturucu
+        function createToggleKnobElement(config) {
+            const container = document.createElement('div');
+            container.className = 'knob-container';
+
+            const knob = document.createElement('div');
+            knob.className = 'knob';
+            knob.style.cursor = 'pointer'; // Tıklama imleci
+            
+            const knobFill = document.createElement('div');
+            knobFill.className = 'knob-fill';
+            knob.appendChild(knobFill);
+
+            const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            icon.setAttribute('class', 'knob-icon');
+            icon.setAttribute('viewBox', '0 0 24 24');
+            icon.setAttribute('fill', 'none');
+            icon.innerHTML = ICONS[config.id] || ICONS['loop'];
+            knob.appendChild(icon);
+
+            const label = document.createElement('span');
+            label.className = 'knob-label';
+            label.textContent = config.label;
+            label.dataset.info = config.info;
+            label.addEventListener('mouseover', () => showTooltip(label));
+            label.addEventListener('mouseout', hideTooltip);
+
+            const valueEl = document.createElement('span');
+            valueEl.className = 'knob-value';
+            
+            container.appendChild(knob);
+            container.appendChild(label);
+            container.appendChild(valueEl);
+
+            const knobData = {
+                element: container,
+                config: config,
+                currentValue: config.value
+            };
+            knob.knobData = knobData;
+            
+            // Tıklama olayı (sürükleme değil)
+            knob.addEventListener('click', (e) => {
+                const data = e.currentTarget.knobData;
+                const newValue = !data.currentValue;
+                data.currentValue = newValue;
+                updateToggleKnob(data, newValue);
+            });
+
+            updateToggleKnob(knobData, config.value); // Başlangıç değerini ayarla
+            return container;
+        }
+
+        // YENİ: Dairesel Toggle Güncelleyici
+        function updateToggleKnob(knobData, value) {
+            const config = knobData.config;
+            const valueEl = knobData.element.querySelector('.knob-value');
+            const knobFillEl = knobData.element.querySelector('.knob-fill');
+            
+            window[config.var] = value;
+            valueEl.textContent = value ? 'YES' : 'NO';
+            knobFillEl.style.height = value ? '100%' : '0%';
+
+            if (config.var === 'loopAudio' && source) {
+                source.loop = value;
+            }
+        }
+
+
+        // YENİ: Checkbox Oluşturucu (Refactor)
+        function createCheckboxElement(config) {
             const container = document.createElement('div');
             container.className = 'checkbox-group';
 
@@ -1075,10 +1189,9 @@
             labelWrapper.className = 'label-wrapper';
 
             const labelEl = document.createElement('label');
-            labelEl.setAttribute('for', id);
-            labelEl.textContent = label;
-            labelEl.dataset.info = info;
-            // YENİ: Tooltip event'leri
+            labelEl.setAttribute('for', config.id);
+            labelEl.textContent = config.label;
+            labelEl.dataset.info = config.info;
             labelEl.addEventListener('mouseover', () => showTooltip(labelEl));
             labelEl.addEventListener('mouseout', hideTooltip);
 
@@ -1087,31 +1200,25 @@
 
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
-            checkbox.id = id;
-            checkbox.checked = isChecked;
+            checkbox.id = config.id;
+            checkbox.checked = config.value; // Varsayılan değeri config'den al
             
-            // YENİ: Event listener'ları HATA DÜZELTME
-            if (id === 'loopToggle') {
-                checkbox.addEventListener('change', () => { 
-                    window.loopAudio = checkbox.checked; 
-                    if (source) source.loop = window.loopAudio;
-                });
-            }
-            if (id === 'linesToggle') {
-                checkbox.addEventListener('change', () => { window.enableLines = checkbox.checked; });
-            }
-            if (id === 'simultaneousToggle') {
-                checkbox.addEventListener('change', () => { window.enableSimultaneousConnections = checkbox.checked; });
-            }
-            if (id === 'autoRotateToggle') {
-                checkbox.addEventListener('change', () => { 
-                    if (controls) controls.autoRotate = checkbox.checked; 
-                });
-            }
+            // Genel event listener
+            checkbox.addEventListener('change', () => { 
+                window[config.var] = checkbox.checked; 
+            });
 
             container.appendChild(checkbox);
             return container;
         }
+
+        /* YENİ: Ayırıcı Oluşturucu (KALDIRILDI)
+        function createDividerElement() {
+            const div = document.createElement('div');
+            div.className = 'settings-divider';
+            return div;
+        }
+        */
 
         
         // Scene Setup
@@ -1147,7 +1254,7 @@
 
         // Başlatma
         initParametricBox();
-        createKnobs(); // YENİ: Düğmeleri oluştur (Hata düzeltildi, 'controls' sonrası)
+        createKnobs(); // YENİ: Düğmeleri oluştur
         
         // Küp (Sadece çizgiler)
         function initParametricBox() {
@@ -1745,10 +1852,10 @@
         toggleUiBtn.addEventListener('click', () => {
             uiVisible = !uiVisible;
             const displayValue = uiVisible ? 'flex' : 'none';
-            const blockDisplayValue = uiVisible ? 'block' : 'none';
+            // const blockDisplayValue = uiVisible ? 'block' : 'none'; // blockDisplayValue kaldırıldı
             
             controlsPanel.style.display = displayValue;
-            settingsContainer.style.display = displayValue;
+            settingsContainer.style.display = uiVisible ? 'flex' : 'none'; // .settings-panel artık 'flex' kullanıyor
             
             if (parametricBox) parametricBox.visible = uiVisible;
             
@@ -1771,9 +1878,9 @@
             }
         }, true); // Use capture phase
 
-        // YENİ: Düğme Sürükleme için global listener'lar
-        document.addEventListener('mousemove', onKnobMouseMove);
-        document.addEventListener('mouseup', onKnobMouseUp);
+        // YENİ: Düğme Sürükleme için global listener'lar (createKnobs içine taşındı)
+        // document.addEventListener('mousemove', onKnobMouseMove);
+        // document.addEventListener('mouseup', onKnobMouseUp);
 
         // Başlangıç
         animate();
