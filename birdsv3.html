@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spectral Point Cloud v23 (Fixed Box)</title>
-    <!-- FONT: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Spectral Point Cloud v24 (Custom Fonts)</title>
+    <!-- FONT: Inter kaldırıldı -->
     
     <script type="importmap">
     {
@@ -18,8 +15,35 @@
     }
     </script>
     <style>
+        /* GÜNCELLENDİ: Yeni Font Yüklemeleri */
+        @font-face {
+            font-family: 'FakeReceipt';
+            src: url('https://raw.githubusercontent.com/decentralize-dfw/font/main/OwreKynge.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            
+        }
+        @font-face {
+            font-family: '16Segments';
+            src: url('https://raw.githubusercontent.com/decentralize-dfw/font/main/pixelsix00.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'GuyfordBlackletter';
+            src: url('https://raw.githubusercontent.com/decentralize-dfw/font/main/GuyfordBlackletter.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Biological';
+            src: url('https://raw.githubusercontent.com/decentralize-dfw/font/main/LazenbyCompLiquid.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         :root {
-            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            /* --font-sans kaldırıldı */
             --bg-color: #000000; 
             --panel-bg: transparent;
             --border-color: transparent; 
@@ -39,7 +63,8 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: var(--font-sans);
+            /* GÜNCELLENDİ: Varsayılan font ayarlandı */
+            font-family: sans-serif; 
             background: var(--bg-color); 
             color: var(--text-primary); 
             overflow: hidden;
@@ -61,6 +86,8 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            /* GÜNCELLENDİ: Sol Panel Fontu */
+            font-family: 'Biological', sans-serif;
         }
         .input-wrapper { position: relative; width: 100%; }
         .clear-btn {
@@ -83,7 +110,7 @@
             background: var(--input-bg);
             color: var(--text-primary);
             font-size: 12px;
-            font-family: inherit;
+            font-family: inherit; /* Panelin fontunu miras al */
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         input[type="text"] { padding-right: 25px; }
@@ -125,9 +152,11 @@
             left: 20px;
             z-index: 99; 
             padding: 10px 12px;
-            font-size: 11px; 
+            font-size: 15px; 
             color: var(--text-secondary);
             line-height: 1.6;
+            /* GÜNCELLENDİ: Sol Alt Panel Fontu */
+            font-family: 'Biological', sans-serif;
         }
         #infoBox strong { color: var(--text-primary); font-weight: 500; }
         #infoBox span { color: #FFFFFF; font-weight: 500; margin-left: 8px; }
@@ -141,6 +170,8 @@
             gap: 4px; 
             max-height: calc(100vh - 40px);
             overflow-y: auto;
+            /* GÜNCELLENDİ: Sağ Panel Fontu */
+            font-family: '16Segments', sans-serif;
         }
         .setting-group { display: flex; flex-direction: column; }
         .label-wrapper {
@@ -192,6 +223,8 @@
             transition: opacity 0.2s ease, visibility 0.2s ease;
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);
             border: 1px solid var(--input-border);
+            /* GÜNCELLENDİ: Tooltip Fontu */
+            font-family: '16Segments', serif;
         }
         .info-icon:hover .tooltip { visibility: visible; opacity: 1; }
         
@@ -278,7 +311,7 @@
             position: absolute;
             color: #FFF;
             font-size: 8px;
-            font-family: var(--font-sans);
+            font-family: sans-serif; /* 3D etiketler varsayılan fontta kalsın */
             pointer-events: none;
             background: rgba(0, 0, 0, 0.7);
             padding: 2px 4px;
@@ -302,7 +335,6 @@
         }
         #toggleUiBtn:hover { background: #333; color: #FFF; }
 
-        /* Gizmometre kaldırıldı */
         #gizmoContainer {
             display: none; 
         }
@@ -311,8 +343,6 @@
 </head>
 <body>
     <div id="container"></div>
-
-    <!-- Gizmometre Konteyneri kaldırıldı -->
 
     <!-- BİLGİ KUTUSU -->
     <div id="infoBox" class="panel">
@@ -342,7 +372,7 @@
         <div id="status">Load a file or paste a URL</div>
     </div>
 
-    <!-- AYARLAR (GÜNCELLENDİ) -->
+    <!-- AYARLAR -->
     <div id="settings" class="panel">
         <!-- EKSEN AYARLARI -->
         <div class="setting-group">
@@ -393,13 +423,13 @@
             <span id="verticalScaleValue">1.00x</span>
         </div>
         
-        <!-- GÜNCELLENDİ: Z-EKSENİ (Basitleştirildi) -->
+        <!-- Z-EKSENİ (Basitleştirildi) -->
         <div class="setting-group">
             <div class="label-wrapper">
                 <label for="zAxisScaleSlider">Z-Axis Scale (Pitch):</label>
                 <span class="info-icon">i<span class="tooltip">VISUAL: Stretches or compresses the depth (Z-Axis) of the pitch visualization.</span></span>
             </div>
-            <input type="range" id="zAxisScaleSlider" min="-1" max="1" value="0" step="0.01"> <!-- 10^0 = 1.0x -->
+            <input type="range" id="zAxisScaleSlider" min="-1" max="1" value="0" step="0.01"> 
             <span id="zAxisScaleValue">1.00x</span>
         </div>
         <div class="setting-group">
@@ -428,7 +458,7 @@
                 <label for="pointScaleSlider">Point Scale:</label>
                 <span class="info-icon">i<span class="tooltip">VISUAL: Sets the size of the individual points.</span></span>
             </div>
-            <input type="range" id="pointScaleSlider" min="-1" max="1" value="0" step="0.01">
+            <input type="range" id="pointScaleSlider" min="-1" max="1" value="0" step="0.01"> 
             <span id="pointScaleValue">1.00x</span>
         </div>
         
@@ -564,9 +594,9 @@
         let maxPeaks = 3;
         let pointLifetime = 8;
         let verticalScale = 1.0; 
-        let zAxisScale = 1.0; // YENİ
-        let pitchRangeMin = 36; // YENİ
-        let pitchRangeMax = 96; // YENİ
+        let zAxisScale = 1.0;
+        let pitchRangeMin = 36;
+        let pitchRangeMax = 96;
         let pointScale = 1.0;
         let loopAudio = false;
         let playbackSpeed = 1.0;
@@ -590,9 +620,9 @@
         const maxPeaksSlider = document.getElementById('maxPeaksSlider');
         const pointLifetimeSlider = document.getElementById('pointLifetimeSlider');
         const verticalScaleSlider = document.getElementById('verticalScaleSlider');
-        const zAxisScaleSlider = document.getElementById('zAxisScaleSlider'); // YENİ
-        const pitchRangeMinSlider = document.getElementById('pitchRangeMinSlider'); // YENİ
-        const pitchRangeMaxSlider = document.getElementById('pitchRangeMaxSlider'); // YENİ
+        const zAxisScaleSlider = document.getElementById('zAxisScaleSlider');
+        const pitchRangeMinSlider = document.getElementById('pitchRangeMinSlider');
+        const pitchRangeMaxSlider = document.getElementById('pitchRangeMaxSlider');
         const pointScaleSlider = document.getElementById('pointScaleSlider');
         const loopToggle = document.getElementById('loopToggle');
         const speedSlider = document.getElementById('speedSlider');
@@ -614,9 +644,9 @@
         const maxPeaksValue = document.getElementById('maxPeaksValue');
         const pointLifetimeValue = document.getElementById('pointLifetimeValue');
         const verticalScaleValue = document.getElementById('verticalScaleValue');
-        const zAxisScaleValue = document.getElementById('zAxisScaleValue'); // YENİ
-        const pitchRangeMinValue = document.getElementById('pitchRangeMinValue'); // YENİ
-        const pitchRangeMaxValue = document.getElementById('pitchRangeMaxValue'); // YENİ
+        const zAxisScaleValue = document.getElementById('zAxisScaleValue');
+        const pitchRangeMinValue = document.getElementById('pitchRangeMinValue');
+        const pitchRangeMaxValue = document.getElementById('pitchRangeMaxValue');
         const pointScaleValue = document.getElementById('pointScaleValue');
         const connectionDistanceValue = document.getElementById('connectionDistanceValue');
         const speedValue = document.getElementById('speedValue');
@@ -631,11 +661,12 @@
 
         // Parametrik Küp ve Eksen Etiketleri için değişkenler
         let parametricBox;
-        let axisLabels; // THREE.Group
+        let axisLabels;
+        let labelRenderer; // YENİ: labelRenderer'ı global yap
 
         // GÜNCELLENDİ: Slider Event Listeners (Logaritmik Ölçek)
         function updateLogSlider(slider, variableName, labelElement, suffix = 'x') {
-            const sliderValue = parseFloat(slider.value); // -1 to 1 (veya -2 to 1)
+            const sliderValue = parseFloat(slider.value); 
             const actualScale = Math.pow(10, sliderValue); 
             
             if (variableName === 'xAxisScale') xAxisScale = actualScale;
@@ -657,6 +688,8 @@
         verticalScaleSlider.addEventListener('input', () => updateLogSlider(verticalScaleSlider, 'verticalScale', verticalScaleValue));
         pointScaleSlider.addEventListener('input', () => updateLogSlider(pointScaleSlider, 'pointScale', pointScaleValue));
         zAxisScaleSlider.addEventListener('input', () => updateLogSlider(zAxisScaleSlider, 'zAxisScale', zAxisScaleValue));
+        
+        // NoteSpacing kaldırıldı, Z-Axis Scale ile birleşti
         
         // Diğer (lineer) slider'lar
         minFreqSlider.addEventListener('input', () => {
@@ -684,7 +717,6 @@
             pointLifetimeValue.textContent = `${pointLifetime} s`;
         });
         
-        // YENİ: Pitch Range Slider'ları
         function getNoteName(midi) {
             const octave = Math.floor(midi / 12) - 1;
             return NOTE_NAMES[midi % 12] + octave;
@@ -779,7 +811,8 @@
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
         
-        const labelRenderer = new CSS2DRenderer();
+        // GÜNCELLENDİ: labelRenderer artık global
+        labelRenderer = new CSS2DRenderer();
         labelRenderer.setSize(window.innerWidth, window.innerHeight);
         labelRenderer.domElement.style.position = 'absolute';
         labelRenderer.domElement.style.top = '0px';
@@ -798,7 +831,7 @@
         bloomPass.radius = parseFloat(bloomRadiusSlider.value);
         composer.addPass(bloomPass);
 
-        // GÜNCELLENDİ: Başlatma sırası düzeltildi
+        // Başlatma
         initAxisLabels();
         initParametricBox();
 
@@ -815,6 +848,7 @@
 
         // Parametrik Küp Başlatma Fonksiyonu
         function initParametricBox() {
+            // Temel boyutlar: X=60, Y=40, Z=50
             const boxGeom = new THREE.BoxGeometry(BASE_X_WIDTH, BASE_Y_HEIGHT, BASE_Z_DEPTH);
             const boxEdges = new THREE.EdgesGeometry(boxGeom);
             const boxMat = new THREE.LineBasicMaterial({
@@ -824,8 +858,6 @@
                 linewidth: 1
             });
             parametricBox = new THREE.LineSegments(boxEdges, boxMat);
-            
-            // updateBoxScale() artık animate() döngüsünde çağrılacak
             scene.add(parametricBox);
         }
         
@@ -851,6 +883,7 @@
             const halfZ = BASE_Z_DEPTH / 2;
             const offset = 2.0; 
 
+            // Sol (-X), Üst (+Y), Ön (+Z) köşe
             const labelX = createAxisLabel('X', -halfX - offset, halfY, halfZ);
             const labelY = createAxisLabel('Y', -halfX, halfY + offset, halfZ);
             const labelZ = createAxisLabel('Z', -halfX, halfY, halfZ + offset);
@@ -862,11 +895,12 @@
             scene.add(axisLabels);
         }
         
-        // GÜNCELLENDİ: Küpü ve Etiketleri güncelleyen fonksiyon (Basitleştirilmiş Z)
+        // GÜNCELLENDİ: Küpü ve Etiketleri güncelleyen fonksiyon
         function updateBoxScale() {
             if (!parametricBox || !axisLabels) return; 
 
             // Küpün ve etiketlerin ölçeğini doğrudan slider'lardan al
+            // GÜNCELLENDİ: Z-Axis ölçeği artık Z-Axis Scale'den geliyor
             parametricBox.scale.set(xAxisScale, verticalScale, zAxisScale);
             axisLabels.scale.set(xAxisScale, verticalScale, zAxisScale);
             
@@ -1051,9 +1085,8 @@
                     infoPitch.textContent = "--";
                 }
 
-                // GÜNCELLENDİ: Pitch normalizasyon aralığı
                 const pitchRange = pitchRangeMax - pitchRangeMin;
-                if (pitchRange <= 0) { // Hata önleme
+                if (pitchRange <= 0) { 
                     console.error("Pitch range is invalid");
                     return;
                 }
@@ -1061,21 +1094,19 @@
                 allPeaks.forEach(data => {
                     // 1. X, Y, Z Koordinatlarını Normalize Et (-0.5 to +0.5)
                     
-                    // X-Axis (Frequency)
                     const logMinFreq = Math.log10(minFrequency > 0 ? minFrequency : 1);
                     const logMaxFreq = Math.log10(maxFrequency);
                     const logCurrentFreq = Math.log10(data.frequency);
                     let logNormalizedFreq = (logCurrentFreq - logMinFreq) / (logMaxFreq - logMinFreq);
-                    logNormalizedFreq = Math.min(Math.max(logNormalizedFreq, 0), 1); // 0.0 to 1.0
-                    let x_norm = logNormalizedFreq - 0.5; // -0.5 to +0.5
+                    logNormalizedFreq = Math.min(Math.max(logNormalizedFreq, 0), 1); 
+                    let x_norm = logNormalizedFreq - 0.5; 
                     
-                    // Y-Axis (Amplitude)
-                    const y_norm = data.amplitude - 0.5; // -0.5 to +0.5 (Amplitüd zaten 0-1 arasındaydı)
+                    const y_norm = data.amplitude - 0.5;
                     
                     // Z-Axis (Pitch)
                     let noteNormalized = (data.midiNote - pitchRangeMin) / pitchRange;
-                    noteNormalized = Math.min(Math.max(noteNormalized, 0), 1); // 0.0 to 1.0
-                    const z_norm = noteNormalized - 0.5; // -0.5 to +0.5
+                    noteNormalized = Math.min(Math.max(noteNormalized, 0), 1); 
+                    const z_norm = noteNormalized - 0.5; 
                     
                     const color = getSpectrumColor(data.frequency);
 
@@ -1096,7 +1127,6 @@
                     }
 
                     // 3. "KUTU" MANTIĞI
-                    // Normalize X pozisyonunu kilitle
                     if (bestMatch) {
                         x_norm = bestMatch.x_norm_pos; 
                     }
@@ -1120,7 +1150,7 @@
                         frequency: data.frequency, 
                         point: newPoint, 
                         matched: false,
-                        x_norm_pos: x_norm // Normalize X pozisyonunu sakla
+                        x_norm_pos: x_norm 
                     });
                 });
                 
@@ -1394,7 +1424,9 @@
             composer.render();
             labelRenderer.render(scene, camera); 
 
-            // YENİ: Parametrik küpü ve etiketleri her karede güncelle
+            // Gizmometre kaldırıldı
+            
+            // Küpü ve etiketleri her karede güncelle
             updateBoxScale();
         }
 
@@ -1438,7 +1470,7 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
             composer.setSize(window.innerWidth, window.innerHeight);
-            labelRenderer.setSize(window.innerWidth, window.innerHeight); // YENİ
+            labelRenderer.setSize(window.innerWidth, window.innerHeight); 
         });
 
         // GÜNCELLENDİ: UI GİZLEME MANTIĞI
@@ -1446,13 +1478,15 @@
         toggleUiBtn.addEventListener('click', () => {
             uiVisible = !uiVisible;
             const displayValue = uiVisible ? 'flex' : 'none';
+            const blockDisplayValue = uiVisible ? 'block' : 'none';
+            
             controlsPanel.style.display = displayValue;
             settingsPanel.style.display = displayValue;
             
-            // YENİ: Küp etiketlerini (HTML) VE küpün kendisini (WebGL) de gizle/göster
-            axisLabels.visible = uiVisible;
-            parametricBox.visible = uiVisible;
-            labelRenderer.domElement.style.display = uiVisible ? 'block' : 'none'; // <-- EKLENEN SATIR
+            // Küp etiketlerini (HTML) VE küpün kendisini (WebGL) de gizle/göster
+            if (axisLabels) axisLabels.visible = uiVisible;
+            if (parametricBox) parametricBox.visible = uiVisible;
+            if (labelRenderer) labelRenderer.domElement.style.display = blockDisplayValue; 
             
             toggleUiBtn.textContent = uiVisible ? 'Hide UI' : 'Show UI';
         });
@@ -1462,7 +1496,7 @@
          xAxisScaleSlider, 
          amplitudeThresholdSlider, maxPeaksSlider, pointLifetimeSlider, 
          verticalScaleSlider, 
-         zAxisScaleSlider, pitchRangeMinSlider, pitchRangeMaxSlider, // YENİ
+         zAxisScaleSlider, pitchRangeMinSlider, pitchRangeMaxSlider,
          pointScaleSlider,
          connectionDistanceSlider,
          speedSlider,
