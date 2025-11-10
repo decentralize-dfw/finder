@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- GÜNCELLENDİ: v32.1 (ReferenceError Düzeltmesi) -->
-    <title>Spectral Point Cloud v32.1 (Fix)</title>
+    <title>Spectral Point Cloud v32.4 (Link Added)</title>
     
     <script type="importmap">
     {
@@ -41,7 +40,7 @@
             font-style: normal;
         }
 
-        /* CSS Stilleri (Değişmedi) */
+        /* CSS Stilleri */
         :root {
             --bg-color: #000000; 
             --panel-bg: transparent;
@@ -122,6 +121,128 @@
         button:hover { background: var(--accent-color-hover); }
         #pauseBtn { background: var(--pause-color); }
         #pauseBtn:hover { background: var(--pause-color-hover); }
+
+        /* Info Paneli Stilleri */
+        #infoBtn {
+            font-family: 'GuyfordBlackletter', sans-serif;
+            font-size: 15px;
+            background: var(--input-bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--input-border);
+            margin-top: 4px; 
+        }
+        #infoBtn:hover {
+            background: #333;
+            color: #FFF;
+        }
+        .info-modal-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-family: '16Segments', sans-serif;
+        }
+        .info-modal-content {
+            background: #111;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 30px 40px;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            color: var(--text-secondary);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+         .close-info-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px; /* Yazı tipi boyutu kutuya sığması için ayarlandı */
+            color: var(--text-secondary);
+            background: #222; /* "Kutu" olması için arka plan eklendi */
+            border: 1px solid var(--input-border); /* "Kutu" olması için kenarlık eklendi */
+            cursor: pointer;
+            font-family: sans-serif;
+            font-weight: 300;
+            line-height: 30px; /* 'x' işaretini dikeyde ortalamak için */
+            padding: 0; /* İç boşluk kaldırıldı */
+            width: 30px; /* Sabit genişlik */
+            height: 30px; /* Sabit yükseklik */
+            border-radius: 4px; /* Köşeleri yuvarlatılmış kutu */
+            text-align: center; /* 'x' işaretini yatayda ortalamak için */
+        }
+        .close-info-btn:hover {
+            color: #FFF;
+            background: #333;
+        }
+        .info-modal-content h2 {
+            font-family: 'GuyfordBlackletter', sans-serif;
+            color: #FFF;
+            font-size: 28px;
+            margin-bottom: 5px;
+            font-weight: normal;
+        }
+        .info-modal-content h22 {
+            font-family: 'GuyfordBlackletter', sans-serif;
+            color: #FFF;
+            font-size: 14x;
+            margin-bottom: 5px;
+            font-weight: normal;
+        }
+        .info-modal-content h3 {
+            font-family: 'Biological', sans-serif;
+            color: var(--text-primary);
+            font-size: 16px;
+            margin-bottom: 20px;
+            font-weight: normal;
+        }
+        .info-modal-content h4 {
+            color: #FFF;
+            font-size: 14px;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        .info-modal-content p {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .info-modal-content ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .info-modal-content li {
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .info-modal-content li strong {
+            color: var(--text-primary);
+            font-weight: normal;
+        }
+        .info-footer {
+            display: block;
+            margin-top: 30px;
+            font-family: 'Biological', sans-serif;
+            font-size: 14px;
+            text-align: right;
+            color: var(--text-secondary);
+        }
+        /* YENİ: Footer Link Stili */
+        .info-footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .info-footer a:hover {
+            color: var(--text-primary);
+        }
+        
         #status {
             font-size: 10px;
             color: var(--text-secondary);
@@ -328,13 +449,13 @@
 <body>
     <div id="container"></div>
 
-    <!-- GÜNCELLENDİ: InfoBox Etiketleri v32'ye Göre Değişti -->
     <div id="infoBox" class="panel">
         <strong>X-Axis:</strong> Frequency <span id="infoFreq">--</span><br>
         <strong>Y-Axis:</strong> Amplitude <span id="infoAmp">--</span><br>
         <strong>Z-Axis:</strong> Timbre (Harm) <span id="infoTimbre">--</span>
         <div class="settings-divider"></div>
         <button id="toggleUiBtn">Hide UI</button>
+        <button id="infoBtn">[INFO]</button>
     </div>
 
 
@@ -353,9 +474,8 @@
             <div id="progressBar"></div>
         </div>
         <div id="status">Load a file or paste a URL</div>
-    </div>
+        </div>
 
-    <!-- GÜNCELLENDİ: Ayarlar Paneli v32'ye Göre Yeniden Düzenlendi -->
     <div id="settings" class="panel">
         <div class="setting-group">
             <div class="label-wrapper">
@@ -363,7 +483,6 @@
             </div>
         </div>
         
-        <!-- X-EKSENİ (Frekans) -->
         <div class="setting-group">
             <div class="label-wrapper">
                 <label for="xAxisScaleSlider">X-Axis Scale (Frequency):</label>
@@ -388,7 +507,6 @@
             <input type="range" id="maxFreqSlider" min="5000" max="20000" value="10000" step="100">
             <span id="maxFreqValue">10000 Hz</span>
         </div>
-        <!-- Renk Slider'ı kaldırıldı (artık Pitch Class'a bağlı) -->
         <div class="setting-group" id="colorMaxFreqGroup" style="display: none;">
             <div class="label-wrapper">
                 <label for="colorMaxFreqSlider">Color Max Frequency (Hz):</label>
@@ -397,7 +515,6 @@
             <span id="colorMaxFreqValue">4000 Hz</span>
         </div>
         
-        <!-- Y-EKSENİ (Amplitüd/Güç) -->
         <div class="setting-group">
             <div class="label-wrapper">
                 <label for="verticalScaleSlider">Y-Axis Scale (Amplitude):</label>
@@ -411,11 +528,10 @@
                 <label for="amplitudeThresholdSlider">Amplitude Threshold:</label>
                 <span class="info-icon">i<span class="tooltip">FILTER: The minimum volume (0-1) required to create a point (Y-Axis bottom limit).</span></span>
             </div>
-            <input type="range" id="amplitudeThresholdSlider" min="0.01" max="0.5" value="0.25" step="0.01">
-            <span id="amplitudeThresholdValue">25.0%</span>
+            <input type="range" id="amplitudeThresholdSlider" min="0.1" max="0.5" value="0.31" step="0.01">
+            <span id="amplitudeThresholdValue">31.0%</span>
         </div>
 
-        <!-- Z-EKSENİ (Tını/Harmonik Zenginlik) -->
         <div class="setting-group">
             <div class="label-wrapper">
                 <label for="zAxisScaleSlider">Z-Axis Scale (Timbre):</label>
@@ -433,9 +549,7 @@
             <span id="harmonicSensitivityValue">0.50</span>
         </div>
 
-        <!-- DİĞER AYARLAR (Genel Filtreler ve Görseller) -->
         <div class="settings-divider"></div>
-        <!-- Pitch/Nota Filtreleri (Artık eksen değil, filtre) -->
         <div class="setting-group">
             <div class="label-wrapper">
                 <label for="pitchRangeMinSlider">Min Pitch (Note) Filter:</label>
@@ -452,7 +566,6 @@
             <input type="range" id="pitchRangeMaxSlider" min="81" max="108" value="96" step="1">
             <span id="pitchRangeMaxValue">96 (C7)</span>
         </div>
-        <!-- Diğerleri -->
         <div class="setting-group">
             <div class="label-wrapper">
                 <label for="pointScaleSlider">Base Point Scale:</label>
@@ -493,7 +606,6 @@
             <input type="range" id="speedSlider" min="0.1" max="5.0" value="1.0" step="0.1">
             <span id="speedValue">1.0x</span>
         </div>
-        <!-- Görünüm Seçenekleri -->
         <div class="settings-divider"></div>
         <div class="checkbox-group">
             <div class="label-wrapper">
@@ -524,7 +636,6 @@
             <input type="range" id="connectionDistanceSlider" min="5" max="500" value="15" step="1">
             <span id="connectionDistanceValue">15</span>
         </div>
-        <!-- Bloom Ayarları -->
         <div class="settings-divider"></div>
         <div class="setting-group">
             <div class="label-wrapper">
@@ -557,6 +668,34 @@
         </div>
     </div>
 
+    <div id="infoModal" class="info-modal-container">
+        <div class="info-modal-content">
+            <button id="closeInfoBtn" class="close-info-btn">&times;</button>
+            
+            <h2>[ Acoustic Architecture System ]</h2>
+            <p>Each sound particle is positioned in 3D space according to 6 primary parameters:</p>
+            
+            <h4>1. SPATIAL AXES (X, Y, Z)</h4>
+            <ul>
+                <li><strong>X-AXIS (Frequency):</strong> Defines the "tonal space" of the sound. Low frequencies (bass) are on the left, high frequencies (treble) are on the right.</li>
+                <li><strong>Y-AXIS (Amplitude):</strong> Defines the "power" or "volume" of the sound. High amplitude (loud) sounds move higher up the Y-axis.</li>
+                <li><strong>Z-AXIS (Timbre):</strong> Defines the "timbral richness." Pure sounds (sine waves, flutes) are near the front (low Z), while harmonically rich sounds (piano, vocals, distortion) are placed deeper along the Z-axis.</li>
+            </ul>
+            
+            <h4>2. VISUAL PROPERTIES</h4>
+            <ul>
+                <li><strong>COLOR (Hue):</strong> Represents the "musical identity" (Pitch Class) using a 12-note color wheel (e.g., C=Red, D=Yellow, E=Green...).</li>
+                <li><strong>SCALE (Size):</strong> Reflects the "volume" (Amplitude). Louder sounds (higher on the Y-Axis) also create larger particles.</li>
+                <li><strong>BRIGHTNESS (Bloom):</strong> The sound's power and brilliance create a glow effect, controlled by the "Bloom" settings (top-right menu).</li>
+            </ul>
+            
+            <span class="info-footer">
+              <span class="info-footer"><h22>Virtually Ever After,<h22><p>2025, <br>
+                <a href="https://www.virtuallyeverafter.xyz/" target="_blank">🔗website</a>
+            </span>
+        </div>
+    </div>
+
     <!-- THREE.JS & UYGULAMA MANTIĞI -->
     <script type="module">
         import * as THREE from 'three';
@@ -585,7 +724,7 @@
         let minFrequency = 200;
         let maxFrequency = 10000;
         let xAxisScale = 1.0; 
-        let amplitudeThreshold = 0.25;
+        let amplitudeThreshold = 0.31; // GÜNCELLENDİ: Varsayılan değer
         let maxPeaks = 3;
         let pointLifetime = 8;
         let verticalScale = 1.0; // Y-Ekseni (Amplitüd) Ölçeği
@@ -697,17 +836,16 @@
         harmonicSensitivitySlider.addEventListener('input', () => {
             harmonicSensitivity = parseFloat(harmonicSensitivitySlider.value);
             harmonicSensitivityValue.textContent = harmonicSensitivity.toFixed(2);
-            // Bu, var olan noktaları değil, sadece yeni oluşacak noktaları etkiler
-            // (veya updateAllPositions'u tetikleyebiliriz, ancak z_norm'u yeniden hesaplamamız gerekir)
-            // Şimdilik sadece yeni noktaları etkilesin.
         });
 
-        // Diğer (lineer) slider'lar (Değişmedi)
+        // Diğer (lineer) slider'lar
         minFreqSlider.addEventListener('input', () => {
             minFrequency = parseFloat(minFreqSlider.value);
+            minFreqValue.textContent = `${minFrequency} Hz`; // Etiket güncellemesi eklendi
         });
         maxFreqSlider.addEventListener('input', () => {
             maxFrequency = parseFloat(maxFreqSlider.value);
+            maxFreqValue.textContent = `${maxFrequency} Hz`; // Etiket güncellemesi eklendi
         });
         amplitudeThresholdSlider.addEventListener('input', () => {
             amplitudeThreshold = parseFloat(amplitudeThresholdSlider.value);
@@ -800,6 +938,11 @@
         const toggleUiBtn = document.getElementById('toggleUiBtn');
         const controlsPanel = document.getElementById('controls');
         const settingsPanel = document.getElementById('settings');
+
+        // YENİ: Info Modal Elemanları
+        const infoBtn = document.getElementById('infoBtn');
+        const infoModal = document.getElementById('infoModal');
+        const closeInfoBtn = document.getElementById('closeInfoBtn');
 
         // Scene Setup (Değişmedi)
         const scene = new THREE.Scene();
@@ -1230,15 +1373,9 @@
         // GÜNCELLENDİ: Noktaları Güncelleme (Zaman/Hız mantığı kaldırıldı)
         function updatePointsAndLines(deltaTime) {
             
-            // Z-Ekseni (Zaman) hızı KALDIRILDI
-            // const timeSpeed = zAxisScale * 5.0; 
-
             for (let i = points.length - 1; i >= 0; i--) {
                 const point = points[i];
                 point.lifetime -= deltaTime;
-                
-                // Z-Ekseninde kaydırma KALDIRILDI
-                // point.mesh.position.z -= timeSpeed * deltaTime;
                 
                 const opacity = Math.max(0, point.lifetime / point.initialLifetime);
                 point.mesh.material.opacity = opacity;
@@ -1274,12 +1411,6 @@
                     } else if (lineInfo.type === 'harmonic') {
                         lineInfo.line.visible = enableSimultaneousConnections;
                     }
-                    
-                    // Çizgi pozisyonlarını GÜNCELLEME (Slider'lar için updateAllPositions'ta yapılır)
-                    // const positions = lineInfo.line.geometry.attributes.position;
-                    // positions.setXYZ(0, ...);
-                    // positions.setXYZ(1, ...);
-                    // positions.needsUpdate = true;
                     
                     // Sadece opacity'yi soluklaştır
                     const minOpacity = Math.min(
@@ -1541,6 +1672,20 @@
             if (labelRenderer) labelRenderer.domElement.style.display = blockDisplayValue; 
             
             toggleUiBtn.textContent = uiVisible ? 'Hide UI' : 'Show UI';
+        });
+
+        // YENİ: Info Modal Kontrolleri
+        infoBtn.addEventListener('click', () => {
+            infoModal.style.display = 'flex';
+        });
+        closeInfoBtn.addEventListener('click', () => {
+            infoModal.style.display = 'none';
+        });
+        // İsteğe bağlı: Dışarı tıklayınca kapat
+        infoModal.addEventListener('click', (e) => {
+            if (e.target === infoModal) {
+                infoModal.style.display = 'none';
+            }
         });
 
         // GÜNCELLENDİ: Başlangıç tetikleme listesi (v32)
