@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spectral Point Cloud v17 (Deterministic Cents)</title>
+    <!-- FONT: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/"
+        }
+    }
+    </script>
+    <style>
+        :root {
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --bg-color: #000000; 
+            --panel-bg: transparent;
+            --border-color: transparent; 
+            --shadow-color: transparent; 
+            
+            --text-primary: #FFFFFF;
+            --text-secondary: #AAAAAA;
+            --accent-color: #FFFFFF;
+            --accent-color-hover: #DDDDDD;
+            --pause-color: #FFD700;
+            --pause-color-hover: #FFA500;
+            
+            --slider-track: #444444;
+            --input-border: #555555;
+            --input-bg: #222222;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-color); 
+            color: var(--text-primary); 
+            overflow: hidden;
+        }
+        #container { width: 100vw; height: 100vh; position: relative; }
+        .panel {
+            position: absolute;
+            z-index: 100;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            padding: 12px;
+        }
+        #controls {
+            top: 20px;
+            left: 20px;
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .input-wrapper { position: relative; width: 100%; }
+        .clear-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #999;
+            cursor: pointer;
+            display: none; 
+        }
+        .clear-btn:hover { color: #FFF; }
+        
+        input[type="file"], input[type="text"], button {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 5px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 12px;
+            font-family: inherit;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        input[type="text"] { padding-right: 25px; }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+        }
+        button {
+            background: var(--accent-color);
+            color: #000000;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+        button:hover { background: var(--accent-color-hover); }
+        #pauseBtn { background: var(--pause-color); }
+        #pauseBtn:hover { background: var(--pause-color-hover); }
+        #status {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: -4px;
+        }
+        #progressBarContainer {
+            margin-bottom: 2px;
+            background: var(--slider-track);
+            border-radius: 2px;
+            height: 4px;
+            overflow: hidden;
+        }
+        #progressBar {
+            width: 0%;
+            height: 100%;
+            background: var(--accent-color);
+            transition: width 0.1s linear;
+        }
+        #infoBox {
+            bottom: 20px;
+            left: 20px;
+            z-index: 99;
+            padding: 10px 12px;
+            font-size: 11px; 
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        #infoBox strong { color: var(--text-primary); font-weight: 500; }
+        #infoBox span { color: #FFFFFF; font-weight: 500; margin-left: 8px; }
+        #settings {
+            top: 20px;
+            right: 20px;
+            min-width: 230px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .setting-group { display: flex; flex-direction: column; }
+        .label-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .label-wrapper label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0;
+        }
+        .info-icon {
+            position: relative;
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            line-height: 14px;
+            text-align: center;
+            border-radius: 50%;
+            background: var(--slider-track);
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: bold;
+            font-style: italic;
+            cursor: help;
+        }
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            width: 180px;
+            background-color: #111;
+            color: #fff;
+            text-align: left;
+            border-radius: 4px;
+            padding: 8px 10px;
+            position: absolute;
+            z-index: 101;
+            right: 120%; 
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            font-weight: 400;
+            font-style: normal;
+            line-height: 1.4;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            border: 1px solid var(--input-border);
+        }
+        .info-icon:hover .tooltip { visibility: visible; opacity: 1; }
+        
+        .setting-group span {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-align: right;
+        }
+        .settings-divider {
+            height: 1px;
+            background: var(--slider-track);
+            margin: 6px 0;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            background: var(--slider-track);
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            border: none;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 4px;
+        }
+        .checkbox-group label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0;
+        }
+        .checkbox-group .label-wrapper { margin-bottom: 0; flex-grow: 1; }
+        
+        input[type="checkbox"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 4px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        input[type="checkbox"]:checked {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            top: -2px;
+            left: 2px;
+            font-size: 12px;
+            color: #000;
+            font-weight: bold;
+        }
+        .label {
+            position: absolute;
+            color: #FFF;
+            font-size: 8px;
+            font-family: var(--font-sans);
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2px 4px;
+            border-radius: 3px;
+            white-space: nowrap;
+            border: 1px solid #444;
+            line-height: 1.4;
+            transform: translate(10px, -50%); 
+        }
+        #toggleUiBtn { 
+            background: var(--input-bg);
+            color: var(--text-secondary);
+            font-weight: 500;
+            border: 1px solid var(--input-border);
+            padding: 8px 10px;
+            font-size: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            margin-top: 5px;
+        }
+        #toggleUiBtn:hover { background: #333; color: #FFF; }
+        
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+
+    <!-- BİLGİ KUTUSU (Pitch artık oktav gösterecek) -->
+    <div id="infoBox" class="panel">
+        <strong>X-Axis:</strong> Frequency <span id="infoFreq">--</span><br>
+        <strong>Y-Axis:</strong> Amplitude <span id="infoAmp">--</span><br>
+        <strong>Z-Axis:</strong> Pitch <span id="infoPitch">--</span>
+        
+        <div class="settings-divider"></div>
+        <button id="toggleUiBtn">Hide UI</button>
+    </div>
+
+    <!-- KONTROLLER -->
+    <div id="controls" class="panel">
+        <div class="input-wrapper">
+            <input type="file" id="fileInput" accept="audio/*">
+            <span id="clearFileBtn" class="clear-btn">&times;</span>
+        </div>
+        <div class="input-wrapper">
+            <input type="text" id="urlInput" placeholder="Or paste audio URL">
+            <span id="clearUrlBtn" class="clear-btn">&times;</span>
+        </div>
+        <button id="playBtn">Play</button>
+        <button id="pauseBtn" style="display:none;">Pause</button>
+        <div id="progressBarContainer">
+            <div id="progressBar"></div>
+        </div>
+        <div id="status">Load a file or paste a URL</div>
+    </div>
+
+    <!-- AYARLAR (YENİ Z-EKSENİ KONTROLLERİ) -->
+    <div id="settings" class="panel">
+        <!-- Temel Ayarlar -->
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="minFreqSlider">Min Frequency (Hz):</label>
+                <span class="info-icon">i<span class="tooltip">FİLTRE: Görselleştirilecek en düşük frekans sınırı.</span></span>
+            </div>
+            <input type="range" id="minFreqSlider" min="20" max="5000" value="200" step="10">
+            <span id="minFreqValue">200 Hz</span>
+        </div>
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="maxFreqSlider">Max Frequency (Hz):</label>
+                <span class="info-icon">i<span class="tooltip">FİLTRE: Görselleştirilecek en yüksek frekans sınırı.</span></span>
+            </div>
+            <input type="range" id="maxFreqSlider" min="5000" max="20000" value="10000" step="100">
+            <span id="maxFreqValue">10000 Hz</span>
+        </div>
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="colorMaxFreqSlider">Color Max Frequency (Hz):</label>
+                <span class="info-icon">i<span class="tooltip">GÖRSEL: 'Kırmızı' rengin hangi frekansta olacağını belirler. Renk çeşitliliği için 'Max Frequency' filtresinden düşük tutun.</span></span>
+            </div>
+            <input type="range" id="colorMaxFreqSlider" min="1000" max="20000" value="4000" step="100">
+            <span id="colorMaxFreqValue">4000 Hz</span>
+        </div>
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="amplitudeThresholdSlider">Amplitude Threshold:</label>
+                <span class="info-icon">i<span class="tooltip">FİLTRE: Bir noktanın oluşması için gereken minimum ses yüksekliği (0-1).</span></span>
+            </div>
+            <input type="range" id="amplitudeThresholdSlider" min="0.01" max="0.5" value="0.25" step="0.01">
+            <span id="amplitudeThresholdValue">25.0%</span>
+        </div>
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="maxPeaksSlider">Max Peaks per Sample:</label>
+                <span class="info-icon">i<span class="tooltip">FİLTRE: Her karede bulunacak maksimum nokta sayısı. Düşük tutmak gürültüyü azaltır.</span></span>
+            </div>
+            <input type="range" id="maxPeaksSlider" min="1" max="20" value="3" step="1">
+            <span id="maxPeaksValue">3</span>
+        </div>
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="pointLifetimeSlider">Point Lifetime (seconds):</label>
+                <span class="info-icon">i<span class="tooltip">GÖRSEL: Bir noktanın ekranda kalma süresi (saniye).</span></span>
+            </div>
+            <input type="range" id="pointLifetimeSlider" min="5" max="60" value="8" step="1">
+            <span id="pointLifetimeValue">8 s</span>
+        </div>
+        
+        <!-- Pozisyon & Hız Ayarları -->
+        <div class="settings-divider"></div>
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="sampleFpsSlider">Sample Rate (FPS):</label>
+                <span class="info-icon">i<span class="tooltip">HIZ: Saniyede kaç kez sesin analiz edilip nokta oluşturulacağı.</span></span>
+            </div>
+            <input type="range" id="sampleFpsSlider" min="1" max="50" value="10" step="1">
+            <span id="sampleFpsValue">10 FPS</span>
+        </div>
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="verticalScaleSlider">Vertical Scale Multiplier:</label>
+                <span class="info-icon">i<span class="tooltip">GÖRSEL: Ses yüksekliğinin (Amplitüd) Y eksenindeki dikey etkisini çarpar.</span></span>
+            </div>
+            <input type="range" id="verticalScaleSlider" min="0.1" max="10.0" value="1.0" step="0.1">
+            <span id="verticalScaleValue">1.0x</span>
+        </div>
+        
+        <!-- YENİ Z-EKSENİ KONTROLLERİ -->
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="noteSpacingSlider">Note Spacing (Z-Depth):</label>
+                <span class="info-icon">i<span class="tooltip">Z-EKSENİ: Notalar (C4, D4, E4) arasındaki ana derinlik mesafesini ayarlar. "Duvarların" Z eksenindeki yerini belirler.</span></span>
+            </div>
+            <input type="range" id="noteSpacingSlider" min="0.1" max="10.0" value="2.0" step="0.1">
+            <span id="noteSpacingValue">2.0</span>
+        </div>
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="centSensitivitySlider">Cent Sensitivity (Z-Thickness):</label>
+                <span class="info-icon">i<span class="tooltip">Z-EKSENİ: Bir notanın "alt notalarını" (cents) büyüterek "duvara" 3D kalınlık verir. 0 = Düz duvar.</span></span>
+            </div>
+            <input type="range" id="centSensitivitySlider" min="0.0" max="50.0" value="20.0" step="1.0">
+            <span id="centSensitivityValue">20.0</span>
+        </div>
+        <!-- KALDIRILAN KONTROLLER -->
+        
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="speedSlider">Playback Speed:</label>
+                <span class="info-icon">i<span class="tooltip">HIZ: Sesin oynatma hızı (1.0 = normal).</span></span>
+            </div>
+            <input type="range" id="speedSlider" min="0.1" max="5.0" value="1.0" step="0.1">
+            <span id="speedValue">1.0x</span>
+        </div>
+        
+        <!-- Görünüm Seçenekleri -->
+        <div class="settings-divider"></div>
+        <div class="checkbox-group">
+            <div class="label-wrapper">
+                <label for="loopToggle">Loop Audio</label>
+                <span class="info-icon">i<span class="tooltip">Ses bittiğinde otomatik olarak yeniden başlatır.</span></span>
+            </div>
+            <input type="checkbox" id="loopToggle">
+        </div>
+        <div class="checkbox-group">
+            <div class="label-wrapper">
+                <label for="linesToggle">Show Lines</label>
+                <span class="info-icon">i<span class="tooltip">Noktalar arasındaki bağlantı çizgilerini gösterir/gizler.</span></span>
+            </div>
+            <input type="checkbox" id="linesToggle" checked>
+        </div>
+
+        <!-- Bloom Ayarları -->
+        <div class="settings-divider"></div>
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label style="color: var(--text-primary); font-weight: 500;">Bloom Settings</label>
+            </div>
+        </div>
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="bloomThresholdSlider">Bloom Threshold:</label>
+                <span class="info-icon">i<span class="tooltip">Parlamanın (Bloom) başlaması için gereken minimum parlaklık.</span></span>
+            </div>
+            <input type="range" id="bloomThresholdSlider" min="0.0" max="1.0" value="0.1" step="0.01">
+            <span id="bloomThresholdValue">0.1</span>
+        </div>
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="bloomStrengthSlider">Bloom Strength:</label>
+                <span class="info-icon">i<span class="tooltip">Parlamanın yoğunluğu ve gücü.</span></span>
+            </div>
+            <input type="range" id="bloomStrengthSlider" min="0.0" max="3.0" value="1.8" step="0.1">
+            <span id="bloomStrengthValue">1.8</span>
+        </div>
+        <div class="setting-group">
+            <div class="label-wrapper">
+                <label for="bloomRadiusSlider">Bloom Radius:</label>
+                <span class="info-icon">i<span class="tooltip">Parlamanın etrafa ne kadar yayılacağı.</span></span>
+            </div>
+            <input type="range" id="bloomRadiusSlider" min="0.0" max="2.0" value="0.5" step="0.1">
+            <span id="bloomRadiusValue">0.5</span>
+        </div>
+    </div>
+
+    <!-- THREE.JS & UYGULAMA MANTIĞI -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+        // SABİT DEĞERLER
+        const FFT_SIZE = 8192; 
+        const BASE_HEIGHT = 40.0; 
+        const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        const A4_FREQ = 440.0;
+
+        // Ayarlar
+        let minFrequency = 200;
+        let maxFrequency = 10000;
+        let colorMaxFrequency = 4000;
+        let amplitudeThreshold = 0.25;
+        let maxPeaks = 3;
+        let pointLifetime = 8;
+        let verticalScale = 1.0; 
+        let noteSpacing = 2.0; // YENİ
+        let centSensitivity = 20.0; // YENİ
+        let loopAudio = false;
+        let playbackSpeed = 1.0;
+        let enableLines = true;
+        let bloomPass; 
+        let sampleRateFps = 10;
+
+        // Peak tracking
+        let previousPeaks = []; 
+        const peakTrackingTolerance = 50; 
+        const spectralMaskingHz = 100; 
+
+        // Slider elemanları
+        const minFreqSlider = document.getElementById('minFreqSlider');
+        const maxFreqSlider = document.getElementById('maxFreqSlider');
+        const colorMaxFreqSlider = document.getElementById('colorMaxFreqSlider');
+        const amplitudeThresholdSlider = document.getElementById('amplitudeThresholdSlider');
+        const maxPeaksSlider = document.getElementById('maxPeaksSlider');
+        const pointLifetimeSlider = document.getElementById('pointLifetimeSlider');
+        const verticalScaleSlider = document.getElementById('verticalScaleSlider');
+        const noteSpacingSlider = document.getElementById('noteSpacingSlider'); // YENİ
+        const centSensitivitySlider = document.getElementById('centSensitivitySlider'); // YENİ
+        const loopToggle = document.getElementById('loopToggle');
+        const speedSlider = document.getElementById('speedSlider');
+        const linesToggle = document.getElementById('linesToggle');
+        const bloomThresholdSlider = document.getElementById('bloomThresholdSlider');
+        const bloomStrengthSlider = document.getElementById('bloomStrengthSlider');
+        const bloomRadiusSlider = document.getElementById('bloomRadiusSlider');
+        const sampleFpsSlider = document.getElementById('sampleFpsSlider');
+
+        // Değer etiketleri
+        const minFreqValue = document.getElementById('minFreqValue');
+        const maxFreqValue = document.getElementById('maxFreqValue');
+        const colorMaxFreqValue = document.getElementById('colorMaxFreqValue');
+        const amplitudeThresholdValue = document.getElementById('amplitudeThresholdValue');
+        const maxPeaksValue = document.getElementById('maxPeaksValue');
+        const pointLifetimeValue = document.getElementById('pointLifetimeValue');
+        const verticalScaleValue = document.getElementById('verticalScaleValue');
+        const noteSpacingValue = document.getElementById('noteSpacingValue'); // YENİ
+        const centSensitivityValue = document.getElementById('centSensitivityValue'); // YENİ
+        const speedValue = document.getElementById('speedValue');
+        const bloomThresholdValue = document.getElementById('bloomThresholdValue');
+        const bloomStrengthValue = document.getElementById('bloomStrengthValue');
+        const bloomRadiusValue = document.getElementById('bloomRadiusValue');
+        const sampleFpsValue = document.getElementById('sampleFpsValue');
+        
+        const infoFreq = document.getElementById('infoFreq');
+        const infoAmp = document.getElementById('infoAmp');
+        const infoPitch = document.getElementById('infoPitch');
+
+        // Slider Event Listeners
+        minFreqSlider.addEventListener('input', () => {
+            minFrequency = parseFloat(minFreqSlider.value);
+            minFreqValue.textContent = `${minFrequency} Hz`;
+            if (maxFrequency < minFrequency) {
+                maxFrequency = minFrequency;
+                maxFreqSlider.value = minFrequency;
+                maxFreqValue.textContent = `${maxFrequency} Hz`;
+            }
+        });
+        maxFreqSlider.addEventListener('input', () => {
+            maxFrequency = parseFloat(maxFreqSlider.value);
+            maxFreqValue.textContent = `${maxFrequency} Hz`;
+            if (minFrequency > maxFrequency) {
+                minFrequency = maxFrequency;
+                minFreqSlider.value = maxFrequency;
+                minFreqValue.textContent = `${minFrequency} Hz`;
+            }
+        });
+        
+        colorMaxFreqSlider.addEventListener('input', () => {
+            colorMaxFrequency = parseFloat(colorMaxFreqSlider.value);
+            colorMaxFreqValue.textContent = `${colorMaxFrequency} Hz`;
+        });
+        
+        amplitudeThresholdSlider.addEventListener('input', () => {
+            amplitudeThreshold = parseFloat(amplitudeThresholdSlider.value);
+            amplitudeThresholdValue.textContent = `${(amplitudeThreshold * 100).toFixed(1)}%`;
+        });
+        maxPeaksSlider.addEventListener('input', () => {
+            maxPeaks = parseInt(maxPeaksSlider.value);
+            maxPeaksValue.textContent = maxPeaks;
+        });
+        pointLifetimeSlider.addEventListener('input', () => {
+            pointLifetime = parseFloat(pointLifetimeSlider.value);
+            pointLifetimeValue.textContent = `${pointLifetime} s`;
+        });
+        verticalScaleSlider.addEventListener('input', () => {
+            verticalScale = parseFloat(verticalScaleSlider.value);
+            verticalScaleValue.textContent = `${verticalScale.toFixed(1)}x`;
+        });
+        
+        // YENİ Z-EKSENİ SLIDERLARI
+        noteSpacingSlider.addEventListener('input', () => {
+            noteSpacing = parseFloat(noteSpacingSlider.value);
+            noteSpacingValue.textContent = noteSpacing.toFixed(1);
+        });
+        centSensitivitySlider.addEventListener('input', () => {
+            centSensitivity = parseFloat(centSensitivitySlider.value);
+            centSensitivityValue.textContent = centSensitivity.toFixed(1);
+        });
+        
+        speedSlider.addEventListener('input', () => {
+            playbackSpeed = parseFloat(speedSlider.value);
+            speedValue.textContent = `${playbackSpeed.toFixed(1)}x`;
+            if (source) {
+                source.playbackRate.setValueAtTime(playbackSpeed, audioContext.currentTime);
+            }
+        });
+        sampleFpsSlider.addEventListener('input', () => {
+            sampleRateFps = parseInt(sampleFpsSlider.value);
+            sampleFpsValue.textContent = `${sampleRateFps} FPS`;
+        });
+        
+        // Checkbox Event Listeners
+        loopToggle.addEventListener('change', () => {
+            loopAudio = loopToggle.checked;
+            if (source) {
+                source.loop = loopAudio;
+            }
+        });
+        linesToggle.addEventListener('change', () => {
+            enableLines = linesToggle.checked;
+            lines.forEach(l => l.line.visible = enableLines);
+        });
+        
+        // Bloom Slider Event Listeners
+        bloomThresholdSlider.addEventListener('input', () => {
+            const value = parseFloat(bloomThresholdSlider.value);
+            if (bloomPass) bloomPass.threshold = value;
+            bloomThresholdValue.textContent = value.toFixed(2);
+        });
+        bloomStrengthSlider.addEventListener('input', () => {
+            const value = parseFloat(bloomStrengthSlider.value);
+            if (bloomPass) bloomPass.strength = value;
+            bloomStrengthValue.textContent = value.toFixed(1);
+        });
+        bloomRadiusSlider.addEventListener('input', () => {
+            const value = parseFloat(bloomRadiusSlider.value);
+            if (bloomPass) bloomPass.radius = value;
+            bloomRadiusValue.textContent = value.toFixed(1);
+        });
+
+        // Diğer UI Elemanları
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const fileInput = document.getElementById('fileInput');
+        const urlInput = document.getElementById('urlInput');
+        const statusEl = document.getElementById('status');
+        const progressBar = document.getElementById('progressBar');
+        const clearFileBtn = document.getElementById('clearFileBtn');
+        const clearUrlBtn = document.getElementById('clearUrlBtn');
+        const toggleUiBtn = document.getElementById('toggleUiBtn');
+        const controlsPanel = document.getElementById('controls');
+        const settingsPanel = document.getElementById('settings');
+
+        // Scene Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000); 
+        document.getElementById('container').appendChild(renderer.domElement);
+        camera.position.set(25, 15, 35);
+        camera.lookAt(0, 0, 0);
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // Post-processing (Bloom)
+        const composer = new EffectComposer(renderer);
+        composer.addPass(new RenderPass(scene, camera));
+        bloomPass = new UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            1.8, 0.5, 0.1
+        );
+        bloomPass.threshold = parseFloat(bloomThresholdSlider.value);
+        bloomPass.strength = parseFloat(bloomStrengthSlider.value);
+        bloomPass.radius = parseFloat(bloomRadiusSlider.value);
+        composer.addPass(bloomPass);
+
+        // Audio State
+        let audioContext, analyser, dataArray, source;
+        let isPlaying = false;
+        let isPaused = false;
+        let startTime = 0;
+        let lastSampleTime = 0;
+        const points = [];
+        const lines = [];
+
+        // Renk Hesaplama (Aynı)
+        function getSpectrumColor(frequency) {
+            const t = Math.min(Math.max((frequency - minFrequency) / (colorMaxFrequency - minFrequency), 0), 1);
+            const color = new THREE.Color();
+            const hue = (1 - t) * 0.7; // 0.7 (Mavi/Mor) -> 0.0 (Kırmızı)
+            color.setHSL(hue, 1.0, 0.6); 
+            return color;
+        }
+
+        // Gelişmiş Tepe Noktalarını Bulma (Aynı)
+        function getAllActivePeaks() {
+            if (!analyser || !isPlaying || isPaused) return [];
+            
+            analyser.getByteFrequencyData(dataArray);
+            
+            const sampleRate = audioContext.sampleRate;
+            const binCount = analyser.frequencyBinCount;
+            const binFrequency = sampleRate / FFT_SIZE;
+            
+            const candidatePeaks = [];
+            
+            for (let i = 5; i < binCount - 5; i++) {
+                const amplitude = dataArray[i] / 255.0;
+                if (amplitude < amplitudeThreshold) continue;
+
+                const frequency = i * binFrequency;
+                if (frequency < minFrequency || frequency > maxFrequency) continue;
+                
+                let isLocalMax = true;
+                for (let j = 1; j <= 3; j++) {
+                    if (amplitude < dataArray[i - j] / 255.0 || amplitude < dataArray[i + j] / 255.0) {
+                        isLocalMax = false;
+                        break;
+                    }
+                }
+                if (!isLocalMax) continue;
+
+                const alpha = dataArray[i - 1] / 255.0;
+                const beta = dataArray[i] / 255.0;
+                const gamma = dataArray[i + 1] / 255.0;
+                const p = 0.5 * (alpha - gamma) / (alpha - 2.0 * beta + gamma);
+                const preciseFrequency = (i + p) * binFrequency;
+
+                const midiNote = 12 * Math.log2(preciseFrequency / A4_FREQ) + 69;
+                const pitchClass = Math.round(midiNote) % 12;
+
+                candidatePeaks.push({
+                    frequency: preciseFrequency,
+                    amplitude: amplitude,
+                    bin: i,
+                    midiNote: midiNote, // Bu artık bir float (örn: 60.03)
+                    pitchClass: pitchClass
+                });
+                
+                i += 3;
+            }
+            
+            candidatePeaks.sort((a, b) => b.amplitude - a.amplitude);
+
+            const filteredPeaks = [];
+            for (const peak of candidatePeaks) {
+                let isMasked = false;
+                for (const filteredPeak of filteredPeaks) {
+                    if (Math.abs(peak.frequency - filteredPeak.frequency) < spectralMaskingHz) {
+                        isMasked = true;
+                        break;
+                    }
+                }
+                if (!isMasked) {
+                    filteredPeaks.push(peak);
+                    if (filteredPeaks.length >= maxPeaks) break;
+                }
+            }
+            
+            return filteredPeaks;
+        }
+
+        // Nokta Oluşturma (Aynı)
+        function createPoint(x, y, z, color, amplitude, frequency, emissionTime, midiNote) {
+            const geometry = new THREE.SphereGeometry(0.3, 16, 16);
+            const material = new THREE.MeshBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 1.0
+            });
+            
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(x, y, z);
+            scene.add(mesh);
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'label';
+            labelDiv.style.display = 'none';
+            document.body.appendChild(labelDiv);
+            
+            const point = {
+                position: mesh.position,
+                color: color.clone(),
+                lifetime: pointLifetime,
+                initialLifetime: pointLifetime,
+                mesh: mesh,
+                light: null, 
+                emissionTime: emissionTime,
+                amplitude: amplitude,
+                frequency: frequency,
+                midiNote: midiNote,
+                label: labelDiv
+            };
+            
+            points.push(point);
+            return point; 
+        }
+
+        // Çizgi Oluşturma (Aynı)
+        function createLine(startPoint, endPoint, color) {
+            if (!enableLines) return; 
+
+            const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+                startPoint.position,
+                endPoint.position
+            ]);
+            const lineMaterial = new THREE.LineBasicMaterial({
+                color: color, 
+                transparent: true,
+                opacity: 0.7,
+                linewidth: 2
+            });
+            
+            const line = new THREE.Line(lineGeometry, lineMaterial);
+            line.visible = enableLines; 
+            scene.add(line);
+            
+            lines.push({
+                line: line,
+                tube: null,
+                startPoint: startPoint,
+                endPoint: endPoint
+            });
+        }
+
+        // GÜNCELLENDİ: Ses Örnekleme (YENİ Z-EKSENİ FORMÜLÜ)
+        function sampleAudio() {
+            if (!isPlaying || isPaused || !audioContext) return;
+            
+            const currentTime = audioContext.currentTime - startTime;
+            
+            if (currentTime - lastSampleTime >= 1.0 / sampleRateFps) {
+                lastSampleTime = currentTime;
+                
+                const allPeaks = getAllActivePeaks();
+                const newPeakData = []; 
+                
+                if (allPeaks.length > 0) {
+                    const mainPeak = allPeaks[0];
+                    infoFreq.textContent = `${mainPeak.frequency.toFixed(0)} Hz`;
+                    infoAmp.textContent = `${(mainPeak.amplitude * 100).toFixed(1)}%`;
+                    
+                    // GÜNCELLENDİ: InfoBox artık Oktavı gösteriyor (örn: C4)
+                    const octave = Math.floor(mainPeak.midiNote / 12) - 1;
+                    infoPitch.textContent = NOTE_NAMES[mainPeak.pitchClass] + octave;
+                } else {
+                    infoFreq.textContent = "--";
+                    infoAmp.textContent = "--";
+                    infoPitch.textContent = "--";
+                }
+
+                allPeaks.forEach(data => {
+                    // 1. X ve Y Koordinatları (Deterministik)
+                    const logMinFreq = Math.log10(minFrequency > 0 ? minFrequency : 1);
+                    const logMaxFreq = Math.log10(maxFrequency);
+                    const logCurrentFreq = Math.log10(data.frequency);
+                    let logNormalizedFreq = (logCurrentFreq - logMinFreq) / (logMaxFreq - logMinFreq);
+                    logNormalizedFreq = Math.min(Math.max(logNormalizedFreq, 0), 1);
+                    
+                    const x = (logNormalizedFreq * 60 - 30);
+                    
+                    const effectiveHeight = BASE_HEIGHT * verticalScale;
+                    const y = (data.amplitude * effectiveHeight - (effectiveHeight / 2));
+                    
+                    // 2. YENİ Z-EKSENİ HESAPLAMASI (Deterministik Cents)
+                    // Z eksenini iki parçaya ayır: Ana nota ve "alt nota" (cent) sapması
+                    const integerNote = Math.round(data.midiNote);
+                    const centDeviation = data.midiNote - integerNote; // örn: -0.5 ile +0.5 arası
+                    
+                    // Ana nota (C4, D4...) 'noteSpacing' ile Z derinliğini belirler
+                    const z_base = (integerNote - 60) * noteSpacing; // 60 = Orta C
+                    // "Alt nota" sapması (C'nin C'den farkı) 'centSensitivity' ile "duvar kalınlığını" belirler
+                    const z_cents = centDeviation * centSensitivity;
+                    
+                    const z = z_base + z_cents;
+                    
+                    const color = getSpectrumColor(data.frequency);
+
+                    // 3. Yeni Noktayı Oluştur
+                    const newPoint = createPoint(x, y, z, color, data.amplitude, data.frequency, currentTime, data.midiNote);
+                    
+                    // 4. Peak Tracking (Sadece Frekansa Göre)
+                    let bestMatch = null;
+                    let minFreqDiff = peakTrackingTolerance;
+                    let bestMatchIndex = -1;
+
+                    for (let i = 0; i < previousPeaks.length; i++) {
+                        const prevPeak = previousPeaks[i];
+                        if (prevPeak.matched) continue; 
+                        
+                        const freqDiff = Math.abs(data.frequency - prevPeak.frequency);
+                        
+                        if (freqDiff < minFreqDiff) {
+                            minFreqDiff = freqDiff;
+                            bestMatch = prevPeak;
+                            bestMatchIndex = i;
+                        }
+                    }
+
+                    // 5. Eşleşme varsa çizgi çiz
+                    if (bestMatch) {
+                        createLine(bestMatch.point, newPoint, color);
+                        previousPeaks[bestMatchIndex].matched = true; 
+                    }
+                    
+                    // 6. Bir sonraki kare için listeye ekle
+                    newPeakData.push({ 
+                        frequency: data.frequency, 
+                        point: newPoint, 
+                        matched: false 
+                    });
+                });
+                
+                previousPeaks = newPeakData;
+            }
+        }
+
+        // Güncellemeler (Aynı)
+        function updatePointsAndLines(deltaTime) {
+            for (let i = points.length - 1; i >= 0; i--) {
+                const point = points[i];
+                point.lifetime -= deltaTime;
+                const opacity = Math.max(0, point.lifetime / point.initialLifetime);
+                point.mesh.material.opacity = opacity;
+
+                if (point.lifetime <= 0) {
+                    scene.remove(point.mesh);
+                    point.mesh.geometry.dispose();
+                    point.mesh.material.dispose();
+                    document.body.removeChild(point.label);
+                    
+                    const removedPoint = points.splice(i, 1)[0];
+
+                    for (let j = previousPeaks.length - 1; j >= 0; j--) {
+                        if (previousPeaks[j].point === removedPoint) {
+                            previousPeaks.splice(j, 1);
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            for (let i = lines.length - 1; i >= 0; i--) {
+                const lineInfo = lines[i];
+                lineInfo.line.visible = enableLines;
+                if (!points.includes(lineInfo.startPoint) || !points.includes(lineInfo.endPoint)) {
+                    scene.remove(lineInfo.line);
+                    lineInfo.line.geometry.dispose();
+                    lineInfo.line.material.dispose();
+                    lines.splice(i, 1);
+                } else if (enableLines) { 
+                    const minOpacity = Math.min(
+                        lineInfo.startPoint.mesh.material.opacity,
+                        lineInfo.endPoint.mesh.material.opacity
+                    );
+                    lineInfo.line.material.opacity = minOpacity * 0.7;
+                }
+            }
+        }
+
+        // Etiketleri Güncelleme (Aynı)
+        function updateLabels() {
+            points.forEach(point => {
+                const vector = point.position.clone();
+                vector.project(camera);
+                
+                const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                const y = (-(vector.y) * 0.5 + 0.5) * window.innerHeight;
+                
+                const distance = camera.position.distanceTo(point.position);
+                const showDist = 15.0;
+                const hideDist = 20.0;
+                
+                if (distance < hideDist && vector.z < 1) {
+                    point.label.style.display = 'block';
+                    point.label.style.left = x + 'px';
+                    point.label.style.top = y + 'px';
+                    let opacity = 1.0;
+                    if (distance > showDist) {
+                        opacity = 1.0 - (distance - showDist) / (hideDist - showDist);
+                    }
+                    point.label.style.opacity = Math.max(0, Math.min(1, opacity * point.mesh.material.opacity));
+                    
+                    point.label.innerHTML = `${point.emissionTime.toFixed(2)}<br>${point.amplitude.toFixed(4)}<br>${point.frequency.toFixed(2)}`;
+                
+                } else {
+                    point.label.style.display = 'none';
+                }
+            });
+        }
+        
+        // Ses motorunu durdurma (Aynı)
+        async function resetAudio() {
+             if (isPlaying && source) {
+                source.onended = null;
+                source.stop();
+            }
+            if (source) source.disconnect();
+            if (analyser) analyser.disconnect();
+            if (audioContext && audioContext.state !== 'closed') {
+                await audioContext.close();
+            }
+            
+            source = null;
+            analyser = null;
+            
+            points.forEach(p => {
+                scene.remove(p.mesh);
+                document.body.removeChild(p.label);
+            });
+            lines.forEach(l => scene.remove(l.line));
+            points.length = 0;
+            lines.length = 0;
+            previousPeaks.length = 0; 
+            
+            isPlaying = false;
+            isPaused = false;
+            progressBar.style.width = '0%';
+            statusEl.textContent = 'Load a file or paste a URL';
+            playBtn.disabled = false;
+            pauseBtn.style.display = 'none';
+            playBtn.style.display = 'block';
+            
+            infoFreq.textContent = "--";
+            infoAmp.textContent = "--";
+            infoPitch.textContent = "--";
+        }
+
+        // Ses Yükleme (Aynı)
+        async function initAudio(sourceType) { 
+            await resetAudio();
+            statusEl.textContent = 'Loading...';
+            playBtn.disabled = true;
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = FFT_SIZE;
+                analyser.smoothingTimeConstant = 0.75;
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+                
+                let audioBuffer;
+                
+                if (sourceType === 'file') {
+                    const file = fileInput.files[0];
+                    const arrayBuffer = await file.arrayBuffer();
+                    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                    statusEl.textContent = `Playing: ${file.name}`;
+                } else if (sourceType === 'url') {
+                    statusEl.textContent = 'Fetching from URL...';
+                    const response = await fetch(urlInput.value.trim());
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    const arrayBuffer = await response.arrayBuffer();
+                    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                    statusEl.textContent = 'Playing from URL';
+                } 
+                else if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const arrayBuffer = await file.arrayBuffer();
+                    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                    statusEl.textContent = `Playing: ${file.name}`;
+                } else if (urlInput.value.trim()) {
+                    statusEl.textContent = 'Fetching from URL...';
+                    const response = await fetch(urlInput.value.trim());
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    const arrayBuffer = await response.arrayBuffer();
+                    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                    statusEl.textContent = 'Playing from URL';
+                } else {
+                    statusEl.textContent = 'No file or URL provided';
+                    playBtn.disabled = false;
+                    return;
+                }
+                
+                source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.loop = loopAudio;
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+                source.playbackRate.setValueAtTime(playbackSpeed, 0);
+                source.start(0);
+                
+                startTime = audioContext.currentTime;
+                lastSampleTime = 0;
+                isPlaying = true;
+                isPaused = false;
+                
+                playBtn.style.display = 'none';
+                pauseBtn.style.display = 'block';
+                pauseBtn.textContent = 'Pause';
+                playBtn.disabled = false;
+
+                source.onended = () => {
+                    isPlaying = false;
+                    isPaused = false;
+                    playBtn.style.display = 'block';
+                    pauseBtn.style.display = 'none';
+                    statusEl.textContent = 'Finished. Select a new file.';
+                    progressBar.style.width = '0%';
+                    infoFreq.textContent = "--";
+                    infoAmp.textContent = "--";
+                    infoPitch.textContent = "--";
+                    previousPeaks.length = 0; 
+                };
+
+            } catch (error) {
+                statusEl.textContent = 'Audio loading error: ' + error.message;
+                console.error(error);
+                playBtn.disabled = false;
+            }
+        }
+
+        // Duraklatma/Devam Etme (Aynı)
+        function togglePause() {
+            if (!audioContext) return;
+            if (isPaused) {
+                audioContext.resume();
+                isPaused = false;
+                pauseBtn.textContent = 'Pause';
+            } else {
+                audioContext.suspend();
+                isPaused = true;
+                pauseBtn.textContent = 'Resume';
+            }
+        }
+
+        // Sahne Işıkları
+        const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.2);
+        scene.add(ambientLight);
+        
+        // Ana Render Döngüsü (Aynı)
+        let lastTime = performance.now();
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const currentTime = performance.now();
+            const deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+            
+            if (!isPaused) {
+                sampleAudio();
+                updatePointsAndLines(deltaTime);
+            }
+            
+            updateLabels(); 
+            
+            if (isPlaying && !isPaused && source && source.buffer) {
+                const elapsedTime = audioContext.currentTime - startTime;
+                const duration = source.buffer.duration;
+                const progress = Math.min(elapsedTime / duration, 1);
+                progressBar.style.width = (progress * 100) + '%';
+            }
+            
+            controls.update();
+            composer.render();
+        }
+
+        // Event Listeners (Aynı)
+        playBtn.addEventListener('click', () => initAudio()); 
+        pauseBtn.addEventListener('click', togglePause);
+        
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                urlInput.value = ''; 
+                clearUrlBtn.style.display = 'none';
+                clearFileBtn.style.display = 'block';
+                initAudio('file'); 
+            }
+        });
+        urlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if(urlInput.value.trim()) {
+                    fileInput.value = ''; 
+                    clearFileBtn.style.display = 'none';
+                    clearUrlBtn.style.display = 'block';
+                    initAudio('url'); 
+                }
+            }
+        });
+        
+        clearFileBtn.addEventListener('click', () => {
+            fileInput.value = '';
+            clearFileBtn.style.display = 'none';
+            resetAudio();
+        });
+        clearUrlBtn.addEventListener('click', () => {
+            urlInput.value = '';
+            clearUrlBtn.style.display = 'none';
+            resetAudio();
+        });
+        
+        
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // UI GİZLEME MANTIĞI (Aynı)
+        let uiVisible = true;
+        toggleUiBtn.addEventListener('click', () => {
+            uiVisible = !uiVisible;
+            if (uiVisible) {
+                controlsPanel.style.display = 'flex';
+                settingsPanel.style.display = 'flex';
+                toggleUiBtn.textContent = 'Hide UI';
+            } else {
+                controlsPanel.style.display = 'none';
+                settingsPanel.style.display = 'none';
+                toggleUiBtn.textContent = 'Show UI';
+            }
+        });
+
+        // GÜNCELLENDİ: Başlangıç tetikleme listesi
+        [minFreqSlider, maxFreqSlider, colorMaxFreqSlider,
+         amplitudeThresholdSlider, maxPeaksSlider, pointLifetimeSlider, 
+         verticalScaleSlider, 
+         noteSpacingSlider, centSensitivitySlider, // YENİ
+         speedSlider,
+         bloomThresholdSlider, bloomStrengthSlider, bloomRadiusSlider,
+         sampleFpsSlider 
+        ].forEach(slider => { 
+            if(slider) slider.dispatchEvent(new Event('input'));
+        });
+        
+        [loopToggle, linesToggle
+        ].forEach(toggle => {
+            if(toggle) toggle.dispatchEvent(new Event('change'));
+        });
+
+        // Animasyonu Başlat
+        animate();
+    </script>
+</body>
+</html>
