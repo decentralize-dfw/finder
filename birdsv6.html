@@ -397,13 +397,13 @@
             display: flex;
             flex-direction: row; /* Yatayda başla */
             flex-wrap: wrap; /* Aşağı kaydır */
-            gap: 5px;
+            gap: 2px;
             align-items: flex-start;
             justify-content: center;
             max-height: 100%;
             overflow-y: auto;
             font-family: '16Segments', sans-serif;
-            padding: 15px 10px;
+            padding: 10px 5px;
             /* Scrollbar Stilleri */
             scrollbar-width: thin;
             scrollbar-color: var(--highlight-color) rgba(0,0,0,0.3);
@@ -418,16 +418,16 @@
 
         /* YENİ: Dairesel Düğme (Knob) Stilleri */
         .knob-container {
-            width: 100px; /* İki sütun için */
+            width: 80px; /* İki sütun için */
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             position: relative;
         }
         .knob {
-            width: 60px;
-            height: 60px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             background: var(--control-bg);
             box-shadow: 
@@ -445,11 +445,11 @@
             box-shadow: 
                 inset 5px 5px 10px var(--shadow-dark), 
                 inset -5px -5px 10px var(--shadow-light),
-                inset 0 0 10px var(--highlight-color);
+                inset -5px -5px 10px var(--shadow-light);
         }
         .knob-icon {
-            width: 28px;
-            height: 28px;
+            width: 16px;
+            height: 16px;
             stroke: var(--text-primary);
             filter: drop-shadow(0 0 3px var(--highlight-color));
             pointer-events: none;
@@ -459,10 +459,10 @@
         }
         .knob-label {
             font-family: '16Segments', sans-serif;
-            font-size: 9px;
+            font-size: 8px;
             text-transform: uppercase;
             color: var(--text-secondary);
-            margin-top: 6px;
+            margin-top: 4px;
             cursor: help; /* Bilgi için */
             text-align: center;
         }
@@ -472,9 +472,9 @@
         }
         .knob-value {
             font-family: '16Segments', sans-serif;
-            font-size: 10px;
+            font-size: 9px;
             color: var(--text-primary);
-            margin-top: 3px;
+            margin-top: 2px;
         }
 
         /* YENİ: Düğme Dolgusu */
@@ -507,10 +507,10 @@
             align-items: center;
             justify-content: space-between;
             margin-top: 2px;
-            padding: 5px 8px;
+            padding: 3px 8px;
         }
         .checkbox-group label {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 500;
             color: var(--text-primary);
             margin-bottom: 0;
@@ -524,8 +524,8 @@
         input[type="checkbox"] {
             -webkit-appearance: none;
             appearance: none;
-            width: 40px; /* Örnekteki gibi daha geniş */
-            height: 20px;
+            width: 30px; /* Örnekteki gibi daha geniş */
+            height: 15px;
             border-radius: 10px;
             border: none;
             background: var(--control-bg);
@@ -543,8 +543,8 @@
             position: absolute;
             top: 2px;
             left: 2px;
-            width: 16px;
-            height: 16px;
+            width: 11px;
+            height: 11px;
             border-radius: 50%;
             background: linear-gradient(145deg, #ddd, #aaa);
             box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
@@ -559,7 +559,7 @@
                 0 0 10px var(--highlight-color);
         }
         input[type="checkbox"]:checked::before {
-            transform: translateX(20px);
+            transform: translateX(15px);
             background: #1a1a1a; /* Koyu tutamaç */
         }
         
