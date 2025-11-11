@@ -1060,10 +1060,10 @@
         // YENİ: Düğme Kontrol Konfigürasyonu (TEK LİSTE)
         const ALL_CONTROLS_CONFIG = [
             // Group 1: Scale
-            { type: 'knob', id: 'xAxisScale', min: -1, max: 1, value: 0.33, log: true, suffix: 'x', var: 'xAxisScale', label: 'X-Axis Scale', info: 'VISUAL: Stretches or compresses the horizontal (X-Axis) spread of frequencies.' },
-            { type: 'knob', id: 'verticalScale', min: -1, max: 1, value: 0.45, log: true, suffix: 'x', var: 'verticalScale', label: 'Y-Axis Scale', info: 'VISUAL: Multiplies the effect of volume (Amplitude) on the Y-Axis (height).' },
-            { type: 'knob', id: 'zAxisScale', min: -1, max: 1, value: 0.35, log: true, suffix: 'x', var: 'zAxisScale', label: 'Z-Axis Scale', info: 'VISUAL: Stretches or compresses the depth (Z-Axis) of the Timbre (Harmonic Richness).' },
-            { type: 'knob', id: 'pointScale', min: -1, max: 1, value: -0.13, log: true, suffix: 'x', var: 'pointScale', label: 'Base Point Scale', info: 'VISUAL: Sets the base size of the points. Final size is (Base * Amplitude).' },
+            { type: 'knob', id: 'xAxisScale', min: -2, max: 2, value: 0.33, log: true, suffix: 'x', var: 'xAxisScale', label: 'X-Axis Scale', info: 'VISUAL: Stretches or compresses the horizontal (X-Axis) spread of frequencies.' },
+            { type: 'knob', id: 'verticalScale', min: -2, max: 2, value: 0.45, log: true, suffix: 'x', var: 'verticalScale', label: 'Y-Axis Scale', info: 'VISUAL: Multiplies the effect of volume (Amplitude) on the Y-Axis (height).' },
+            { type: 'knob', id: 'zAxisScale', min: -2, max: 2, value: 0.35, log: true, suffix: 'x', var: 'zAxisScale', label: 'Z-Axis Scale', info: 'VISUAL: Stretches or compresses the depth (Z-Axis) of the Timbre (Harmonic Richness).' },
+            { type: 'knob', id: 'pointScale', min: -2, max: 2, value: -0.13, log: true, suffix: 'x', var: 'pointScale', label: 'Base Point Scale', info: 'VISUAL: Sets the base size of the points. Final size is (Base * Amplitude).' },
             
             /* { type: 'divider' }, // KALDIRILDI */
 
@@ -1075,8 +1075,8 @@
             /* { type: 'divider' }, // KALDIRILDI */
 
             // Group 3: Freq/Amp Filters
-            { type: 'knob', id: 'minFreq', min: 20, max: 5000, value: 20, log: false, suffix: ' Hz', step: 10, var: 'minFrequency', label: 'Min Frequency', info: 'FILTER: The lowest frequency to visualize (X-Axis left limit).' },
-            { type: 'knob', id: 'maxFreq', min: 5000, max: 20000, value: 20000, log: false, suffix: ' Hz', step: 100, var: 'maxFrequency', label: 'Max Frequency', info: 'FILTER: The highest frequency to visualize (X-Axis right limit).' },
+            { type: 'knob', id: 'minFreq', min: 0, max: 5000, value: 20, log: false, suffix: ' Hz', step: 10, var: 'minFrequency', label: 'Min Frequency', info: 'FILTER: The lowest frequency to visualize (X-Axis left limit).' },
+            { type: 'knob', id: 'maxFreq', min: 100, max: 20000, value: 20000, log: false, suffix: ' Hz', step: 100, var: 'maxFrequency', label: 'Max Frequency', info: 'FILTER: The highest frequency to visualize (X-Axis right limit).' },
             { type: 'knob', id: 'amplitudeThreshold', min: 0.1, max: 0.5, value: 0.5, log: false, suffix: '%', step: 0.01, var: 'amplitudeThreshold', label: 'Amplitude Threshold', info: 'FILTER: The minimum volume (0-1) required to create a point (Y-Axis bottom limit).' },
             
             /* { type: 'divider' }, // KALDIRILDI */
@@ -1088,8 +1088,8 @@
             /* { type: 'divider' }, // KALDIRILDI */
 
             // Group 5: Point/Sample Logic
-            { type: 'knob', id: 'sampleFps', min: 1, max: 50, value: 15, log: false, suffix: ' FPS', step: 1, var: 'sampleRateFps', label: 'Sample Rate', info: 'SPEED: How many times per second to sample the audio and create points.' },
-            { type: 'knob', id: 'pointLifetime', min: 5, max: 60, value: 10, log: false, suffix: ' s', step: 1, var: 'pointLifetime', label: 'Point Lifetime', info: 'VISUAL: How long a point stays on screen before fading out.' },
+            { type: 'knob', id: 'sampleFps', min: 1, max: 120, value: 15, log: false, suffix: ' FPS', step: 1, var: 'sampleRateFps', label: 'Sample Rate', info: 'SPEED: How many times per second to sample the audio and create points.' },
+            { type: 'knob', id: 'pointLifetime', min: .5, max: 60, value: 10, log: false, suffix: ' s', step: 1, var: 'pointLifetime', label: 'Point Lifetime', info: 'VISUAL: How long a point stays on screen before fading out.' },
             { type: 'knob', id: 'maxPeaks', min: 1, max: 20, value: 2, log: false, suffix: '', step: 1, var: 'maxPeaks', label: 'Max Peaks', info: 'FILTER: The maximum number of points to create per frame. Lower values reduce noise.' },
 
             /* { type: 'divider' }, // KALDIRILDI */
