@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Model Viewer (GLB dosyaları için) -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    
+    <style>
+        /* Ana sayfa fontu */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+        }
+
+        /* Arama çubuğu placeholder rengi */
+        ::placeholder {
+            color: #737373; /* neutral-500 */
+            opacity: 1;
+        }
+        
+        /* Modal Stilleri */
+        #modal-container {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+        }
+        #modal-container.open { opacity: 1; visibility: visible; }
+        
+        #modal-backdrop {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+        }
+        #modal-backdrop.open { opacity: 1; visibility: visible; }
+
+        /* Yatay kaydırma çubuğu (Modal içi) */
+        .media-scroller::-webkit-scrollbar { height: 6px; }
+        .media-scroller::-webkit-scrollbar-track { background: #171717; } /* neutral-900 */
+        .media-scroller::-webkit-scrollbar-thumb { background: #525252; border-radius: 3px; }
+        .media-scroller::-webkit-scrollbar-thumb:hover { background: #737373; }
+        
+        /* Modal metin alanları için kaydırma çubuğu */
+        #modal-left-col::-webkit-scrollbar,
+        #modal-right-col::-webkit-scrollbar {
+            width: 4px;
+        }
+        #modal-left-col::-webkit-scrollbar-thumb,
+        #modal-right-col::-webkit-scrollbar-thumb {
+            background: #525252;
+            border-radius: 2px;
+        }
+
+        /* Akordeon İçeriği Animasyonu - JS ile Yönetiliyor (LAGSIZ) */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        /* Aktif Akordeon Başlığı */
+        .accordion-toggle.active {
+            background-color: transparent; 
+            border-color: #737373; /* neutral-500 */
+            border-width: 2px; 
+            border-style: solid;
+            border-radius: 6px; /* rounded-md */
+        }
+        
+        /* Opaklık geçişi */
+        .accordion-toggle, .project-row {
+            transition: opacity 0.3s ease-out;
+        }
+        
+        /* Filtre Düğmeleri */
+        .filter-button {
+            transition: color 0.2s, border-color 0.2s;
+            border: 1px solid transparent; 
+        }
+        .filter-button.active {
+            background-color: transparent; 
+            color: #f5f5f5; /* neutral-100 */
+            border-color: #f5f5f5; 
+        }
+
+        /* Thumbnail Önizleme */
+        #thumbnail-preview {
+            position: fixed;
+            z-index: 1000;
+            pointer-events: none; 
+            opacity: 0;
+            transition: opacity 0.2s ease-out;
+            border: 1px solid white;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        #thumbnail-preview.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="text-neutral-400">
+
+    <!-- Ana Konteyner -->
+    <div class="container mx-auto p-4 md:p-8 max-w-full"> 
+        
+        <!-- Üst Başlıklar ve Filtreler -->
+        <header class="mb-4"> <!-- Boşluk azaltıldı -->
+            <!-- Arama Çubuğu -->
+            <!-- text-2xl (24px - Max Font), py-2 (Normal boşluk) -->
+            <input type="text" id="search-input" class="w-full bg-transparent border-b-2 border-neutral-500 text-neutral-200 text-2xl rounded-none py-2 px-2 mb-2 focus:outline-none focus:border-neutral-300 placeholder-neutral-500" placeholder="Search">
+            
+            <!-- Gruplama Filtreleri -->
+            <div class="flex flex-wrap gap-2 items-center mt-2">
+                <div id="filter-buttons-container" class="flex flex-wrap gap-2">
+                    <!-- Düğmeler JavaScript ile buraya eklenecek -->
+                </div>
+            </div>
+        </header>
+
+        <!-- Akordeon Liste Ana Başlıkları (Sütun Başlıkları) -->
+        <!-- text-lg (18px), py-2, mt-4 (Boşluklar azaltıldı) -->
+        <div id="accordion-header" class="hidden md:flex sticky top-0 bg-black z-10 py-2 border-b-2 border-neutral-500 mt-4 text-lg font-normal text-neutral-500">
+            <div class="w-[40%] px-2">Project name</div> 
+            <div id="dynamic-header-1" class="w-[15%] px-2 capitalize"></div>
+            <div id="dynamic-header-2" class="w-[15%] px-2 capitalize"></div>
+            <div id="dynamic-header-3" class="w-[15%] px-2 capitalize"></div>
+            <div id="dynamic-header-4" class="w-[15%] px-2 capitalize"></div>
+        </div>
+
+        <!-- Akordeon Konteyneri -->
+        <div id="accordion-container">
+            <!-- Gruplar JavaScript ile buraya eklenecek -->
+        </div>
+
+    </div>
+
+    <!-- Thumbnail Önizleme Kutusu -->
+    <img id="thumbnail-preview" src="" alt="Preview" width="250"> <!-- Boyut optimize edildi -->
+
+    <!-- Modal (Popup) -->
+    <div id="modal-container" tabindex="-1" class="fixed inset-0 z-40 flex items-center justify-center p-4 md:p-12 outline-none">
+        <!-- Arka Plan Karartma -->
+        <div id="modal-backdrop" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40"></div>
+        
+        <!-- Modal İçeriği -->
+        <div id="modal-content" class="relative z-50 w-full h-full bg-black border border-neutral-700 rounded-lg shadow-xl flex flex-col overflow-hidden">
+            <!-- Kapatma Düğmesi -->
+            <!-- text-sm, px-3 py-1 -->
+            <button id="modal-close-btn" class="absolute top-4 right-4 z-50 text-sm font-medium px-3 py-1 rounded-md border border-white text-white bg-black/60 hover:bg-black/80 transition-colors">
+                Close
+            </button>
+            
+            <!-- Üst Kısım: Medya Galerisi -->
+            <div id="modal-media-scroller" class="media-scroller w-full h-[60%] flex-shrink-0 overflow-x-auto overflow-y-hidden whitespace-nowrap border-b border-neutral-800">
+                <!-- Medya öğeleri -->
+            </div>
+            
+            <!-- Alt Kısım: Metin (İkiye Bölünmüş) -->
+            <div class="w-full h-[40%] grid grid-cols-1 md:grid-cols-2 gap-px bg-neutral-800">
+                <!-- Sol Sütun: Künye -->
+                <div id="modal-left-col" class="bg-black p-[5%] overflow-y-auto">
+                    <!-- Künye -->
+                </div>
+                <!-- Sağ Sütun: Açıklama -->
+                <div id="modal-right-col" class="bg-black p-[5%] overflow-y-auto">
+                    <!-- Açıklama -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- 1. VERİTABANI ---
+
+        const categoryPriorityList = [
+            'type', 'year', 'collection', 'medium', 'expression', 'reality', 'contents'
+        ];
+
+        const projects = [
+            {
+                id: 1,
+                name: 'Metaverse Project',
+                description: 'This is a project from 2025 focusing on digital art and the metaverse. Render techniques were used.',
+                link: 'https://proje1.com',
+                media: [
+                    { type: 'image', src: 'https://placehold.co/800x600/1a1a1a/ffffff?text=Proje+1+Resim+1' },
+                    { type: 'video', src: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                    { type: 'image', src: 'https://placehold.co/800x600/1a1a1a/ffffff?text=Proje+1+Resim+2' }
+                ],
+                categories: {
+                    year: '2025',
+                    type: 'painting',
+                    collection: 'diigtal',
+                    medium: 'tops',
+                    expression: 'render',
+                    reality: 'metaverse',
+                    contents: 'decentralize'
+                }
+            },
+            {
+                id: 2,
+                name: 'IRL Theater Experience',
+                description: 'In this 2024 project, physical (IRL) and digital (image) worlds were brought together. It deals with religious themes and robotics.',
+                link: 'https://proje2.com',
+                media: [
+                    { type: 'image', src: 'https://placehold.co/800x600/2a2a2a/ffffff?text=Proje+2+Resim+1' }
+                ],
+                categories: {
+                    year: '2024',
+                    type: 'theaters',
+                    collection: 'image',
+                    medium: 'photo',
+                    expression: 'religious',
+                    reality: 'irl',
+                    contents: 'robotics'
+                }
+            },
+            {
+                id: 3,
+                name: 'Web Application',
+                description: 'Developed in 2023, this web application was custom-designed for DFW (Design Fiction Week).',
+                link: 'https://proje3.com',
+                media: [
+                    { type: 'image', src: 'https://placehold.co/800x600/3a3a3a/ffffff?text=Proje+3+Resim+1' },
+                    { type: 'model', src: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb' }
+                ],
+                categories: {
+                    year: '2023',
+                    type: 'video',
+                    collection: 'web app',
+                    medium: 'graphic',
+                    expression: 'dfw',
+                    reality: 'metaverse', 
+                    contents: 'decentralize' 
+                }
+            },
+            {
+                id: 4,
+                name: 'Gallery Exhibition',
+                description: 'A text-based gallery experience from 2022.',
+                link: 'https://proje4.com',
+                media: [
+                    { type: 'image', src: 'https://placehold.co/800x600/4a4a4a/ffffff?text=Proje+4+Resim+1' }
+                ],
+                categories: {
+                    year: '2022',
+                    type: 'text',
+                    collection: 'gallery',
+                    medium: 'video',
+                    expression: 'vea',
+                    reality: 'irl', 
+                    contents: 'robotics' 
+                }
+            },
+            {
+                id: 5,
+                name: 'Architectural Design',
+                description: 'An architectural study from 2020 with a "world building" concept.',
+                link: 'https://proje5.com',
+                media: [
+                    { type: 'image', src: 'https://placehold.co/800x600/5a5a5a/ffffff?text=Proje+5+Resim+1' }
+                ],
+                categories: {
+                    year: '2020',
+                    type: 'architecture',
+                    collection: 'world building',
+                    medium: 'graphic',
+                    expression: 'web ui',
+                    reality: 'metaverse', 
+                    contents: 'decentralize' 
+                }
+            }
+        ];
+
+        // --- 2. GLOBAL DEĞİŞKENLER ---
+        let currentGroupKey = 'type'; 
+        let currentSearchQuery = '';
+        const accordionContainer = document.getElementById('accordion-container');
+        const filterButtonsContainer = document.getElementById('filter-buttons-container');
+        const searchInput = document.getElementById('search-input');
+        
+        const modalContainer = document.getElementById('modal-container');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalContent = document.getElementById('modal-content');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalMediaScroller = document.getElementById('modal-media-scroller');
+        const modalLeftCol = document.getElementById('modal-left-col');
+        const modalRightCol = document.getElementById('modal-right-col');
+        const thumbnailPreview = document.getElementById('thumbnail-preview');
+
+        // --- 3. ANA FONKSİYONLAR ---
+
+        function renderAccordion() {
+            accordionContainer.innerHTML = ''; 
+            
+            const filteredProjects = projects.filter(project => {
+                if (!currentSearchQuery) return true;
+                const query = currentSearchQuery.toLowerCase();
+                const visibleHeaders = getDynamicHeaders(currentGroupKey);
+                const searchInHeaders = visibleHeaders.some(key => 
+                    project.categories[key]?.toLowerCase().includes(query)
+                );
+                return (
+                    project.name.toLowerCase().includes(query) ||
+                    searchInHeaders
+                );
+            });
+
+            const groups = filteredProjects.reduce((acc, project) => {
+                const key = project.categories[currentGroupKey] || 'Other';
+                if (!acc[key]) {
+                    acc[key] = [];
+                }
+                acc[key].push(project);
+                return acc;
+            }, {});
+
+            const dynamicHeaders = getDynamicHeaders(currentGroupKey);
+            updateAccordionHeaders(dynamicHeaders);
+
+            const sortedGroupNames = Object.keys(groups).sort();
+            
+            sortedGroupNames.forEach(groupName => {
+                const groupProjects = groups[groupName];
+
+                const groupToggle = document.createElement('div');
+                // text-2xl (24px - Max Font), py-2 (Sıkılaştırıldı)
+                groupToggle.className = 'accordion-toggle flex py-2 px-2 border-b-2 border-neutral-500 cursor-pointer transition-opacity duration-300 text-2xl font-bold text-neutral-200';
+                groupToggle.innerHTML = `<span class="capitalize">${groupName}</span>`;
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'accordion-content';
+                
+                if (currentSearchQuery) {
+                    groupToggle.classList.add('active');
+                    contentDiv.style.maxHeight = "none"; 
+                    contentDiv.classList.add('open');
+                }
+                
+                groupProjects.forEach(project => {
+                    const projectRow = document.createElement('div');
+                    // text-lg (18px - Orta Font), ml-4, py-1.5 (Sıkılaştırıldı)
+                    projectRow.className = 'project-row flex cursor-pointer transition-opacity duration-300 ml-4 text-lg text-neutral-400';
+                    
+                    let headersHtml = '';
+                    dynamicHeaders.forEach(key => {
+                        const value = project.categories[key] || 'N/A';
+                        // py-1.5
+                        headersHtml += `<div class="py-1.5 px-2 border-b-2 border-neutral-500 w-[15%] capitalize">${value}</div>`;
+                    });
+                    
+                    projectRow.innerHTML = `
+                        <div class="py-1.5 px-2 border-b-2 border-neutral-500 w-[40%] text-neutral-300 font-medium">${project.name}</div>
+                        ${headersHtml}
+                    `;
+                    
+                    projectRow.addEventListener('click', (e) => {
+                        e.stopPropagation(); 
+                        openModal(project.id);
+                    });
+                    
+                    projectRow.addEventListener('mouseenter', (e) => {
+                        if (contentDiv.classList.contains('open')) {
+                            groupToggle.style.opacity = '0.5';
+                            contentDiv.querySelectorAll('.project-row').forEach(sibling => {
+                                sibling.style.opacity = (sibling === projectRow) ? '1' : '0.3';
+                            });
+                        }
+                        showThumbnail(e, project.id);
+                    });
+
+                    projectRow.addEventListener('mouseleave', () => {
+                        if (contentDiv.classList.contains('open')) {
+                            groupToggle.style.opacity = '1';
+                            contentDiv.querySelectorAll('.project-row').forEach(sibling => {
+                                sibling.style.opacity = '1';
+                            });
+                        }
+                        hideThumbnail();
+                    });
+                    
+                    contentDiv.appendChild(projectRow);
+                });
+                
+                groupToggle.addEventListener('click', () => {
+                    const wasActive = groupToggle.classList.contains('active');
+                    const currentActiveToggle = document.querySelector('.accordion-toggle.active');
+                    
+                    if (currentActiveToggle && currentActiveToggle !== groupToggle) {
+                        currentActiveToggle.classList.remove('active');
+                        currentActiveToggle.classList.add('border-b-2', 'border-neutral-500');
+                        const currentActiveContent = currentActiveToggle.nextElementSibling;
+                        if (currentActiveContent && currentActiveContent.classList.contains('accordion-content')) {
+                            currentActiveContent.style.maxHeight = null;
+                            currentActiveContent.classList.remove('open');
+                            currentActiveContent.querySelectorAll('.project-row').forEach(row => row.style.opacity = '1');
+                        }
+                    }
+
+                    if (wasActive) {
+                        groupToggle.classList.remove('active');
+                        contentDiv.style.maxHeight = null;
+                        contentDiv.classList.remove('open');
+                        
+                        document.querySelectorAll('.accordion-toggle').forEach(toggle => {
+                            toggle.style.opacity = '1'; 
+                            if (!toggle.classList.contains('active')) { 
+                                toggle.classList.add('border-b-2', 'border-neutral-500');
+                            }
+                        });
+                    } else {
+                        groupToggle.classList.add('active');
+                        groupToggle.classList.remove('border-b-2', 'border-neutral-500');
+                        contentDiv.classList.add('open');
+                        contentDiv.style.maxHeight = contentDiv.scrollHeight + "px";
+                        
+                        document.querySelectorAll('.accordion-toggle').forEach(toggle => {
+                            toggle.style.opacity = (toggle === groupToggle) ? '1' : '0.2';
+                        });
+                    }
+                });
+                
+                groupToggle.addEventListener('mouseenter', (e) => {
+                    groupToggle.style.opacity = '1';
+                    const anyActive = document.querySelector('.accordion-toggle.active');
+                    if (!anyActive) { 
+                        document.querySelectorAll('.accordion-toggle').forEach(toggle => {
+                            if (toggle !== groupToggle) {
+                                toggle.style.opacity = '0.5';
+                            }
+                        });
+                    }
+                    if (groupProjects.length > 0) {
+                        showThumbnail(e, groupProjects[0].id);
+                    }
+                });
+
+                groupToggle.addEventListener('mouseleave', () => {
+                    const currentActiveToggle = document.querySelector('.accordion-toggle.active');
+                    if (currentActiveToggle) {
+                        if (groupToggle !== currentActiveToggle) {
+                            groupToggle.style.opacity = '0.2'; 
+                        }
+                    } else {
+                        document.querySelectorAll('.accordion-toggle').forEach(toggle => {
+                            toggle.style.opacity = '1';
+                        });
+                    }
+                    hideThumbnail();
+                });
+                
+                accordionContainer.appendChild(groupToggle);
+                accordionContainer.appendChild(contentDiv);
+            });
+        }
+
+        function updateAccordionHeaders(headers) {
+            document.getElementById('accordion-header').classList.toggle('hidden', headers.length === 0);
+            for (let i = 0; i < 4; i++) {
+                const headerEl = document.getElementById(`dynamic-header-${i + 1}`);
+                if (headerEl) {
+                    headerEl.textContent = headers[i] || '';
+                }
+            }
+        }
+        
+        function getDynamicHeaders(activeKey) {
+            return categoryPriorityList
+                .filter(key => key !== activeKey) 
+                .slice(0, 4); 
+        }
+
+        function renderFilterButtons() {
+            filterButtonsContainer.innerHTML = '';
+            categoryPriorityList.forEach(key => {
+                const button = document.createElement('button');
+                // text-base (16px), py-1, px-3
+                button.className = 'filter-button text-base bg-transparent text-neutral-500 px-3 py-1 rounded-md hover:text-neutral-300 hover:border-neutral-600 capitalize';
+                button.textContent = key;
+                if (key === currentGroupKey) {
+                    button.classList.add('active');
+                }
+                button.addEventListener('click', () => {
+                    currentGroupKey = key;
+                    document.querySelectorAll('.filter-button.active').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    renderAccordion();
+                });
+                filterButtonsContainer.appendChild(button);
+            });
+        }
+        
+        function openModal(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return;
+            
+            modalMediaScroller.innerHTML = '';
+            project.media.forEach(media => {
+                let mediaEl;
+                if (media.type === 'image') {
+                    mediaEl = document.createElement('img');
+                    mediaEl.src = media.src;
+                    mediaEl.alt = project.name;
+                    mediaEl.className = "inline-block h-full object-contain mr-4"; 
+                } else if (media.type === 'video') {
+                    mediaEl = document.createElement('video');
+                    mediaEl.src = media.src;
+                    mediaEl.controls = true;
+                    mediaEl.className = "inline-block h-full object-contain mr-4";
+                } else if (media.type === 'model') {
+                    mediaEl = document.createElement('model-viewer');
+                    mediaEl.src = media.src;
+                    mediaEl.className = "inline-block h-full w-auto mr-4";
+                    mediaEl.setAttribute('ar', '');
+                    mediaEl.setAttribute('camera-controls', '');
+                    mediaEl.setAttribute('auto-rotate', '');
+                    mediaEl.setAttribute('shadow-intensity', '1');
+                    mediaEl.style.backgroundColor = 'transparent';
+                }
+                
+                if (mediaEl) {
+                    modalMediaScroller.appendChild(mediaEl);
+                }
+            });
+
+            const allMetadata = {
+                'Project': project.name,
+                ...project.categories,
+                'Link': `<a href="${project.link}" target="_blank" class="text-neutral-400 hover:text-white underline break-all">${project.link}</a>`
+            };
+
+            // Popup metin boyutları text-base (16px)
+            let leftHtml = '<div class="space-y-1 text-base leading-tight text-neutral-400">';
+            
+            leftHtml += `<p class="flex"><strong class="font-normal text-neutral-600 w-32 flex-shrink-0 capitalize">Project:</strong> <span class="text-neutral-300">${allMetadata['Project']}</span></p>`;
+            
+            categoryPriorityList.forEach(key => {
+                if (allMetadata[key]) {
+                    leftHtml += `<p class="flex"><strong class="font-normal text-neutral-600 w-32 flex-shrink-0 capitalize">${key}:</strong> <span class="text-neutral-300">${allMetadata[key]}</span></p>`;
+                }
+            });
+            
+            leftHtml += `<p class="flex"><strong class="font-normal text-neutral-600 w-32 flex-shrink-0 capitalize">Link:</strong> <span>${allMetadata['Link']}</span></p>`;
+            leftHtml += '</div>';
+            modalLeftCol.innerHTML = leftHtml;
+
+            // Açıklama: text-lg
+            modalRightCol.innerHTML = `<p class="text-neutral-300 text-lg whitespace-pre-line leading-relaxed">${project.description}</p>`;
+            
+            modalContainer.classList.add('open');
+            modalBackdrop.classList.add('open');
+            
+            modalContainer.focus();
+        }
+
+        function closeModal() {
+            modalContainer.classList.remove('open');
+            modalBackdrop.classList.remove('open');
+            modalMediaScroller.innerHTML = ''; 
+            modalLeftCol.innerHTML = '';
+            modalRightCol.innerHTML = '';
+        }
+        
+        function showThumbnail(event, projectId) {
+            const project = projects.find(p => p.id === projectId);
+            const firstImage = project?.media.find(m => m.type === 'image');
+            
+            if (firstImage) {
+                thumbnailPreview.src = firstImage.src;
+                thumbnailPreview.style.left = (event.clientX + 15) + 'px';
+                thumbnailPreview.style.top = (event.clientY + 15) + 'px';
+                thumbnailPreview.classList.add('visible');
+            }
+        }
+        
+        function hideThumbnail() {
+            thumbnailPreview.classList.remove('visible');
+        }
+        
+        function handleWheelScroll(event) {
+            event.preventDefault();
+            modalMediaScroller.scrollLeft += event.deltaY;
+        }
+
+        // --- 4. OLAY DİNLEYİCİLERİ ---
+
+        searchInput.addEventListener('input', (e) => {
+            currentSearchQuery = e.target.value;
+            renderAccordion();
+        });
+
+        modalCloseBtn.addEventListener('click', closeModal);
+        modalBackdrop.addEventListener('click', closeModal);
+        
+        window.addEventListener('keydown', (e) => {
+            if ((e.key === 'Escape' || e.key === 'Esc') && modalContainer.classList.contains('open')) {
+                closeModal();
+            }
+        });
+        
+        modalMediaScroller.addEventListener('wheel', handleWheelScroll, { passive: false });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (thumbnailPreview.classList.contains('visible')) {
+                thumbnailPreview.style.left = (e.clientX + 15) + 'px';
+                thumbnailPreview.style.top = (e.clientY + 15) + 'px';
+            }
+        });
+
+        // --- 5. BAŞLANGIÇ ---
+        
+        function init() {
+            renderFilterButtons();
+            renderAccordion();
+        }
+        
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>
