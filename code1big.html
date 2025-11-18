@@ -10,16 +10,29 @@
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
     
     <style>
+        /* --- GLOBAL RENK VE AYARLAR (TEK YERDEN YÖNETİM) --- */
+        :root {
+            /* Ana UI Rengi (Metinler, Çizgiler, İkonlar) - Yves Klein Mavisi */
+            --ui-color: #002FA7; 
+            
+            /* Ana Sayfa Arka Plan Rengi - Transparent */
+            --bg-color: transparent;
+            
+            /* Modal (Popup) Arka Plan Rengi - Okunabilirlik için Siyah */
+            --modal-bg: white;
+        }
+
         /* Ana sayfa fontu */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #000;
+            background-color: var(--bg-color);
+            color: var(--ui-color);
         }
 
-        /* Arama çubuğu placeholder rengi */
+        /* Placeholder Rengi */
         ::placeholder {
-            color: #737373; /* neutral-500 */
-            opacity: 1;
+            color: var(--ui-color);
+            opacity: 0.6; /* Biraz şeffaflık */
         }
         
         /* Modal Stilleri */
@@ -39,9 +52,9 @@
 
         /* Yatay kaydırma çubuğu (Modal içi) */
         .media-scroller::-webkit-scrollbar { height: 6px; }
-        .media-scroller::-webkit-scrollbar-track { background: #171717; } /* neutral-900 */
-        .media-scroller::-webkit-scrollbar-thumb { background: #525252; border-radius: 3px; }
-        .media-scroller::-webkit-scrollbar-thumb:hover { background: #737373; }
+        .media-scroller::-webkit-scrollbar-track { background: transparent; }
+        .media-scroller::-webkit-scrollbar-thumb { background: var(--ui-color); border-radius: 3px; opacity: 0.5; }
+        .media-scroller::-webkit-scrollbar-thumb:hover { background: var(--ui-color); }
         
         /* Modal metin alanları için kaydırma çubuğu */
         #modal-left-col::-webkit-scrollbar,
@@ -50,11 +63,11 @@
         }
         #modal-left-col::-webkit-scrollbar-thumb,
         #modal-right-col::-webkit-scrollbar-thumb {
-            background: #525252;
+            background: var(--ui-color);
             border-radius: 2px;
         }
 
-        /* Akordeon İçeriği Animasyonu - JS ile Yönetiliyor (LAGSIZ) */
+        /* Akordeon İçeriği Animasyonu */
         .accordion-content {
             max-height: 0;
             overflow: hidden;
@@ -64,10 +77,10 @@
         /* Aktif Akordeon Başlığı */
         .accordion-toggle.active {
             background-color: transparent; 
-            border-color: #737373; /* neutral-500 */
+            border-color: var(--ui-color);
             border-width: 2px; 
             border-style: solid;
-            border-radius: 6px; /* rounded-md */
+            border-radius: 6px; 
         }
         
         /* Opaklık geçişi */
@@ -79,11 +92,18 @@
         .filter-button {
             transition: color 0.2s, border-color 0.2s;
             border: 1px solid transparent; 
+            color: var(--ui-color);
+            opacity: 0.7;
+        }
+        .filter-button:hover {
+            opacity: 1;
+            border-color: var(--ui-color);
         }
         .filter-button.active {
             background-color: transparent; 
-            color: #f5f5f5; /* neutral-100 */
-            border-color: #f5f5f5; 
+            color: var(--ui-color);
+            border-color: var(--ui-color);
+            opacity: 1;
         }
 
         /* Thumbnail Önizleme */
@@ -93,25 +113,28 @@
             pointer-events: none; 
             opacity: 0;
             transition: opacity 0.2s ease-out;
-            border: 1px solid white;
+            border: 1px solid var(--ui-color);
             border-radius: 4px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         #thumbnail-preview.visible {
             opacity: 1;
         }
+
+        /* Genel UI Renk Sınıfları */
+        .ui-text { color: var(--ui-color); }
+        .ui-border { border-color: var(--ui-color); }
     </style>
 </head>
-<body class="text-neutral-400">
+<body>
 
     <!-- Ana Konteyner -->
     <div class="container mx-auto p-4 md:p-8 max-w-full"> 
         
         <!-- Üst Başlıklar ve Filtreler -->
-        <header class="mb-4"> <!-- Boşluk azaltıldı -->
+        <header class="mb-4"> 
             <!-- Arama Çubuğu -->
-            <!-- text-2xl (24px - Max Font), py-2 (Normal boşluk) -->
-            <input type="text" id="search-input" class="w-full bg-transparent border-b-2 border-neutral-500 text-neutral-200 text-2xl rounded-none py-2 px-2 mb-2 focus:outline-none focus:border-neutral-300 placeholder-neutral-500" placeholder="Search">
+            <input type="text" id="search-input" class="w-full bg-transparent border-b-2 ui-border ui-text text-2xl rounded-none py-2 px-2 mb-2 focus:outline-none placeholder-[var(--ui-color)]" placeholder="Search">
             
             <!-- Gruplama Filtreleri -->
             <div class="flex flex-wrap gap-2 items-center mt-2">
@@ -122,8 +145,7 @@
         </header>
 
         <!-- Akordeon Liste Ana Başlıkları (Sütun Başlıkları) -->
-        <!-- text-lg (18px), py-2, mt-4 (Boşluklar azaltıldı) -->
-        <div id="accordion-header" class="hidden md:flex sticky top-0 bg-black z-10 py-2 border-b-2 border-neutral-500 mt-4 text-lg font-normal text-neutral-500">
+        <div id="accordion-header" class="hidden md:flex sticky top-0 z-10 py-2 border-b-2 ui-border mt-4 text-lg font-normal ui-text" style="background-color: var(--bg-color);">
             <div class="w-[40%] px-2">Project name</div> 
             <div id="dynamic-header-1" class="w-[15%] px-2 capitalize"></div>
             <div id="dynamic-header-2" class="w-[15%] px-2 capitalize"></div>
@@ -139,7 +161,7 @@
     </div>
 
     <!-- Thumbnail Önizleme Kutusu -->
-    <img id="thumbnail-preview" src="" alt="Preview" width="250"> <!-- Boyut optimize edildi -->
+    <img id="thumbnail-preview" src="" alt="Preview" width="250">
 
     <!-- Modal (Popup) -->
     <div id="modal-container" tabindex="-1" class="fixed inset-0 z-40 flex items-center justify-center p-4 md:p-12 outline-none">
@@ -147,26 +169,25 @@
         <div id="modal-backdrop" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40"></div>
         
         <!-- Modal İçeriği -->
-        <div id="modal-content" class="relative z-50 w-full h-full bg-black border border-neutral-700 rounded-lg shadow-xl flex flex-col overflow-hidden">
+        <div id="modal-content" class="relative z-50 w-full h-full border ui-border rounded-lg shadow-xl flex flex-col overflow-hidden" style="background-color: var(--modal-bg);">
             <!-- Kapatma Düğmesi -->
-            <!-- text-sm, px-3 py-1 -->
-            <button id="modal-close-btn" class="absolute top-4 right-4 z-50 text-sm font-medium px-3 py-1 rounded-md border border-white text-white bg-black/60 hover:bg-black/80 transition-colors">
+            <button id="modal-close-btn" class="absolute top-4 right-4 z-50 text-sm font-medium px-3 py-1 rounded-md border ui-border ui-text bg-black/60 hover:bg-black/80 transition-colors">
                 Close
             </button>
             
             <!-- Üst Kısım: Medya Galerisi -->
-            <div id="modal-media-scroller" class="media-scroller w-full h-[60%] flex-shrink-0 overflow-x-auto overflow-y-hidden whitespace-nowrap border-b border-neutral-800">
+            <div id="modal-media-scroller" class="media-scroller w-full h-[60%] flex-shrink-0 overflow-x-auto overflow-y-hidden whitespace-nowrap border-b ui-border">
                 <!-- Medya öğeleri -->
             </div>
             
             <!-- Alt Kısım: Metin (İkiye Bölünmüş) -->
-            <div class="w-full h-[40%] grid grid-cols-1 md:grid-cols-2 gap-px bg-neutral-800">
+            <div class="w-full h-[40%] grid grid-cols-1 md:grid-cols-2 gap-px ui-border" style="border-color: var(--ui-color);">
                 <!-- Sol Sütun: Künye -->
-                <div id="modal-left-col" class="bg-black p-[5%] overflow-y-auto">
+                <div id="modal-left-col" class="p-[5%] overflow-y-auto" style="background-color: var(--modal-bg);">
                     <!-- Künye -->
                 </div>
                 <!-- Sağ Sütun: Açıklama -->
-                <div id="modal-right-col" class="bg-black p-[5%] overflow-y-auto">
+                <div id="modal-right-col" class="p-[5%] overflow-y-auto" style="background-color: var(--modal-bg);">
                     <!-- Açıklama -->
                 </div>
             </div>
@@ -329,8 +350,8 @@
                 const groupProjects = groups[groupName];
 
                 const groupToggle = document.createElement('div');
-                // text-2xl (24px - Max Font), py-2 (Sıkılaştırıldı)
-                groupToggle.className = 'accordion-toggle flex py-2 px-2 border-b-2 border-neutral-500 cursor-pointer transition-opacity duration-300 text-2xl font-bold text-neutral-200';
+                // UI Değişkenleri Kullanılıyor
+                groupToggle.className = 'accordion-toggle flex py-2 px-2 border-b-2 ui-border cursor-pointer transition-opacity duration-300 text-2xl font-bold ui-text';
                 groupToggle.innerHTML = `<span class="capitalize">${groupName}</span>`;
                 
                 const contentDiv = document.createElement('div');
@@ -344,18 +365,17 @@
                 
                 groupProjects.forEach(project => {
                     const projectRow = document.createElement('div');
-                    // text-lg (18px - Orta Font), ml-4, py-1.5 (Sıkılaştırıldı)
-                    projectRow.className = 'project-row flex cursor-pointer transition-opacity duration-300 ml-4 text-lg text-neutral-400';
+                    // UI Değişkenleri Kullanılıyor
+                    projectRow.className = 'project-row flex cursor-pointer transition-opacity duration-300 ml-4 text-lg ui-text';
                     
                     let headersHtml = '';
                     dynamicHeaders.forEach(key => {
                         const value = project.categories[key] || 'N/A';
-                        // py-1.5
-                        headersHtml += `<div class="py-1.5 px-2 border-b-2 border-neutral-500 w-[15%] capitalize">${value}</div>`;
+                        headersHtml += `<div class="py-1.5 px-2 border-b-2 ui-border w-[15%] capitalize">${value}</div>`;
                     });
                     
                     projectRow.innerHTML = `
-                        <div class="py-1.5 px-2 border-b-2 border-neutral-500 w-[40%] text-neutral-300 font-medium">${project.name}</div>
+                        <div class="py-1.5 px-2 border-b-2 ui-border w-[40%] font-medium">${project.name}</div>
                         ${headersHtml}
                     `;
                     
@@ -393,7 +413,7 @@
                     
                     if (currentActiveToggle && currentActiveToggle !== groupToggle) {
                         currentActiveToggle.classList.remove('active');
-                        currentActiveToggle.classList.add('border-b-2', 'border-neutral-500');
+                        currentActiveToggle.classList.add('border-b-2', 'ui-border');
                         const currentActiveContent = currentActiveToggle.nextElementSibling;
                         if (currentActiveContent && currentActiveContent.classList.contains('accordion-content')) {
                             currentActiveContent.style.maxHeight = null;
@@ -410,12 +430,12 @@
                         document.querySelectorAll('.accordion-toggle').forEach(toggle => {
                             toggle.style.opacity = '1'; 
                             if (!toggle.classList.contains('active')) { 
-                                toggle.classList.add('border-b-2', 'border-neutral-500');
+                                toggle.classList.add('border-b-2', 'ui-border');
                             }
                         });
                     } else {
                         groupToggle.classList.add('active');
-                        groupToggle.classList.remove('border-b-2', 'border-neutral-500');
+                        groupToggle.classList.remove('border-b-2', 'ui-border');
                         contentDiv.classList.add('open');
                         contentDiv.style.maxHeight = contentDiv.scrollHeight + "px";
                         
@@ -479,8 +499,7 @@
             filterButtonsContainer.innerHTML = '';
             categoryPriorityList.forEach(key => {
                 const button = document.createElement('button');
-                // text-base (16px), py-1, px-3
-                button.className = 'filter-button text-base bg-transparent text-neutral-500 px-3 py-1 rounded-md hover:text-neutral-300 hover:border-neutral-600 capitalize';
+                button.className = 'filter-button text-base bg-transparent px-3 py-1 rounded-md capitalize';
                 button.textContent = key;
                 if (key === currentGroupKey) {
                     button.classList.add('active');
@@ -531,26 +550,26 @@
             const allMetadata = {
                 'Project': project.name,
                 ...project.categories,
-                'Link': `<a href="${project.link}" target="_blank" class="text-neutral-400 hover:text-white underline break-all">${project.link}</a>`
+                'Link': `<a href="${project.link}" target="_blank" class="underline break-all" style="color: var(--ui-color); filter: brightness(1.5);">${project.link}</a>`
             };
 
-            // Popup metin boyutları text-base (16px)
-            let leftHtml = '<div class="space-y-1 text-base leading-tight text-neutral-400">';
+            // Modal Künye
+            let leftHtml = '<div class="space-y-1 text-base leading-tight ui-text">';
             
-            leftHtml += `<p class="flex"><strong class="font-normal text-neutral-600 w-32 flex-shrink-0 capitalize">Project:</strong> <span class="text-neutral-300">${allMetadata['Project']}</span></p>`;
+            leftHtml += `<p class="flex"><strong class="font-normal w-32 flex-shrink-0 capitalize">Project:</strong> <span>${allMetadata['Project']}</span></p>`;
             
             categoryPriorityList.forEach(key => {
                 if (allMetadata[key]) {
-                    leftHtml += `<p class="flex"><strong class="font-normal text-neutral-600 w-32 flex-shrink-0 capitalize">${key}:</strong> <span class="text-neutral-300">${allMetadata[key]}</span></p>`;
+                    leftHtml += `<p class="flex"><strong class="font-normal w-32 flex-shrink-0 capitalize">${key}:</strong> <span>${allMetadata[key]}</span></p>`;
                 }
             });
             
-            leftHtml += `<p class="flex"><strong class="font-normal text-neutral-600 w-32 flex-shrink-0 capitalize">Link:</strong> <span>${allMetadata['Link']}</span></p>`;
+            leftHtml += `<p class="flex"><strong class="font-normal w-32 flex-shrink-0 capitalize">Link:</strong> <span>${allMetadata['Link']}</span></p>`;
             leftHtml += '</div>';
             modalLeftCol.innerHTML = leftHtml;
 
-            // Açıklama: text-lg
-            modalRightCol.innerHTML = `<p class="text-neutral-300 text-lg whitespace-pre-line leading-relaxed">${project.description}</p>`;
+            // Modal Açıklama
+            modalRightCol.innerHTML = `<p class="text-lg whitespace-pre-line leading-relaxed ui-text">${project.description}</p>`;
             
             modalContainer.classList.add('open');
             modalBackdrop.classList.add('open');
