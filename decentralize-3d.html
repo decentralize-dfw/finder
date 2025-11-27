@@ -1,0 +1,2718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Portfolio 3D View V6 - Final Interactions</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Meshopt Decoder (Global) -->
+    <script src="https://unpkg.com/meshoptimizer@0.19.0/meshopt_decoder.js"></script>
+
+    <style>
+        /* --- THEME SETTINGS --- */
+        :root {
+            --ui-color: #002fa7; 
+            --bg-color: pink;
+            --modal-bg: #d6a1aa;
+            --card-bg: transparent; 
+        }
+
+        html, body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--ui-color);
+            margin: 0;
+            overflow: hidden;
+            touch-action: none; /* Prevents browser handling gestures */
+            scrollbar-width: none; 
+            -ms-overflow-style: none; 
+        }
+
+        *::-webkit-scrollbar { display: none; width: 0; height: 0; background: transparent; }
+
+        /* --- UI CONTAINER --- */
+        #ui-container {
+            position: absolute; top: 0; left: 0; width: 100%; z-index: 100;
+            padding: 2rem; pointer-events: none;
+            display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start;
+            background-color: var(--bg-color); 
+            border-bottom: 1px solid rgba(0, 47, 167, 0.3); 
+        }
+
+        @media (max-width: 768px) { #ui-container { padding: 1rem; } }
+
+        .menu-bar {
+            display: flex; flex-wrap: wrap; gap: 0.75rem; 
+            justify-content: flex-start; align-items: center; 
+            pointer-events: auto; width: 100%;
+        }
+
+        .menu-group-separator {
+            width: 1px; height: 20px; background-color: var(--ui-color);
+            opacity: 0.3; margin: 0 8px;
+        }
+
+        .nav-btn {
+            background: transparent; border: 1px solid transparent; color: var(--ui-color); 
+            padding: 4px 12px; text-transform: capitalize; font-size: 1rem; font-weight: 400;
+            cursor: pointer; transition: all 0.2s ease; border-radius: 0.375rem; opacity: 0.7;
+        }
+        .nav-btn:hover { opacity: 1; border-color: var(--ui-color); }
+        .nav-btn.active { background-color: transparent; color: var(--ui-color); border-color: var(--ui-color); opacity: 1; font-weight: 500; }
+
+        /* --- SLIDER --- */
+        #slider-container {
+            position: fixed; bottom: 30px; left: 30px; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; gap: 5px; pointer-events: auto;
+        }
+        #slider-label {
+            font-size: 0.7rem; text-transform: uppercase; font-weight: bold; opacity: 0.7; color: var(--ui-color);
+        }
+        input[type=range] {
+            -webkit-appearance: none; width: 120px; height: 4px; background: rgba(0, 47, 167, 0.3);
+            border-radius: 2px; outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 12px; height: 12px;
+            border-radius: 50%; background: var(--ui-color); cursor: pointer;
+        }
+
+        /* --- 3D ELEMENTS --- */
+        .element-card {
+            width: 160px; height: 160px; 
+            background-color: var(--card-bg);
+            border: none; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            pointer-events: auto; user-select: none;
+            /* Visibility Update: Double Sided enabled */
+            backface-visibility: visible; -webkit-backface-visibility: visible;
+            transform-style: preserve-3d;
+            transition: transform 0.2s;
+        }
+        .element-card:hover { transform: scale(1.15); z-index: 1000; }
+        
+        .card-image {
+            width: 100%; height: 100%; object-fit: contain; pointer-events: none;
+            display: block;
+            user-select: none; -webkit-user-drag: none; /* Crucial for clean dragging */
+        }
+
+        .group-label {
+            font-size: 80px; font-weight: 900; color: var(--ui-color);
+            text-transform: uppercase; pointer-events: none; user-select: none;
+            white-space: nowrap; font-family: 'Arial Black', sans-serif;
+            text-align: center; opacity: 0; transform: scale(0.8);
+            transition: opacity 1s ease, transform 1s ease;
+            backface-visibility: visible; -webkit-backface-visibility: visible;
+        }
+        .group-label.visible { opacity: 1 !important; transform: scale(1); }
+
+        /* --- MODAL --- */
+        #modal-container {
+            opacity: 0; visibility: hidden; transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+            position: fixed; inset: 0; z-index: 99999;
+            display: flex; align-items: center; justify-content: center; padding: 3%; pointer-events: none;
+        }
+        #modal-container.open { opacity: 1; visibility: visible; pointer-events: auto; }
+        
+        #modal-backdrop {
+            position: absolute; inset: 0; background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px); z-index: -1; cursor: pointer;
+        }
+
+        #modal-content {
+            position: relative; z-index: 50; width: 100%; height: 100%;
+            border: 1px solid var(--ui-color); border-radius: 8px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            display: flex; flex-direction: column; overflow: hidden;
+            background-color: var(--modal-bg); color: var(--ui-color);
+        }
+
+        .media-scroller {
+            scrollbar-width: thin; scrollbar-color: var(--ui-color) transparent;
+            overflow-x: auto; overflow-y: hidden;
+        }
+        .media-scroller::-webkit-scrollbar { display: block; height: 6px; }
+        .media-scroller::-webkit-scrollbar-track { background: transparent; }
+        .media-scroller::-webkit-scrollbar-thumb { background: var(--ui-color); border-radius: 3px; opacity: 0.5; border: none; }
+        
+        #modal-left-col, #modal-right-col {
+            scrollbar-width: thin; scrollbar-color: var(--ui-color) transparent;
+        }
+        #modal-left-col::-webkit-scrollbar, #modal-right-col::-webkit-scrollbar { display: block; width: 4px; }
+        #modal-left-col::-webkit-scrollbar-thumb, #modal-right-col::-webkit-scrollbar-thumb { background: var(--ui-color); border-radius: 2px; border: none; }
+
+        /* UTILS */
+        .ui-text { color: var(--ui-color); }
+        .ui-border { border-color: var(--ui-color); }
+        
+        .html-scale-wrapper {
+            position: relative; overflow: hidden; background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 100%;
+            aspect-ratio: 16 / 9; min-width: 400px; margin-right: 1rem; border: 1px solid #eee;
+        }
+        .html-scale-wrapper iframe {
+            position: absolute; top: 0; left: 0; width: 200%; height: 200%; border: none;
+            transform: scale(0.5); transform-origin: 0 0;
+        }
+        .glb-wrapper {
+            height: 100%; min-width: 300px; margin-right: 1rem; position: relative;
+            background: transparent; border-radius: 4px;
+        }
+
+        /* LOADER */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color); z-index: 99999; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease-out; pointer-events: auto; 
+        }
+        .loader-text {
+            font-size: 1.5rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ui-color); font-weight: bold;
+        }
+
+        #container { 
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1; pointer-events: auto;
+            touch-action: none; /* VITAL for OrbitControls */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="loader-text">INITIALIZING UNIVERSE</div>
+    </div>
+
+    <div id="ui-container">
+        <div class="menu-bar">
+            <button class="nav-btn active" data-type="view" data-val="random">Chaos</button>
+            <button class="nav-btn" data-type="view" data-val="grid">Grid</button>
+            <button class="nav-btn" data-type="view" data-val="sphere">Sphere</button>
+
+            <div class="menu-group-separator"></div>
+
+            <button class="nav-btn active" data-type="filter" data-val="all">All</button>
+            <button class="nav-btn" data-type="filter" data-val="year">Year</button>
+            <button class="nav-btn" data-type="filter" data-val="type">Type</button>
+            <button class="nav-btn" data-type="filter" data-val="subtype">Subtype</button> <!-- NEW BUTTON -->
+            <button class="nav-btn" data-type="filter" data-val="collection">Collection</button>
+            <button class="nav-btn" data-type="filter" data-val="medium">Medium</button>
+            <button class="nav-btn" data-type="filter" data-val="expression">Expression</button>
+        </div>
+    </div>
+
+    <div id="slider-container">
+        <div id="slider-label">Auto Rotate</div>
+        <input type="range" id="rotate-slider" min="-2" max="2" step="0.1" value="0">
+    </div>
+
+    <div id="container"></div>
+
+    <div id="modal-container" tabindex="-1">
+        <div id="modal-backdrop"></div>
+        <div id="modal-content">
+            <button id="modal-close-btn" class="absolute top-4 right-4 z-50 text-sm font-medium px-3 py-1 rounded-md border ui-border ui-text bg-black/60 hover:bg-black/80 transition-colors text-white cursor-pointer">Close</button>
+            <div id="modal-media-scroller" class="media-scroller w-full h-[60%] flex-shrink-0 overflow-x-auto overflow-y-hidden whitespace-nowrap border-b ui-border bg-transparent flex items-center p-4 gap-4"></div>
+            <div class="w-full h-[40%] grid grid-cols-1 md:grid-cols-2 gap-px ui-border" style="border-color: var(--ui-color);">
+                <div id="modal-left-col" class="p-[5%] overflow-y-auto" style="background-color: var(--modal-bg);"></div>
+                <div id="modal-right-col" class="p-[5%] overflow-y-auto" style="background-color: var(--modal-bg);"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
+        import TWEEN from 'three/addons/libs/tween.module.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+        import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+
+        // Added 'subtype' to priority list
+        const categoryPriorityList = ['type', 'subtype', 'year', 'collection', 'medium', 'expression', 'reality', 'contents'];
+
+        // --- DATA (REDUCED to ~20 items as requested) ---
+         const projects = [
+            { 
+                id: "demo-1", 
+                name: "MEDIA TEST DEMO", 
+                description: "This project demonstrates 3D Model (GLB), Video (MP4) and HTML Embed (YouTube) support.", 
+                link: null, 
+                media: [
+                    { "type": "model", "src": "https://raw.githubusercontent.com/decentralize-dfw/c2w2-glb/main/seize-centerobject-opt-v1.glb" },
+                    { "type": "html", "src": "https://raw.githubusercontent.com/decentralize-dfw/finder/refs/heads/main/decentralize.html" }, 
+                    { "type": "video", "src": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" }
+                ], 
+                categories: { year: 2024, type: "demo", subtype: "mixed", collection: "test", medium: "digital", expression: "code", reality: "virtual", contents: "mixed" } 
+            },
+           {
+    id: "fig-1",
+    name: "penguin is not a friend, only a sinner",
+    description: "acrylic on 120x120 canvas, 2023",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a161.png" }],
+    categories: { year: 2023, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-2",
+    name: "despite transgression",
+    description: "acrylic on 100x160 gray carton, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a122.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-3",
+    name: "cellular spleens",
+    description: "acrylic on 100x120 canvas, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a130.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-4",
+    name: "ciao capo, sono squalo",
+    description: "acrylic on 65x90 canvas, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a100.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-5",
+    name: "caprocorn sister: war, plague, earthquake",
+    description: "acrylic on 65x90 canvas, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a101.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-6",
+    name: "When the Darkness surrounds, be among those who burn the Great Fire",
+    description: "acrylic on 65x90 canvas, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b86.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-7",
+    name: "cute but unemployed cartoon figure",
+    description: "acrylic on 65x90 canvas, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a158.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-8",
+    name: "good people helping bad ones (that’s why they’re bad too)",
+    description: "acrylic on 70x100 black paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a121.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-9",
+    name: "amor cathedra",
+    description: "acrylic on 70x100 black paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b6.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-10",
+    name: "morbid forebodings triggered by childish landscape",
+    description: "acrylic on 73x80 grey carton, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a124.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-11",
+    name: "duality of the angelic summarization",
+    description: "acrylic on 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a125.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-12",
+    name: "il sbagliato di rompipalle",
+    description: "acrylic on 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a98.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-13",
+    name: "the family dinner after a night in jaïl",
+    description: "acrylic on 65x90 canvas, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a103.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-14",
+    name: "viperella",
+    description: "acrylic on 50x70 canvas, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a99.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-15",
+    name: "society screwing balance",
+    description: "acrylic on A2 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/A116.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-16",
+    name: "wings of abyss",
+    description: "acrylic on 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a129.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-17",
+    name: "baby rights 101",
+    description: "acrylic on 80x100 canvas, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a102.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-18",
+    name: "guarding holy mountains from malice",
+    description: "acrylic on 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b89.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-19",
+    name: "Century of 0 & 1 / Transhumanism",
+    description: "acrylic on 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b88.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-20",
+    name: "How to materialize your loneliness by using an animal in somewhere concrete or technologic",
+    description: "acrylic on 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/A117.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-21",
+    name: "burningman fast",
+    description: "acrylic on 70x100 black paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a118.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-22",
+    name: "see u in the other side",
+    description: "acrylic on A2 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a119.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-23",
+    name: "the assassination of the crow",
+    description: "acrylic on 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a123.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-24",
+    name: "sin over black matter",
+    description: "acrylic on 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a126.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-25",
+    name: "victim psycho-logique II : the peachy pharaoh connects with the chair",
+    description: "acrylic on 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a127.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-26",
+    name: "remixed execution of lucid drowning",
+    description: "acrylic on 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a145.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-27",
+    name: "execution of lucid drowning",
+    description: "acrylic on 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a146.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-28",
+    name: "two woman figures sitting at the back of the canvas",
+    description: "charcoal on back of 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a143.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-29",
+    name: "bacchus 2",
+    description: "acrylic on A2 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b85.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-30",
+    name: "The On-Top Ruler",
+    description: "acrylic on A3 thick paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a128.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-31",
+    name: "instagra, influencer kibele",
+    description: "acrylic on 50x70 whiteboard, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a114.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-32",
+    name: "hell one",
+    description: "pastel on 80x100 paper DUZALY, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a151.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-33",
+    name: "the rulers and governors are bipolar and childish",
+    description: "acrylic on 50x70 whiteboard, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a115.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-34",
+    name: "famp",
+    description: "acrylic on A2 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a148.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-35",
+    name: "yes we met",
+    description: "acrylic on 80x100 print DUZALT, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a154.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-36",
+    name: "frontation",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b56.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-37",
+    name: "blood of ethereum",
+    description: "acrylic on A3 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a159.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-38",
+    name: "chewing gum fight",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b69.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-39",
+    name: "fabl",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a153.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-40",
+    name: "drinking in navigli",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a141.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-41",
+    name: "masterb",
+    description: "acrylic on A3 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b64.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-42",
+    name: "dirty plates since thursday",
+    description: "pastel on A3 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b63.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-43",
+    name: "when it pains, it rours",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a160.png" }],
+    categories: { year: 2019, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-44",
+    name: "kokorec",
+    description: "pastel + watercolor on A3 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b31.png" }],
+    categories: { year: 2020, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "fig-45",
+    name: "touch on syn",
+    description: "acrylic on A3 thick paper, 2022",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b9.png" }],
+    categories: { year: 2022, type: "painting", subtype: "figurative", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-1",
+    name: "eeriy forest",
+    description: "acrylic on 20x80 canvas, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a108.png" }],
+    categories: { year: 2018, type: "painting", subtype: "abstract", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-2",
+    name: "soldiers x lust x nature",
+    description: "acrylic on 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a113.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-3",
+    name: "outta cave 1st",
+    description: "acrylic on 65x90 canvas, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a109.png" }],
+    categories: { year: 2018, type: "painting", subtype: "abstract", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-4",
+    name: "the spike chats with the flesh",
+    description: "acrylic on 65x90 canvas, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a110.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-5",
+    name: "river habitat",
+    description: "acrylic on 80x100 canvas, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a111.png" }],
+    categories: { year: 2018, type: "painting", subtype: "abstract", collection: "irl", medium: "canvas", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-6",
+    name: "cloud daemons",
+    description: "acrylic on A2 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a112.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-7",
+    name: "ikeacyan",
+    description: "acrylic on deconstructed carton package, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b48.png" }],
+    categories: { year: 2020, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-8",
+    name: "rothko sigara",
+    description: "acrylic on carton, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b51.png" }],
+    categories: { year: 2020, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-9",
+    name: "architypical cave meltdown / hunting thru deepres",
+    description: "acrylic on 40x120 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a140.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-10",
+    name: "shape study",
+    description: "marker on carton, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b53.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-11",
+    name: "abstract village photograph",
+    description: "acrylic on A3 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b72.png" }],
+    categories: { year: 2020, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-12",
+    name: "worm thinker",
+    description: "pastel on 50x70 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a150.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-13",
+    name: "pt showing how to squat",
+    description: "acrylic on A3 paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b81.png" }],
+    categories: { year: 2024, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-14",
+    name: "barbarossa",
+    description: "acrylic on A3 paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b75.png" }],
+    categories: { year: 2024, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-15",
+    name: "thickness",
+    description: "acrylic on A3 paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b77.png" }],
+    categories: { year: 2024, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-16",
+    name: "fidelio",
+    description: "acrylic on A3 paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b76.png" }],
+    categories: { year: 2024, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-17",
+    name: "river when we eat gold",
+    description: "acrylic on A3 paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b78.png" }],
+    categories: { year: 2024, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-18",
+    name: "69 crow",
+    description: "acrylic on A3 paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b73.png" }],
+    categories: { year: 2024, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-19",
+    name: "exhibition flyer freestyle",
+    description: "pastel on A3 print, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b2.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-20",
+    name: "forest of chaqras i",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a132.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-21",
+    name: "forest of chaqras ii",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a133.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-22",
+    name: "forest of chaqras iii",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a134.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-23",
+    name: "forest of chaqras iv",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a135.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-24",
+    name: "forest of chaqras v",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a136.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-25",
+    name: "forest of chaqras vi",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a137.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-26",
+    name: "rain dog",
+    description: "acrylic on A3 paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b74.png" }],
+    categories: { year: 2024, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-27",
+    name: "gift",
+    description: "acrylic + crayon on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b57.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-28",
+    name: "human ocean on armageddon",
+    description: "acrylic on A3 thick paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b62.png" }],
+    categories: { year: 2020, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "abs-29",
+    name: "self-eesteem",
+    description: "acrylic on deconstructed whiskey package, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b58.png" }],
+    categories: { year: 2019, type: "painting", subtype: "abstract", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-1",
+    name: "crow_4",
+    description: "acrylic on A3 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b65.png" }],
+    categories: { year: 2020, type: "painting", subtype: "crow studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-2",
+    name: "crow_3",
+    description: "acrylic on A3 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b59.png" }],
+    categories: { year: 2020, type: "painting", subtype: "crow studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-3",
+    name: "69 crow",
+    description: "acrylic on A3 paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b73.png" }],
+    categories: { year: 2024, type: "painting", subtype: "crow studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-4",
+    name: "beecrow",
+    description: "acrylic on A3 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b29.png" }],
+    categories: { year: 2020, type: "painting", subtype: "crow studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-5",
+    name: "myth of con",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a149.png" }],
+    categories: { year: 2019, type: "painting", subtype: "crow studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-6",
+    name: "cult joint",
+    description: "acrylic on deconstructed letter envelope, 2021",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b52.png" }],
+    categories: { year: 2021, type: "painting", subtype: "crow studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-7",
+    name: "bee",
+    description: "watercolor on A4 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b33.png" }],
+    categories: { year: 2019, type: "painting", subtype: "crow studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-8",
+    name: "crow_2",
+    description: "watercolor on A4 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b32.png" }],
+    categories: { year: 2019, type: "painting", subtype: "crow studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-9",
+    name: "filthy (qui e 3)",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a142.png" }],
+    categories: { year: 2019, type: "painting", subtype: "face studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-10",
+    name: "qui e 2",
+    description: "acrylic on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b45.png" }],
+    categories: { year: 2019, type: "painting", subtype: "face studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-11",
+    name: "qui e",
+    description: "acrylic on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b37.png" }],
+    categories: { year: 2019, type: "painting", subtype: "face studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-12",
+    name: "frank pastrami i",
+    description: "pastel on A4 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a106.png" }],
+    categories: { year: 2019, type: "painting", subtype: "face studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-13",
+    name: "frank pastrami ii",
+    description: "pastel on A4 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a104.png" }],
+    categories: { year: 2019, type: "painting", subtype: "face studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-14",
+    name: "frank pastrami iii",
+    description: "pastel on A4 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a105.png" }],
+    categories: { year: 2019, type: "painting", subtype: "face studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-15",
+    name: "frank pastrami iv",
+    description: "pastel on 27x36 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a138.png" }],
+    categories: { year: 2019, type: "painting", subtype: "face studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-16",
+    name: "jack’s smirking revenge",
+    description: "acrylic on A4 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a120.png" }],
+    categories: { year: 2020, type: "painting", subtype: "face studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-17",
+    name: "egypt reunited",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a147.png" }],
+    categories: { year: 2019, type: "painting", subtype: "body studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-18",
+    name: "bet bet",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a152.png" }],
+    categories: { year: 2019, type: "painting", subtype: "body studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-19",
+    name: "against",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a156.png" }],
+    categories: { year: 2019, type: "painting", subtype: "body studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-20",
+    name: "avatars for president",
+    description: "acrylic on A3 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a155.png" }],
+    categories: { year: 2019, type: "painting", subtype: "body studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-21",
+    name: "being eight",
+    description: "watercolor on A4 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b34.png" }],
+    categories: { year: 2019, type: "painting", subtype: "body studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "stu-22",
+    name: "fishman",
+    description: "acrylic on A4 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a157.png" }],
+    categories: { year: 2019, type: "painting", subtype: "body studies", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-1",
+    name: "xyyz008-s prototype",
+    description: "colored pencil on A4 print, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b1.png" }],
+    categories: { year: 2020, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-2",
+    name: "protecting the big cat with cross from the anger of village",
+    description: "pencil on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b10.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-3",
+    name: "calibra",
+    description: "pencil + marker on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b11.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+    },
+      {
+    id: "ske-4",
+    name: "melting",
+    description: "pencil on A4 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b12.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-5",
+    name: "mad scientist & clone & dna",
+    description: "pencil on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b13.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-6",
+    name: "parentship",
+    description: "pencil + ink on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b14.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-7",
+    name: "chairjob",
+    description: "pencil + acrylic on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b15.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-8",
+    name: "being tried",
+    description: "pencil + marker on A4 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b16.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-9",
+    name: "bambi",
+    description: "pencil + marker on A4 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b17.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-10",
+    name: "triplet",
+    description: "pencil on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b18.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-11",
+    name: "abortion",
+    description: "pencil + watercolor on A3 thick paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b20.png" }],
+    categories: { year: 2020, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-12",
+    name: "etoile shooting innocent",
+    description: "pencil on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b21.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-13",
+    name: "the rulers and governors are bipolar and childish studies",
+    description: "pencil on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b22.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-14",
+    name: "good people help bad ones v1",
+    description: "pencil on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b23.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-15",
+    name: "society screwing balance",
+    description: "pencil on A4 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b24.png" }],
+    categories: { year: 2020, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-16",
+    name: "3quility",
+    description: "pencil on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b25.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-17",
+    name: "wings of abyss",
+    description: "pencil on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b26.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-18",
+    name: "italian psycho",
+    description: "pencil on A4 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b36.png" }],
+    categories: { year: 2020, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-19",
+    name: "fly",
+    description: "pen on A4 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b38.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-20",
+    name: "pistacchio",
+    description: "marker on A4 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b39.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-21",
+    name: "self",
+    description: "pencil on A4 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b40.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-22",
+    name: "freedom",
+    description: "marker + acrylic + pencil on A4 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b41.png" }],
+    categories: { year: 2020, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-23",
+    name: "missionaire",
+    description: "marker on A4 paper, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b43.png" }],
+    categories: { year: 2018, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-24",
+    name: "guarding holy mountains from malice",
+    description: "pencil on A4 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b44.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-25",
+    name: "getting more keys",
+    description: "marker on A4 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b46.png" }],
+    categories: { year: 2020, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-26",
+    name: "fake condos",
+    description: "pencil on A4 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b47.png" }],
+    categories: { year: 2020, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-27",
+    name: "witch",
+    description: "colored pencil on A4 graph paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b5.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-28",
+    name: "fake dali",
+    description: "pencil on A4 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b50.png" }],
+    categories: { year: 2020, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-29",
+    name: "trans-control",
+    description: "marker on A4 paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b55.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-30",
+    name: "polimi statics lesson boredom",
+    description: "pencil on A4 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b60.png" }],
+    categories: { year: 2020, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-31",
+    name: "depersonalization towards digital medias",
+    description: "pen on A4 paper, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b61.png" }],
+    categories: { year: 2018, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-32",
+    name: "human figure smoking black void",
+    description: "colored pencil on A3 thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b7.png" }],
+    categories: { year: 2019, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-33",
+    name: "architectural sketches",
+    description: "pen on A4 paper, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b70.png" }],
+    categories: { year: 2018, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-34",
+    name: "milano fashion week",
+    description: "acrylic on A3 paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b79.png" }],
+    categories: { year: 2024, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-35",
+    name: "laught cryer",
+    description: "marker + coffee + salt + glue on A4 paper, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b8.png" }],
+    categories: { year: 2020, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "ske-36",
+    name: "degen bobbin on metaphysical grid",
+    description: "marker + pencil on A3 thick paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b80.png" }],
+    categories: { year: 2024, type: "painting", subtype: "sketch", collection: "irl", medium: "paper", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "mix-1",
+    name: "i dolci dell'ticinese",
+    description: "mixed media, 2021",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/B4.png" }],
+    categories: { year: 2021, type: "painting", subtype: "mixed media", collection: "irl", medium: "mixed", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "mix-2",
+    name: "cool bar wc wall sample",
+    description: "mixed media on 50x70cm thick paper, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b87.png" }],
+    categories: { year: 2019, type: "painting", subtype: "mixed media", collection: "irl", medium: "mixed", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "mix-3",
+    name: "mondrian pellegrino flag",
+    description: "mixed media on 20x80cm carton, 2019",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b82.png" }],
+    categories: { year: 2019, type: "painting", subtype: "mixed media", collection: "irl", medium: "mixed", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "mix-4",
+    name: "collage etude no 1",
+    description: "mixed media on 40x80cm carton, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b83.png" }],
+    categories: { year: 2018, type: "painting", subtype: "mixed media", collection: "irl", medium: "mixed", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "mix-5",
+    name: "honest lyes",
+    description: "mixed media on 60x60cm carton, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b84.png" }],
+    categories: { year: 2018, type: "painting", subtype: "mixed media", collection: "irl", medium: "mixed", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "mix-6",
+    name: "padre x damien",
+    description: "collage + pastel on A3 thick paper, 2021",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/a131.png" }],
+    categories: { year: 2021, type: "painting", subtype: "mixed media", collection: "irl", medium: "mixed", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "mix-7",
+    name: "collage etude no 4",
+    description: "mixed media on A4 printed paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b97.png" }],
+    categories: { year: 2024, type: "painting", subtype: "mixed media", collection: "irl", medium: "mixed", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "mix-8",
+    name: "arxitect",
+    description: "acrylic + tape on printed carton, 2020",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b19.png" }],
+    categories: { year: 2020, type: "painting", subtype: "mixed media", collection: "irl", medium: "mixed", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "mix-9",
+    name: "forget",
+    description: "mixed media on A5 printed paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b94.png" }],
+    categories: { year: 2024, type: "painting", subtype: "mixed media", collection: "irl", medium: "mixed", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "mix-10",
+    name: "tombpaper",
+    description: "tape, ripped A4 paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b96.png" }],
+    categories: { year: 2024, type: "painting", subtype: "mixed media", collection: "irl", medium: "mixed", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "mix-11",
+    name: "autonomous lavoro",
+    description: "mixed media on A4 printed paper, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b95.png" }],
+    categories: { year: 2024, type: "painting", subtype: "mixed media", collection: "irl", medium: "mixed", expression: "decentralize*", reality: "irl", contents: "drawing" }
+  },
+  {
+    id: "obj-1",
+    name: "unopened letter",
+    description: "marker, tape, palo santo, letter, envelope, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b93.png" }],
+    categories: { year: 2024, type: "painting", subtype: "object", collection: "irl", medium: "object", expression: "decentralize*", reality: "irl", contents: "collage" }
+  },
+  {
+    id: "obj-2",
+    name: "sand box capital",
+    description: "metal box, ripped decentralize* sticker, bronze coins, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b92.png" }],
+    categories: { year: 2024, type: "painting", subtype: "object", collection: "irl", medium: "object", expression: "decentralize*", reality: "irl", contents: "collage" }
+  },
+  {
+    id: "obj-3",
+    name: "i've changed",
+    description: "plastic, 1.5lt bottle, beer, sticky tags, ripped paper, pen, 2024",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b91.png" }],
+    categories: { year: 2024, type: "painting", subtype: "object", collection: "irl", medium: "object", expression: "decentralize*", reality: "irl", contents: "collage" }
+  },
+  {
+    id: "obj-4",
+    name: "Milanese Istanbul Matrix",
+    description: "19 bottles of Raki in various sizes, 2023",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/b90.png" }],
+    categories: { year: 2023, type: "painting", subtype: "object", collection: "irl", medium: "object", expression: "decentralize*", reality: "irl", contents: "collage" }
+  },
+   {
+    id: "people-1",
+    name: "0-70",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/0-70.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-2",
+    name: "0-70-1",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/0-70-1.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-3",
+    name: "2den0",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/2den0.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-4",
+    name: "70-",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/70-.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-5",
+    name: "bayan",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/bayan.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-6",
+    name: "bebek",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/bebek.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-7",
+    name: "bilgi",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/bilgi.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-8",
+    name: "birra bex 1",
+    description: "milano, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/birra_bex_1.JPG" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-9",
+    name: "birra bex 2",
+    description: "milano, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/birra_bex_2.JPG" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-10",
+    name: "brunchtime",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/brunchtime.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-11",
+    name: "bunu sanayiye götürmek lazım",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/bunu_sanayiye_goturmek_lazim.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-12",
+    name: "captain captain",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/captain_captain.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-13",
+    name: "cash cut u down",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/cash_cut_u_down.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-14",
+    name: "cash g0ds gonna",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/cash_g0ds_gonna.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-15",
+    name: "date",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/date.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-16",
+    name: "education",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/education.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-17",
+    name: "eraserhead",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/eraserhead.JPG" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-18",
+    name: "fiskiye",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/fiskiye.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-19",
+    name: "frnze",
+    description: "firenze, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/frnze.JPG" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-20",
+    name: "helpful",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/helpful.JPG" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-21",
+    name: "joy",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/joy.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-22",
+    name: "kurabiye sut 2",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/kurabiye%20sut%202.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-23",
+    name: "kurabiye sut",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/kurabiye%20sut.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-24",
+    name: "layer",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/layer.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-25",
+    name: "living room",
+    description: "berlin, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/living_room.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-26",
+    name: "martian",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/martian.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-27",
+    name: "metaverss",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/metaverss.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-28",
+    name: "metro fatih",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/metro_fatih.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-29",
+    name: "milanese",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/milanese.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-30",
+    name: "munafixx",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/munafıxx.JPG" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-31",
+    name: "npc randomizer",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/npc_randomizer.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-32",
+    name: "özenli giyim dünyası",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/ozenli_giyim_dunyası.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-33",
+    name: "özür dilerim",
+    description: "milano, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/ozur_dilerim.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-34",
+    name: "pink",
+    description: "milano, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/pink.JPG" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-35",
+    name: "snorter",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/snorter.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-36",
+    name: "storia",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/storia.JPG" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-37",
+    name: "storm rider 1",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/storm_rider_1.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-38",
+    name: "storm rider 2",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/storm_rider_2.JPG" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-39",
+    name: "studio",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/studio.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-40",
+    name: "tepeden",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/tepeden.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-41",
+    name: "tipsy flee fellas",
+    description: "berlin, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/tipsy_flee_fellas.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-42",
+    name: "tram 9",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/tram_9.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-43",
+    name: "vapur spleen",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/vapur_spleen.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-44",
+    name: "vlad",
+    description: "bled, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/vlad.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-45",
+    name: "wymffs",
+    description: "berlin, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/wymffs.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "people-46",
+    name: "yönelims",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/yonelims.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "people", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-1",
+    name: "2-to-1",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/2-to-1.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-2",
+    name: "2-to-1-2",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/2-to-1-2.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-3",
+    name: "8bira",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/8bira.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-4",
+    name: "arpa",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/arpa.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-5",
+    name: "asa",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/asa.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-6",
+    name: "asik",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/asik.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-7",
+    name: "askı",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/askı.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-8",
+    name: "balat",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/balat.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-9",
+    name: "bölüm",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/bolum.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-10",
+    name: "boo",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/boo.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-11",
+    name: "camus",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/camus.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-12",
+    name: "daily-objectx-1",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/daily-objectx-1.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-13",
+    name: "daralan",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/daralan.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-14",
+    name: "deli-kayış",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/deli-kayış.JPG" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-15",
+    name: "dionysos",
+    description: "firenze, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/dionysos.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-16",
+    name: "frames",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/frames.JPG" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-17",
+    name: "gece çöker",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/gece_coker.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-18",
+    name: "gece-mesaisi",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/gece-mesaisi.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-19",
+    name: "grater",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/grater.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-20",
+    name: "halktv",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/halktv.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-21",
+    name: "hayal@",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/hayal_et.JPG" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-22",
+    name: "hayat",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/hayat.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-23",
+    name: "inflation",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/inflation.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-24",
+    name: "kemer",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/kemer.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-25",
+    name: "like",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/like.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-26",
+    name: "liman",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/liman.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-27",
+    name: "ma",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/ma.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-28",
+    name: "mambocino",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/mambocino.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-29",
+    name: "minare",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/minare.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-30",
+    name: "mistik",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/mistik.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-31",
+    name: "newbornbaby",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/newbornbaby.JPG" }],
+    categories: { year: 2018, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-32",
+    name: "pinched",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/pinched.JPG" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-33",
+    name: "rollers",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/rollers.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-34",
+    name: "ruhemiciler",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/ruhemiciler.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-35",
+    name: "sauron",
+    description: "berlin, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/sauron.JPG" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-36",
+    name: "screen",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/screen.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-37",
+    name: "shoot",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/shoot.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-38",
+    name: "silhouettes",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/silhouettes.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-39",
+    name: "spleen",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/spleen.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-40",
+    name: "the-yve-just-gone-1",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/the-yve-just-gone-1.JPG" }],
+    categories: { year: 2018, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-41",
+    name: "the-yve-just-gone-2",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/the-yve-just-gone-2.JPG" }],
+    categories: { year: 2018, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-42",
+    name: "the-yve-just-gone-3",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/the-yve-just-gone-3.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-43",
+    name: "the-yve-just-gone-4",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/the-yve-just-gone-4.JPG" }],
+    categories: { year: 2018, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-44",
+    name: "the-yve-just-gone-5",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/the-yve-just-gone-5.JPG" }],
+    categories: { year: 2018, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-45",
+    name: "trafic",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/trafic.JPG" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-46",
+    name: "trap-album-cover",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/trap-album-cover.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-47",
+    name: "trash",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/trash.JPG" }],
+    categories: { year: 2018, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-48",
+    name: "vertigo",
+    description: "istanbul, 2017",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/vertigo.jpg" }],
+    categories: { year: 2017, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  },
+  {
+    id: "spleen-49",
+    name: "voices",
+    description: "milano, 2018",
+    link: null,
+    media: [{ "type": "image", "src": "https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives/main/voices.jpg" }],
+    categories: { year: 2018, type: "photography", subtype: "spleen", collection: "Killing the Moment", medium: "photo", expression: "decentralize*early", reality: "irl", contents: "photography" }
+  }
+        ];
+
+
+
+        // --- STATE ---
+        let state = { view: 'random', filter: 'all' };
+        let camera, scene, renderer, controls;
+        let objects = []; 
+        let labels = []; 
+        let chaosOffsets = []; 
+        let isDragging = false; // TRACK DRAG STATE GLOBALLY
+        
+        let autoRotateSpeed = 0;
+        let globalRotation = 0;
+
+        init();
+        animate();
+
+        function init() {
+            const container = document.getElementById('container');
+
+            const aspect = window.innerWidth / window.innerHeight;
+            const frustumSize = 3500; 
+            camera = new THREE.OrthographicCamera( 
+                frustumSize * aspect / - 2, 
+                frustumSize * aspect / 2, 
+                frustumSize / 2, 
+                frustumSize / - 2, 
+                1, 
+                10000 
+            );
+            camera.position.z = 2000;
+            camera.position.y = 1000; 
+            camera.lookAt(0, 0, 0);
+
+            scene = new THREE.Scene();
+
+            renderer = new CSS3DRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.domElement.style.position = 'absolute';
+            renderer.domElement.style.top = '0';
+            container.appendChild(renderer.domElement);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minZoom = 0.5;
+            controls.maxZoom = 2;
+            controls.autoRotateSpeed = 0; 
+            
+            // --- FIX FOR INVERTING CONTROLS ---
+            controls.minPolarAngle = 0.1;
+            controls.maxPolarAngle = Math.PI - 0.1;
+
+            // --- HYBRID INTERACTION LOGIC (SMART DRAG) ---
+            window.addEventListener('mousedown', () => { isDragging = true; });
+            window.addEventListener('mouseup', () => { isDragging = false; });
+            window.addEventListener('touchstart', () => { isDragging = true; });
+            window.addEventListener('touchend', () => { isDragging = false; });
+
+            buildScene();
+
+            window.addEventListener('resize', onWindowResize);
+            setupMenuButtons();
+            setupSlider();
+
+            // Hide Loader
+            const l = document.getElementById('loader');
+            l.style.opacity = 0;
+            setTimeout(() => { l.remove(); }, 500);
+        }
+
+        function buildScene() {
+            objects.forEach(obj => scene.remove(obj));
+            objects = [];
+            chaosOffsets = [];
+
+            projects.forEach((p) => {
+                const el = document.createElement('div');
+                el.className = 'element-card';
+                
+                const img = document.createElement('img');
+                img.className = 'card-image';
+                
+                const imgMedia = p.media && p.media.find(m => m.type === 'image');
+                
+                if (imgMedia) {
+                    const filename = imgMedia.src.split('/').pop().replace(/\.[^/.]+$/, "");
+                    const thumbUrl = `https://raw.githubusercontent.com/decentralize-dfw/decentralize-archives-thumbnail/main/${filename}.png`;
+                    
+                    img.src = thumbUrl;
+                    img.onerror = () => { 
+                        img.src = imgMedia.src; 
+                        img.onerror = () => {
+                            img.src = 'https://placehold.co/300x300/000000/FFF?text=ERR';
+                        };
+                    };
+                } else {
+                    img.src = 'https://placehold.co/300x300/000000/FFF?text=MEDIA';
+                }
+
+                img.loading = "eager"; 
+                img.draggable = false;
+                el.appendChild(img);
+
+                // --- SMART INTERACTION LISTENERS ---
+                // 1. Mouse Enter: If NOT dragging, disable controls so clicking is clean.
+                //    If dragging (started outside), KEEP controls enabled so drag continues over card.
+                el.addEventListener('mouseenter', () => {
+                    if (!isDragging) controls.enabled = false;
+                });
+
+                // 2. Mouse Leave: Always re-enable controls.
+                el.addEventListener('mouseleave', () => {
+                    controls.enabled = true;
+                });
+
+                // 3. Click: Simple click handler (controls being disabled ensures no micro-drag jitter)
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    openModal(p);
+                });
+
+                const obj = new CSS3DObject(el);
+                obj.position.x = Math.random() * 3000 - 1500;
+                obj.position.y = Math.random() * 3000 - 1500;
+                obj.position.z = Math.random() * 3000 - 1500;
+                
+                obj.userData = {
+                    center: new THREE.Vector3(0,0,0),
+                    offset: new THREE.Vector3(obj.position.x, obj.position.y, obj.position.z),
+                    rotation: new THREE.Euler(0,0,0)
+                };
+                
+                scene.add(obj);
+                objects.push(obj);
+
+                chaosOffsets.push({
+                    x: (Math.random() - 0.5) * 2,
+                    y: (Math.random() - 0.5) * 2,
+                    z: (Math.random() - 0.5) * 2,
+                    timeOffset: Math.random() * 100
+                });
+            });
+
+            updateLayout();
+        }
+
+        function setupMenuButtons() {
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const type = e.target.dataset.type;
+                    const val = e.target.dataset.val;
+                    const siblings = e.target.parentElement.querySelectorAll(`.nav-btn[data-type="${type}"]`);
+                    siblings.forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state[type] = val;
+                    updateLayout();
+                });
+            });
+        }
+
+        function setupSlider() {
+            const slider = document.getElementById('rotate-slider');
+            slider.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                autoRotateSpeed = val * 0.02;
+            });
+        }
+
+        function removeOldLabels() {
+            const oldLabels = [...labels]; labels = []; 
+            oldLabels.forEach(l => { l.element.classList.remove('visible'); setTimeout(() => scene.remove(l), 1000); });
+        }
+
+        function createLabel(text, x, y, z) {
+            const div = document.createElement('div');
+            div.className = 'group-label';
+            div.textContent = text;
+            const label = new CSS3DObject(div);
+            label.position.set(x, y, z);
+            // Lock rotation to look forward
+            label.rotation.set(0, 0, 0); 
+            scene.add(label);
+            labels.push(label);
+            setTimeout(() => div.classList.add('visible'), 50);
+        }
+
+        function updateLayout() {
+            TWEEN.removeAll();
+            removeOldLabels();
+
+            objects.forEach(obj => {
+                obj.userData.rotation.set(0, 0, 0);
+            });
+
+            let activeIndices = [];
+            if (state.filter === 'all') {
+                activeIndices = objects.map((_, i) => i);
+            } else {
+                objects.forEach((_, i) => {
+                    if (projects[i].categories[state.filter]) activeIndices.push(i);
+                    else {
+                         new TWEEN.Tween(objects[i].position).to({ y: 10000 }, 2500).easing(TWEEN.Easing.Exponential.InOut).start();
+                         objects[i].userData.center = null; 
+                    }
+                });
+            }
+
+            const groups = {};
+            if (state.filter === 'all') groups['ALL'] = activeIndices;
+            else {
+                activeIndices.forEach(i => {
+                    const p = projects[i];
+                    const key = p.categories[state.filter] || 'Other';
+                    if (!groups[key]) groups[key] = [];
+                    groups[key].push(i);
+                });
+            }
+
+            const groupKeys = Object.keys(groups).sort();
+            
+            groupKeys.forEach((key, gIndex) => {
+                const indexes = groups[key];
+                let cx = 0, cy = 0, cz = 0;
+                
+                const sphereRadius = Math.max(Math.sqrt(indexes.length) * 60, 200); 
+
+                // --- LAYOUT CONSTANTS ---
+                const FIXED_LABEL_Y = 600; 
+                const GRID_TOP_Y = 400;    
+                const SPHERE_TOP_Y = 400; // Same start line for Sphere
+                const ITEM_SPACING = 180;  
+
+                if (state.filter !== 'all') {
+                    const clusterSpacing = 2200; 
+                    const angle = (gIndex / groupKeys.length) * Math.PI * 2;
+                    cx = Math.cos(angle) * clusterSpacing;
+                    cz = Math.sin(angle) * clusterSpacing;
+                    
+                    createLabel(key, cx, FIXED_LABEL_Y, cz); 
+                }
+
+                const dummy = new THREE.Object3D();
+
+                if (state.view === 'grid') {
+                    const cols = Math.ceil(Math.sqrt(indexes.length));
+                    indexes.forEach((objIndex, i) => {
+                        const row = Math.floor(i / cols); 
+                        const col = i % cols;             
+                        
+                        const ox = (col - (cols - 1) / 2) * ITEM_SPACING;
+                        // Grid starts at GRID_TOP_Y and goes DOWN
+                        const oy = GRID_TOP_Y - (row * ITEM_SPACING);
+                        
+                        const obj = objects[objIndex];
+                        new TWEEN.Tween(obj.userData.center).to({x: cx, y: cy, z: cz}, 2500).easing(TWEEN.Easing.Exponential.InOut).start();
+                        new TWEEN.Tween(obj.userData.offset).to({x: ox, y: oy, z: 0}, 2500).easing(TWEEN.Easing.Exponential.InOut).start();
+                        new TWEEN.Tween(obj.userData.rotation).to({x: 0, y: 0, z: 0}, 2500).easing(TWEEN.Easing.Exponential.InOut).start();
+                    });
+                } 
+                else if (state.view === 'sphere') {
+                    // --- FIXED SPHERE LAYOUT ---
+                    // Calculate center Y so that the TOP of the sphere is at SPHERE_TOP_Y
+                    // Sphere Top = cy + radius. So cy = Top - radius.
+                    const sphereCenterY = SPHERE_TOP_Y - sphereRadius;
+
+                    indexes.forEach((objIndex, i) => {
+                        const phi = Math.acos(-1 + (2 * i) / indexes.length);
+                        const theta = Math.sqrt(indexes.length * Math.PI) * phi;
+                        
+                        const ox = sphereRadius * Math.sin(phi) * Math.cos(theta);
+                        const oy = sphereRadius * Math.sin(phi) * Math.sin(theta);
+                        const oz = sphereRadius * Math.cos(phi);
+                        
+                        dummy.position.set(ox, oy, oz);
+                        dummy.lookAt(0, 0, 0); 
+
+                        const obj = objects[objIndex];
+                        // Use sphereCenterY for vertical offset
+                        new TWEEN.Tween(obj.userData.center).to({x: cx, y: cy, z: cz}, 2500).easing(TWEEN.Easing.Exponential.InOut).start();
+                        // Add sphereCenterY to the Y offset directly or handle it in center logic.
+                        // Ideally, we move the group center relative to 0? No, we set offset.
+                        // Let's add sphereCenterY to the y component of offset.
+                        new TWEEN.Tween(obj.userData.offset).to({x: ox, y: oy + sphereCenterY, z: oz}, 2500).easing(TWEEN.Easing.Exponential.InOut).start();
+                        
+                        new TWEEN.Tween(obj.userData.rotation).to({x: dummy.rotation.x, y: dummy.rotation.y, z: dummy.rotation.z}, 2500).easing(TWEEN.Easing.Exponential.InOut).start();
+                    });
+                }
+                else if (state.view === 'random') {
+                    indexes.forEach((objIndex) => {
+                          const ox = (Math.random()-0.5)*1500;
+                          const oy = (Math.random()-0.5)*1500;
+                          const oz = (Math.random()-0.5)*1500;
+                          
+                          const rx = (Math.random()-0.5)*0.5;
+                          const rz = (Math.random()-0.5)*0.5;
+
+                          const obj = objects[objIndex];
+                          new TWEEN.Tween(obj.userData.center).to({x: cx, y: cy, z: cz}, 2500).easing(TWEEN.Easing.Exponential.InOut).start();
+                          new TWEEN.Tween(obj.userData.offset).to({x: ox, y: oy, z: oz}, 2500).easing(TWEEN.Easing.Exponential.InOut).start();
+                          new TWEEN.Tween(obj.userData.rotation).to({x: rx, y: 0, z: rz}, 2500).easing(TWEEN.Easing.Exponential.InOut).start();
+                    });
+                }
+            });
+        }
+
+        function onWindowResize() {
+            const aspect = window.innerWidth / window.innerHeight;
+            const frustumSize = 3500;
+            camera.left = - frustumSize * aspect / 2;
+            camera.right = frustumSize * aspect / 2;
+            camera.top = frustumSize / 2;
+            camera.bottom = - frustumSize / 2;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            TWEEN.update();
+            controls.update();
+
+            globalRotation += autoRotateSpeed;
+            const time = Date.now() * 0.002;
+
+            objects.forEach((obj, i) => {
+                if(obj.userData.center) { 
+                      const offset = obj.userData.offset.clone();
+                      offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), globalRotation);
+                      
+                      let targetPos = new THREE.Vector3().copy(obj.userData.center).add(offset);
+                      
+                      if (state.view === 'random') {
+                          const chaos = chaosOffsets[i];
+                          targetPos.x += Math.sin(time + chaos.timeOffset) * 50; 
+                          targetPos.y += Math.cos(time * 0.9 + chaos.timeOffset) * 50;
+                          targetPos.z += Math.sin(time * 0.7 + chaos.timeOffset) * 50;
+
+                          obj.position.copy(targetPos);
+                          
+                          obj.rotation.x = obj.userData.rotation.x + Math.sin(time * 0.5) * 0.2;
+                          obj.rotation.y = obj.userData.rotation.y + globalRotation;
+                          obj.rotation.z = obj.userData.rotation.z + Math.cos(time * 0.3) * 0.2;
+                      } 
+                      else if (state.view === 'sphere') {
+                          obj.position.copy(targetPos);
+                          
+                          // SPHERE ORIENTATION:
+                          // Always look at the center of *its own group* to maintain the shell effect.
+                          // Group center (rotating with global) is obj.userData.center.
+                          // Wait, center is fixed (cx,cy,cz). Offset rotates.
+                          // The "LookAt" target needs to correspond to the sphere's center IN WORLD SPACE.
+                          // The sphere center moves? No, only offsets rotate.
+                          // The layout center (cx,cy,cz) is static.
+                          // But we added `sphereCenterY` to the offset Y. 
+                          // So the actual sphere center is (cx, cy + sphereCenterY, cz).
+                          // BUT... `cy` in updateLayout was `0`. So center is (cx, sphereCenterY, cz).
+                          
+                          // Let's create a vector for the specific group center.
+                          // Since we don't store "sphereCenterY" on the object, we can infer it or just look at (cx, cy, cz) 
+                          // if we centered the sphere around 0,0,0 in offset. 
+                          // But we shifted offset Y.
+                          
+                          // Simpler approach for Sphere Rotation:
+                          // The base rotation was calculated to face 0,0,0 (local).
+                          // We just apply global Y rotation to that base rotation.
+                          obj.rotation.y = obj.userData.rotation.y + globalRotation;
+                          obj.rotation.x = obj.userData.rotation.x;
+                          obj.rotation.z = obj.userData.rotation.z;
+                      } 
+                      else {
+                          obj.position.copy(targetPos);
+                          obj.rotation.set(0, globalRotation, 0); 
+                      }
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        // --- 3D HELPER ---
+        function initThreeJSViewer(container, modelUrl) {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 0, 3);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            container.appendChild(renderer.domElement);
+
+            const pmremGenerator = new THREE.PMREMGenerator(renderer);
+            pmremGenerator.compileEquirectangularShader();
+            new RGBELoader().setDataType(THREE.UnsignedByteType).load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/equirectangular/venice_sunset_1k.hdr', function (texture) {
+                    const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+                    scene.environment = envMap;
+                    texture.dispose();
+                    pmremGenerator.dispose();
+            });
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            dirLight.position.set(5, 10, 7.5);
+            scene.add(dirLight);
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            
+            const loader = new GLTFLoader();
+            const dracoLoader = new DRACOLoader();
+            dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+            loader.setDRACOLoader(dracoLoader);
+            loader.setMeshoptDecoder(MeshoptDecoder);
+
+            loader.load(modelUrl, (gltf) => {
+                const model = gltf.scene;
+                const box = new THREE.Box3().setFromObject(model);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const scale = 2 / maxDim;
+                model.scale.setScalar(scale);
+                model.position.sub(center.multiplyScalar(scale));
+                scene.add(model);
+                 if (gltf.animations && gltf.animations.length > 0) {
+                    const mixer = new THREE.AnimationMixer(model);
+                    gltf.animations.forEach(clip => { mixer.clipAction(clip).play(); });
+                 }
+            });
+
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // --- MODAL ---
+        const modalContainer = document.getElementById('modal-container');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalMediaScroller = document.getElementById('modal-media-scroller');
+        const modalLeftCol = document.getElementById('modal-left-col');
+        const modalRightCol = document.getElementById('modal-right-col');
+
+        modalMediaScroller.addEventListener('wheel', (evt) => {
+            if (evt.target === modalMediaScroller) {
+                evt.preventDefault();
+                modalMediaScroller.scrollLeft += evt.deltaY;
+            }
+        });
+
+        function openModal(project) {
+            modalMediaScroller.innerHTML = '';
+            if (project.media) {
+                project.media.forEach(media => {
+                    let mediaEl;
+                    if (media.type === 'image') {
+                        mediaEl = document.createElement('img');
+                        mediaEl.src = media.src;
+                        mediaEl.className = "inline-block h-full object-contain mr-4"; 
+                    } else if (media.type === 'video') {
+                        mediaEl = document.createElement('video');
+                        mediaEl.src = media.src;
+                        mediaEl.controls = true;
+                        mediaEl.className = "inline-block h-full object-contain mr-4";
+                    } else if (media.type === 'model') {
+                        mediaEl = document.createElement('div');
+                        mediaEl.className = "glb-wrapper inline-block h-full min-w-[300px] w-auto mr-4";
+                        let modelUrl = media.src;
+                        if (modelUrl.includes('raw.githubusercontent.com')) {
+                             modelUrl = modelUrl.replace('raw.githubusercontent.com', 'cdn.jsdelivr.net/gh').replace('/main/', '@main/');
+                        }
+                        setTimeout(() => initThreeJSViewer(mediaEl, modelUrl), 0);
+                    } else if (media.type === 'html') {
+                        mediaEl = document.createElement('iframe');
+                        let url = media.src;
+                        if (url.includes('raw.githubusercontent.com') && url.endsWith('.html')) {
+                            url = url.replace('raw.githubusercontent.com', 'raw.githack.com').replace('/refs/heads/', '/'); 
+                        }
+                        const wrapper = document.createElement('div');
+                        wrapper.className = "html-scale-wrapper inline-block mr-4";
+                        mediaEl.src = url;
+                        mediaEl.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+                        mediaEl.allowFullscreen = true;
+                        wrapper.appendChild(mediaEl);
+                        modalMediaScroller.appendChild(wrapper);
+                        return;
+                    }
+                    if (mediaEl) modalMediaScroller.appendChild(mediaEl);
+                });
+            }
+
+            const allMetadata = { 'Project': project.name, ...project.categories };
+            if (project.link) allMetadata['Link'] = `<a href="${project.link}" target="_blank" class="underline ui-text">${project.link}</a>`;
+
+            let leftHtml = '<div class="space-y-1 text-base leading-tight ui-text">';
+            leftHtml += `<p class="flex"><strong class="font-normal w-32 flex-shrink-0 capitalize">Project:</strong> <span>${allMetadata['Project']}</span></p>`;
+            categoryPriorityList.forEach(key => {
+                if (allMetadata[key]) leftHtml += `<p class="flex"><strong class="font-normal w-32 flex-shrink-0 capitalize">${key}:</strong> <span>${allMetadata[key]}</span></p>`;
+            });
+            if (allMetadata['Link']) leftHtml += `<p class="flex"><strong class="font-normal w-32 flex-shrink-0 capitalize">Link:</strong> <span>${allMetadata['Link']}</span></p>`;
+            leftHtml += '</div>';
+            
+            modalLeftCol.innerHTML = leftHtml;
+            modalRightCol.innerHTML = `<p class="text-lg whitespace-pre-line leading-relaxed ui-text">${project.description || ''}</p>`;
+            modalContainer.classList.add('open');
+        }
+
+        function closeModal() {
+            modalContainer.classList.remove('open');
+            setTimeout(() => { modalMediaScroller.innerHTML = ''; }, 300);
+        }
+
+        modalCloseBtn.addEventListener('click', closeModal);
+        modalBackdrop.addEventListener('click', closeModal);
+        window.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    </script>
+</body>
+</html>
