@@ -2,16 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <title>Finder — xrweb.studio</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --sidebar-w: 220px;
-      --topbar-h: 44px;
+      --sidebar-w: 260px;
+      --topbar-h: 48px;
       --bg: #f5f5f7;
-      --sidebar-bg: rgba(255,255,255,0.72);
+      --sidebar-bg: rgba(255,255,255,0.82);
       --sidebar-border: rgba(0,0,0,0.08);
       --text-primary: #1d1d1f;
       --text-secondary: #6e6e73;
@@ -21,16 +23,16 @@
       --hover-bg: rgba(0,0,0,0.04);
       --active-bg: rgba(0,113,227,0.10);
       --border: rgba(0,0,0,0.08);
-      --topbar-bg: rgba(245,245,247,0.88);
+      --topbar-bg: rgba(245,245,247,0.92);
       --btn-bg: rgba(0,0,0,0.06);
       --btn-hover: rgba(0,0,0,0.10);
-      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(0,0,0,0.06);
+      --overlay-bg: rgba(0,0,0,0.32);
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
         --bg: #1c1c1e;
-        --sidebar-bg: rgba(28,28,30,0.88);
+        --sidebar-bg: rgba(36,36,38,0.94);
         --sidebar-border: rgba(255,255,255,0.08);
         --text-primary: #f5f5f7;
         --text-secondary: #98989d;
@@ -40,49 +42,54 @@
         --hover-bg: rgba(255,255,255,0.05);
         --active-bg: rgba(41,151,255,0.14);
         --border: rgba(255,255,255,0.08);
-        --topbar-bg: rgba(28,28,30,0.88);
+        --topbar-bg: rgba(28,28,30,0.92);
         --btn-bg: rgba(255,255,255,0.08);
-        --btn-hover: rgba(255,255,255,0.12);
-        --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 0 0 0.5px rgba(255,255,255,0.06);
+        --btn-hover: rgba(255,255,255,0.13);
+        --overlay-bg: rgba(0,0,0,0.55);
       }
     }
 
     html, body {
       height: 100%;
+      height: 100dvh;
       background: var(--bg);
       color: var(--text-primary);
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
     }
 
-    /* ── SHELL ──────────────────────────────────── */
+    /* ── SHELL ──────────────────────────── */
     #shell {
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      height: 100%;
+      height: 100dvh;
     }
 
-    /* ── TOPBAR ─────────────────────────────────── */
+    /* ── TOPBAR ─────────────────────────── */
     #topbar {
       height: var(--topbar-h);
       background: var(--topbar-bg);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(24px) saturate(200%);
+      -webkit-backdrop-filter: blur(24px) saturate(200%);
       border-bottom: 0.5px solid var(--border);
       display: flex;
       align-items: center;
       padding: 0 14px;
+      padding-left: calc(14px + env(safe-area-inset-left));
+      padding-right: calc(14px + env(safe-area-inset-right));
       gap: 10px;
       flex-shrink: 0;
       position: relative;
-      z-index: 20;
+      z-index: 30;
     }
 
     #toggle-btn {
-      width: 30px;
-      height: 30px;
-      border-radius: 8px;
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
       border: none;
       background: var(--btn-bg);
       cursor: pointer;
@@ -91,19 +98,29 @@
       justify-content: center;
       flex-shrink: 0;
       transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
-    #toggle-btn:hover { background: var(--btn-hover); }
+    #toggle-btn:active { background: var(--btn-hover); }
+    @media (hover:hover) { #toggle-btn:hover { background: var(--btn-hover); } }
 
-    #toggle-btn svg {
-      width: 15px;
-      height: 15px;
-      fill: none;
-      stroke: var(--text-secondary);
-      stroke-width: 1.5;
-      stroke-linecap: round;
-      transition: stroke 0.15s;
+    .bar {
+      display: block;
+      width: 16px;
+      height: 1.5px;
+      background: var(--text-secondary);
+      border-radius: 1px;
+      transition: transform 0.22s cubic-bezier(0.4,0,0.2,1),
+                  opacity 0.22s,
+                  width 0.22s cubic-bezier(0.4,0,0.2,1);
+      transform-origin: center;
     }
-    #toggle-btn:hover svg { stroke: var(--text-primary); }
+    .bars { display: flex; flex-direction: column; gap: 3.5px; }
+
+    /* animate to X when sidebar open on mobile */
+    body.drawer-open #toggle-btn .bar:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+    body.drawer-open #toggle-btn .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    body.drawer-open #toggle-btn .bar:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
 
     #breadcrumb {
       flex: 1;
@@ -112,14 +129,14 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      min-width: 0;
     }
-
-    #breadcrumb span { color: var(--text-primary); font-weight: 500; }
+    #breadcrumb strong { color: var(--text-primary); font-weight: 500; }
 
     #open-btn {
-      height: 28px;
-      padding: 0 12px;
-      border-radius: 7px;
+      height: 30px;
+      padding: 0 11px;
+      border-radius: 8px;
       border: none;
       background: var(--btn-bg);
       color: var(--text-secondary);
@@ -130,13 +147,16 @@
       text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       flex-shrink: 0;
       white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
-    #open-btn:hover { background: var(--btn-hover); color: var(--text-primary); }
+    #open-btn:active { background: var(--btn-hover); color: var(--text-primary); }
+    @media (hover:hover) { #open-btn:hover { background: var(--btn-hover); color: var(--text-primary); } }
 
-    /* ── BODY ───────────────────────────────────── */
+    /* ── BODY ───────────────────────────── */
     #body {
       display: flex;
       flex: 1;
@@ -144,19 +164,36 @@
       position: relative;
     }
 
-    /* ── SIDEBAR ────────────────────────────────── */
+    /* ── OVERLAY (mobile only) ──────────── */
+    #overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 39;
+      background: var(--overlay-bg);
+      opacity: 0;
+      transition: opacity 0.28s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body.drawer-open #overlay {
+      opacity: 1;
+    }
+
+    /* ── SIDEBAR ────────────────────────── */
     #sidebar {
       width: var(--sidebar-w);
       background: var(--sidebar-bg);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(24px) saturate(200%);
+      -webkit-backdrop-filter: blur(24px) saturate(200%);
       border-right: 0.5px solid var(--sidebar-border);
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
       overflow: hidden;
+      /* desktop collapse */
       transition: width 0.28s cubic-bezier(0.4,0,0.2,1),
                   opacity 0.28s cubic-bezier(0.4,0,0.2,1);
+      z-index: 40;
     }
 
     #sidebar.collapsed {
@@ -165,23 +202,58 @@
       pointer-events: none;
     }
 
+    /* MOBILE: full-height drawer that slides from left */
+    @media (max-width: 640px) {
+      #overlay { display: block; pointer-events: none; }
+      body.drawer-open #overlay { pointer-events: auto; }
+
+      #sidebar {
+        position: fixed;
+        top: 0; left: 0;
+        width: min(var(--sidebar-w), 85vw) !important;
+        height: 100%;
+        height: 100dvh;
+        opacity: 1 !important;
+        transform: translateX(-110%);
+        transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+        border-right: 0.5px solid var(--sidebar-border);
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+      }
+
+      body.drawer-open #sidebar {
+        transform: translateX(0);
+        pointer-events: auto;
+      }
+
+      /* hide desktop collapse state on mobile */
+      #sidebar.collapsed {
+        width: min(var(--sidebar-w), 85vw) !important;
+        opacity: 1 !important;
+        pointer-events: auto;
+      }
+    }
+
+    /* ── SIDEBAR CONTENTS ───────────────── */
     #sidebar-head {
-      padding: 14px 14px 8px;
+      padding: 16px 14px 8px;
       flex-shrink: 0;
     }
 
     #repo-label {
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.07em;
       text-transform: uppercase;
       color: var(--text-tertiary);
-      margin-bottom: 2px;
+      margin-bottom: 3px;
     }
 
     #repo-name {
       font-size: 12px;
       color: var(--text-secondary);
+      line-height: 1.4;
     }
 
     #search-wrap {
@@ -191,19 +263,20 @@
 
     #search {
       width: 100%;
-      height: 28px;
-      border-radius: 7px;
+      height: 32px;
+      border-radius: 9px;
       border: 0.5px solid var(--border);
       background: var(--hover-bg);
-      font-size: 12px;
+      font-size: 13px;
       font-family: inherit;
       color: var(--text-primary);
-      padding: 0 10px 0 28px;
+      padding: 0 10px 0 30px;
       outline: none;
       transition: border-color 0.15s, background 0.15s;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6e73' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%236e6e73' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: 9px center;
+      -webkit-appearance: none;
     }
     #search:focus { border-color: var(--accent); background-color: var(--bg); }
     #search::placeholder { color: var(--text-tertiary); }
@@ -211,27 +284,29 @@
     #file-list {
       flex: 1;
       overflow-y: auto;
-      padding: 4px 0 8px;
+      overflow-x: hidden;
+      padding: 4px 0 16px;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
-
     #file-list::-webkit-scrollbar { width: 0; }
 
-    /* file items */
-    .folder-group { }
-
+    /* ── FOLDER / FILE ROWS ─────────────── */
     .folder-row {
       display: flex;
       align-items: center;
       gap: 5px;
-      padding: 5px 12px;
+      padding: 7px 12px;
       cursor: pointer;
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
-    .folder-row:hover { background: var(--hover-bg); }
+    .folder-row:active { background: var(--hover-bg); }
+    @media (hover:hover) { .folder-row:hover { background: var(--hover-bg); } }
 
     .chevron {
-      width: 12px;
-      height: 12px;
+      width: 12px; height: 12px;
       flex-shrink: 0;
       transition: transform 0.18s;
       fill: none;
@@ -241,11 +316,6 @@
       stroke-linejoin: round;
     }
     .folder-group.open .chevron { transform: rotate(90deg); }
-
-    .folder-icon {
-      font-size: 13px;
-      line-height: 1;
-    }
 
     .folder-name {
       font-size: 12px;
@@ -259,71 +329,82 @@
 
     .folder-children {
       display: none;
-      padding-left: 14px;
+      padding-left: 12px;
     }
     .folder-group.open .folder-children { display: block; }
 
     .file-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 5px 12px 5px 22px;
-      cursor: pointer;
-      border-radius: 6px;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 8px;
       margin: 1px 6px;
+      cursor: pointer;
       transition: background 0.12s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-height: 40px; /* comfortable touch target */
     }
-    .file-row:hover { background: var(--hover-bg); }
-    .file-row.active { background: var(--active-bg); }
+    .file-row:active { background: var(--hover-bg); }
+    @media (hover:hover) { .file-row:hover { background: var(--hover-bg); } }
+    .file-row.active  { background: var(--active-bg); }
+
+    .root-file { padding-left: 12px; margin: 1px 6px; }
 
     .file-icon-wrap {
-      width: 20px;
-      height: 20px;
-      border-radius: 4px;
+      width: 22px; height: 22px;
+      border-radius: 5px;
       background: var(--accent-bg);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
-    .file-icon-wrap svg {
-      width: 11px;
-      height: 11px;
-      fill: var(--accent);
-    }
+    .file-icon-wrap svg { width: 12px; height: 12px; fill: var(--accent); }
 
     .file-row-name {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-primary);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       flex: 1;
+      line-height: 1.3;
     }
-    .file-row.active .file-row-name { color: var(--accent); font-weight: 500; }
-
-    /* root-level file rows have no indent */
-    .root-file {
-      padding-left: 12px;
-      margin: 1px 6px;
+    .file-row-path {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      line-height: 1.2;
+      display: none;
     }
+    /* show path only in search results (flat list) */
+    .file-row.search-result .file-row-path { display: block; }
+    .file-row.search-result { flex-wrap: wrap; }
+    .file-row.search-result .file-icon-wrap { align-self: flex-start; margin-top: 2px; }
+    .file-row.search-result .file-row-name { width: calc(100% - 30px); }
 
     #sidebar-foot {
-      padding: 8px 14px;
+      padding: 10px 14px;
+      padding-bottom: calc(10px + env(safe-area-inset-bottom));
       border-top: 0.5px solid var(--border);
       font-size: 10px;
       color: var(--text-tertiary);
       flex-shrink: 0;
     }
 
-    /* ── VIEWER ─────────────────────────────────── */
+    /* ── VIEWER ─────────────────────────── */
     #viewer-wrap {
       flex: 1;
       position: relative;
       overflow: hidden;
+      min-width: 0;
       background: #fff;
     }
-
     @media (prefers-color-scheme: dark) {
       #viewer-wrap { background: #111; }
     }
@@ -344,7 +425,6 @@
       background: var(--accent);
       z-index: 10;
       opacity: 0;
-      transition: none;
       border-radius: 0 2px 2px 0;
     }
     #lbar.go   { width: 72%; opacity: 1; transition: width 1.6s cubic-bezier(0.1,0.6,0.4,1); }
@@ -358,32 +438,21 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 12px;
       background: var(--bg);
       pointer-events: none;
     }
     #placeholder.hidden { display: none; }
 
     .ph-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      width: 52px; height: 52px;
+      border-radius: 14px;
       background: var(--hover-bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
     }
-    .ph-icon svg { width: 24px; height: 24px; fill: var(--text-tertiary); }
-
-    .ph-title {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-secondary);
-    }
-    .ph-sub {
-      font-size: 12px;
-      color: var(--text-tertiary);
-    }
+    .ph-icon svg { width: 26px; height: 26px; fill: var(--text-tertiary); }
+    .ph-title { font-size: 15px; font-weight: 500; color: var(--text-secondary); }
+    .ph-sub   { font-size: 13px; color: var(--text-tertiary); }
 
     /* error */
     #err-banner {
@@ -393,68 +462,51 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
       background: var(--bg);
     }
     #err-banner.hidden { display: none; }
     #err-msg {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-secondary);
       text-align: center;
-      max-width: 320px;
+      max-width: 300px;
       line-height: 1.6;
       white-space: pre-line;
     }
 
-    /* ── SPLASH ─────────────────────────────────── */
+    /* ── SPLASH ─────────────────────────── */
     #splash {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       gap: 20px;
       z-index: 100;
-      transition: opacity 0.4s;
+      transition: opacity 0.5s;
     }
     #splash.out { opacity: 0; pointer-events: none; }
 
     .splash-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 14px;
+      width: 60px; height: 60px;
+      border-radius: 16px;
       background: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
     }
-    .splash-icon svg { width: 28px; height: 28px; fill: #fff; }
-
+    .splash-icon svg { width: 30px; height: 30px; fill: #fff; }
     .splash-title {
-      font-size: 17px;
-      font-weight: 600;
+      font-size: 18px; font-weight: 600;
       color: var(--text-primary);
       letter-spacing: -0.02em;
     }
-
-    .splash-sub {
-      font-size: 12px;
-      color: var(--text-tertiary);
-      margin-top: -12px;
-    }
-
+    .splash-sub { font-size: 12px; color: var(--text-tertiary); margin-top: -12px; }
     .progress-track {
-      width: 160px;
-      height: 3px;
+      width: 160px; height: 3px;
       background: var(--hover-bg);
-      border-radius: 2px;
-      overflow: hidden;
+      border-radius: 2px; overflow: hidden;
     }
     .progress-fill {
-      height: 100%;
-      width: 0;
+      height: 100%; width: 0;
       background: var(--accent);
       border-radius: 2px;
       animation: prog 1.4s cubic-bezier(0.4,0,0.2,1) forwards;
@@ -474,34 +526,37 @@
   <div class="progress-track"><div class="progress-fill"></div></div>
 </div>
 
+<!-- mobile overlay -->
+<div id="overlay"></div>
+
 <!-- app -->
 <div id="shell">
   <div id="topbar">
-    <button id="toggle-btn" title="Toggle sidebar">
-      <svg viewBox="0 0 18 18">
-        <rect x="2" y="4" width="14" height="1.5" rx="0.75"/>
-        <rect x="2" y="8.25" width="14" height="1.5" rx="0.75"/>
-        <rect x="2" y="12.5" width="14" height="1.5" rx="0.75"/>
-      </svg>
+    <button id="toggle-btn" title="Toggle sidebar" aria-label="Toggle sidebar">
+      <div class="bars">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </div>
     </button>
-    <div id="breadcrumb">xrweb.studio/finder &rsaquo; <span id="cur-file">—</span></div>
-    <a id="open-btn" href="#" target="_blank">
-      <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 10L10 2M5 2h5v5"/></svg>
+    <div id="breadcrumb">finder &rsaquo; <strong id="cur-file">—</strong></div>
+    <a id="open-btn" href="#" target="_blank" rel="noopener">
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10L10 2M5 2h5v5"/></svg>
       Open
     </a>
   </div>
 
   <div id="body">
-    <aside id="sidebar">
+    <aside id="sidebar" role="navigation" aria-label="File list">
       <div id="sidebar-head">
         <div id="repo-label">Repository</div>
-        <div id="repo-name">decentralize-dfw / finder</div>
+        <div id="repo-name">decentralize-dfw / finder<br>xrweb.studio/finder</div>
       </div>
       <div id="search-wrap">
-        <input id="search" type="text" placeholder="Search files…" autocomplete="off" spellcheck="false"/>
+        <input id="search" type="search" placeholder="Search files…" autocomplete="off" spellcheck="false" autocorrect="off"/>
       </div>
-      <div id="file-list"></div>
-      <div id="sidebar-foot" id="file-count">—</div>
+      <div id="file-list" role="list"></div>
+      <div id="sidebar-foot">—</div>
     </aside>
 
     <div id="viewer-wrap">
@@ -530,29 +585,51 @@
 </div>
 
 <script>
-/* ── CONFIG ─────────────────────────────────────────────────── */
+/* ── CONFIG ─────────────────────────────────────────────── */
 const REPO_USER   = 'decentralize-dfw';
 const REPO_NAME   = 'finder';
 const REPO_BRANCH = 'main';
 const BASE_URL    = 'https://xrweb.studio/finder';
 const API_ROOT    = `https://api.github.com/repos/${REPO_USER}/${REPO_NAME}`;
 
-/* ── UTILS ──────────────────────────────────────────────────── */
-const $ = id => document.getElementById(id);
+/* ── UTILS ──────────────────────────────────────────────── */
+const $  = id => document.getElementById(id);
 const mk = (tag, cls) => { const e = document.createElement(tag); if (cls) e.className = cls; return e; };
+const isMobile = () => window.innerWidth <= 640;
 
-/* ── STATE ──────────────────────────────────────────────────── */
-let allFiles  = [];   // [{path, name, folder}]
-let activeRow = null;
-let sidebarOpen = true;
+/* ── STATE ──────────────────────────────────────────────── */
+let allFiles    = [];
+let activeRow   = null;
+let desktopOpen = true;   // desktop sidebar state
 
-/* ── TOGGLE SIDEBAR ─────────────────────────────────────────── */
+/* ── SIDEBAR TOGGLE ─────────────────────────────────────── */
+function openDrawer() {
+  document.body.classList.add('drawer-open');
+  $('sidebar').classList.remove('collapsed');
+}
+
+function closeDrawer() {
+  document.body.classList.remove('drawer-open');
+  if (!desktopOpen) $('sidebar').classList.add('collapsed');
+}
+
 $('toggle-btn').addEventListener('click', () => {
-  sidebarOpen = !sidebarOpen;
-  $('sidebar').classList.toggle('collapsed', !sidebarOpen);
+  if (isMobile()) {
+    document.body.classList.contains('drawer-open') ? closeDrawer() : openDrawer();
+  } else {
+    desktopOpen = !desktopOpen;
+    $('sidebar').classList.toggle('collapsed', !desktopOpen);
+  }
 });
 
-/* ── LOADING BAR ────────────────────────────────────────────── */
+$('overlay').addEventListener('click', closeDrawer);
+
+/* close drawer on resize to desktop */
+window.addEventListener('resize', () => {
+  if (!isMobile()) closeDrawer();
+});
+
+/* ── LOADING BAR ────────────────────────────────────────── */
 let lbT;
 function lbStart() {
   const b = $('lbar');
@@ -566,39 +643,43 @@ function lbDone() {
   lbT = setTimeout(() => { b.className = ''; }, 700);
 }
 
-/* ── LOAD FILE ──────────────────────────────────────────────── */
+/* ── LOAD FILE ──────────────────────────────────────────── */
 function loadFile(path) {
-  $('cur-file').textContent = path;
+  $('cur-file').textContent = path.split('/').pop();
   const url = `${BASE_URL}/${path}`;
   $('open-btn').href = url;
   $('placeholder').classList.add('hidden');
   $('err-banner').classList.add('hidden');
   lbStart();
+
   const fr = $('viewer');
-  fr.src = url;
+  fr.src     = url;
   fr.onload  = lbDone;
   fr.onerror = () => {
     lbDone();
     $('err-banner').classList.remove('hidden');
     $('err-msg').textContent = `Could not load:\n${url}`;
   };
+
+  /* on mobile: close drawer after picking a file */
+  if (isMobile()) {
+    setTimeout(closeDrawer, 120);
+  }
 }
 
-/* ── BUILD TREE ─────────────────────────────────────────────── */
+/* ── BUILD TREE ─────────────────────────────────────────── */
 function buildTree(files) {
-  // group by first path segment
-  const tree = {};  // { folderName: [path…] } or '' for root
+  const tree = {};
   files.forEach(f => {
-    const parts = f.path.split('/');
+    const parts  = f.path.split('/');
     const folder = parts.length > 1 ? parts.slice(0, -1).join('/') : '';
     if (!tree[folder]) tree[folder] = [];
     tree[folder].push(f);
   });
 
-  const list = $('file-list');
+  const list    = $('file-list');
   list.innerHTML = '';
 
-  // render root files first, then folders
   const rootFiles = tree[''] || [];
   const folders   = Object.keys(tree).filter(k => k !== '').sort();
 
@@ -608,9 +689,10 @@ function buildTree(files) {
     const group = mk('div', 'folder-group open');
 
     const row = mk('div', 'folder-row');
+    row.setAttribute('role', 'button');
     row.innerHTML = `
       <svg class="chevron" viewBox="0 0 10 10"><polyline points="3,2 7,5 3,8"/></svg>
-      <span class="folder-name">${folder}</span>
+      <span class="folder-name">${escHtml(folder)}</span>
     `;
     row.addEventListener('click', () => group.classList.toggle('open'));
 
@@ -622,18 +704,21 @@ function buildTree(files) {
   });
 
   const total = files.length;
-  $('sidebar-foot').textContent = `${total} file${total !== 1 ? 's' : ''} · main`;
+  $('sidebar-foot').textContent = `${total} file${total !== 1 ? 's' : ''} · ${REPO_BRANCH}`;
 }
 
 function renderFileRow(parent, f, isRoot) {
   const row = mk('div', 'file-row' + (isRoot ? ' root-file' : ''));
   row.dataset.path = f.path;
+  row.setAttribute('role', 'listitem');
 
   row.innerHTML = `
     <div class="file-icon-wrap">
       <svg viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V8.414L12.586 3H5zm6 1.5L15.5 9H11V4.5z"/></svg>
     </div>
-    <span class="file-row-name" title="${f.path}">${f.name}</span>
+    <div style="flex:1;min-width:0;">
+      <div class="file-row-name">${escHtml(f.name)}</div>
+    </div>
   `;
 
   row.addEventListener('click', () => {
@@ -646,30 +731,66 @@ function renderFileRow(parent, f, isRoot) {
   parent.appendChild(row);
 }
 
-/* ── SEARCH ─────────────────────────────────────────────────── */
+/* ── SEARCH ─────────────────────────────────────────────── */
 $('search').addEventListener('input', function () {
   const q = this.value.trim().toLowerCase();
-  document.querySelectorAll('.file-row').forEach(row => {
-    const match = row.dataset.path.toLowerCase().includes(q);
-    row.style.display = match ? '' : 'none';
+  const list = $('file-list');
+
+  if (!q) {
+    /* restore tree */
+    buildTree(allFiles);
+    return;
+  }
+
+  /* flat filtered list */
+  list.innerHTML = '';
+  const matches = allFiles.filter(f => f.path.toLowerCase().includes(q));
+  matches.forEach(f => {
+    const row = mk('div', 'file-row search-result');
+    row.dataset.path = f.path;
+    row.innerHTML = `
+      <div class="file-icon-wrap" style="align-self:flex-start;margin-top:2px;">
+        <svg viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V8.414L12.586 3H5zm6 1.5L15.5 9H11V4.5z"/></svg>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="file-row-name">${highlight(f.name, q)}</div>
+        <div class="file-row-path">${highlight(f.path, q)}</div>
+      </div>
+    `;
+    row.addEventListener('click', () => {
+      document.querySelectorAll('.file-row.active').forEach(r => r.classList.remove('active'));
+      row.classList.add('active');
+      activeRow = row;
+      loadFile(f.path);
+    });
+    list.appendChild(row);
   });
-  // show/hide folder groups
-  document.querySelectorAll('.folder-group').forEach(g => {
-    const visible = Array.from(g.querySelectorAll('.file-row'))
-      .some(r => r.style.display !== 'none');
-    g.style.display = visible ? '' : 'none';
-    if (q) g.classList.add('open');
-  });
+
+  if (!matches.length) {
+    list.innerHTML = `<div style="padding:16px 14px;font-size:12px;color:var(--text-tertiary);">No results for "${escHtml(q)}"</div>`;
+  }
 });
 
-/* ── FETCH FILES ────────────────────────────────────────────── */
+function highlight(text, q) {
+  const i = text.toLowerCase().indexOf(q);
+  if (i < 0) return escHtml(text);
+  return escHtml(text.slice(0, i))
+    + `<mark style="background:var(--accent-bg);color:var(--accent);border-radius:2px;">${escHtml(text.slice(i, i+q.length))}</mark>`
+    + escHtml(text.slice(i + q.length));
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── FETCH FILES ────────────────────────────────────────── */
 async function fetchFiles() {
   const res = await fetch(`${API_ROOT}/git/trees/${REPO_BRANCH}?recursive=1`, {
     headers: { Accept: 'application/vnd.github.v3+json' }
   });
   if (!res.ok) throw new Error(`GitHub API ${res.status}: ${res.statusText}`);
   const data = await res.json();
-  if (data.truncated) console.warn('Tree truncated.');
+  if (data.truncated) console.warn('Tree truncated — repo may have too many files.');
   return (data.tree || [])
     .filter(f => f.type === 'blob' && f.path.endsWith('.html'))
     .map(f => {
@@ -678,27 +799,25 @@ async function fetchFiles() {
     });
 }
 
-/* ── INIT ───────────────────────────────────────────────────── */
+/* ── INIT ───────────────────────────────────────────────── */
 async function init() {
   $('splash-sub').textContent = `${REPO_USER}/${REPO_NAME} · ${REPO_BRANCH}`;
 
   try {
     allFiles = await fetchFiles();
-
-    // dismiss splash after animation
     setTimeout(() => $('splash').classList.add('out'), 1500);
 
     if (!allFiles.length) {
       setTimeout(() => {
         $('file-list').innerHTML = `<div style="padding:16px 14px;font-size:12px;color:var(--text-tertiary);line-height:1.6;">No HTML files found in this repository.</div>`;
+        $('sidebar-foot').textContent = '0 files';
       }, 1600);
       return;
     }
 
     setTimeout(() => {
       buildTree(allFiles);
-      // auto-select first non-index file
-      const first = allFiles.find(f => f.name !== 'index.html') || allFiles[0];
+      const first    = allFiles.find(f => f.name !== 'index.html') || allFiles[0];
       const firstRow = document.querySelector(`.file-row[data-path="${CSS.escape(first.path)}"]`);
       if (firstRow) firstRow.click();
     }, 1600);
