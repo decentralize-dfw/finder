@@ -4,7 +4,6 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <title>Finder — xrweb.studio</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -14,7 +13,6 @@
       --topbar-h: 48px;
       --bg: #f5f5f7;
       --sidebar-bg: rgba(255,255,255,0.82);
-      --sidebar-border: rgba(0,0,0,0.08);
       --text-primary: #1d1d1f;
       --text-secondary: #6e6e73;
       --text-tertiary: #aeaeb2;
@@ -28,12 +26,10 @@
       --btn-hover: rgba(0,0,0,0.10);
       --overlay-bg: rgba(0,0,0,0.32);
     }
-
     @media (prefers-color-scheme: dark) {
       :root {
         --bg: #1c1c1e;
         --sidebar-bg: rgba(36,36,38,0.94);
-        --sidebar-border: rgba(255,255,255,0.08);
         --text-primary: #f5f5f7;
         --text-secondary: #98989d;
         --text-tertiary: #636366;
@@ -50,8 +46,7 @@
     }
 
     html, body {
-      height: 100%;
-      height: 100dvh;
+      height: 100%; height: 100dvh;
       background: var(--bg);
       color: var(--text-primary);
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
@@ -60,371 +55,298 @@
       -webkit-text-size-adjust: 100%;
     }
 
-    /* ── SHELL ──────────────────────────── */
-    #shell {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      height: 100dvh;
-    }
+    /* ─── SHELL ─────────────────────────────────── */
+    #shell { display: flex; flex-direction: column; height: 100%; height: 100dvh; }
 
-    /* ── TOPBAR ─────────────────────────── */
+    /* ─── TOPBAR ────────────────────────────────── */
     #topbar {
       height: var(--topbar-h);
       background: var(--topbar-bg);
       backdrop-filter: blur(24px) saturate(200%);
       -webkit-backdrop-filter: blur(24px) saturate(200%);
       border-bottom: 0.5px solid var(--border);
-      display: flex;
-      align-items: center;
+      display: flex; align-items: center;
       padding: 0 14px;
       padding-left: calc(14px + env(safe-area-inset-left));
       padding-right: calc(14px + env(safe-area-inset-right));
-      gap: 10px;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 30;
+      gap: 8px; flex-shrink: 0;
+      position: relative; z-index: 30;
     }
 
+    /* hamburger */
     #toggle-btn {
-      width: 34px;
-      height: 34px;
-      border-radius: 9px;
-      border: none;
-      background: var(--btn-bg);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.15s;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
+      width: 34px; height: 34px;
+      border-radius: 9px; border: none;
+      background: var(--btn-bg); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
     }
     #toggle-btn:active { background: var(--btn-hover); }
     @media (hover:hover) { #toggle-btn:hover { background: var(--btn-hover); } }
 
+    .bars { display: flex; flex-direction: column; gap: 3.5px; }
     .bar {
-      display: block;
-      width: 16px;
-      height: 1.5px;
-      background: var(--text-secondary);
-      border-radius: 1px;
-      transition: transform 0.22s cubic-bezier(0.4,0,0.2,1),
-                  opacity 0.22s,
-                  width 0.22s cubic-bezier(0.4,0,0.2,1);
+      display: block; width: 16px; height: 1.5px;
+      background: var(--text-secondary); border-radius: 1px;
+      transition: transform 0.22s cubic-bezier(0.4,0,0.2,1), opacity 0.22s;
       transform-origin: center;
     }
-    .bars { display: flex; flex-direction: column; gap: 3.5px; }
+    body.drawer-open .bar:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+    body.drawer-open .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    body.drawer-open .bar:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
 
-    /* animate to X when sidebar open on mobile */
-    body.drawer-open #toggle-btn .bar:nth-child(1) { transform: translateY(5px) rotate(45deg); }
-    body.drawer-open #toggle-btn .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
-    body.drawer-open #toggle-btn .bar:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
-
+    /* breadcrumb */
     #breadcrumb {
-      flex: 1;
-      font-size: 13px;
-      color: var(--text-secondary);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      min-width: 0;
+      flex: 1; font-size: 13px; color: var(--text-secondary);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
     }
     #breadcrumb strong { color: var(--text-primary); font-weight: 500; }
 
-    #open-btn {
-      height: 30px;
-      padding: 0 11px;
-      border-radius: 8px;
-      border: none;
+    /* view-mode pill toggle */
+    #view-toggle {
+      display: flex; align-items: center;
       background: var(--btn-bg);
-      color: var(--text-secondary);
-      font-size: 12px;
-      font-family: inherit;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
+      border-radius: 8px; padding: 3px; gap: 2px;
       flex-shrink: 0;
-      white-space: nowrap;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
+    }
+    .vt-btn {
+      width: 30px; height: 26px;
+      border: none; background: transparent; border-radius: 6px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s; color: var(--text-tertiary);
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    }
+    .vt-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    .vt-btn:active { background: var(--btn-hover); }
+    @media (hover:hover) { .vt-btn:hover { background: var(--btn-hover); color: var(--text-secondary); } }
+    .vt-btn.active {
+      background: var(--sidebar-bg); color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 0 0 0.5px rgba(0,0,0,0.06);
+    }
+
+    /* open button */
+    #open-btn {
+      height: 30px; padding: 0 11px; border-radius: 8px; border: none;
+      background: var(--btn-bg); color: var(--text-secondary);
+      font-size: 12px; font-family: inherit; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 5px;
+      flex-shrink: 0; white-space: nowrap;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
     }
     #open-btn:active { background: var(--btn-hover); color: var(--text-primary); }
     @media (hover:hover) { #open-btn:hover { background: var(--btn-hover); color: var(--text-primary); } }
 
-    /* ── BODY ───────────────────────────── */
-    #body {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-      position: relative;
-    }
+    /* ─── BODY ──────────────────────────────────── */
+    #body { display: flex; flex: 1; overflow: hidden; position: relative; }
 
-    /* ── OVERLAY (mobile only) ──────────── */
+    /* ─── OVERLAY (mobile) ──────────────────────── */
     #overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 39;
-      background: var(--overlay-bg);
-      opacity: 0;
-      transition: opacity 0.28s;
-      -webkit-tap-highlight-color: transparent;
+      display: none; position: fixed; inset: 0; z-index: 39;
+      background: var(--overlay-bg); opacity: 0;
+      transition: opacity 0.28s; -webkit-tap-highlight-color: transparent;
     }
-    body.drawer-open #overlay {
-      opacity: 1;
-    }
+    body.drawer-open #overlay { opacity: 1; }
 
-    /* ── SIDEBAR ────────────────────────── */
+    /* ─── SIDEBAR ───────────────────────────────── */
     #sidebar {
       width: var(--sidebar-w);
       background: var(--sidebar-bg);
       backdrop-filter: blur(24px) saturate(200%);
       -webkit-backdrop-filter: blur(24px) saturate(200%);
-      border-right: 0.5px solid var(--sidebar-border);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      overflow: hidden;
-      /* desktop collapse */
-      transition: width 0.28s cubic-bezier(0.4,0,0.2,1),
-                  opacity 0.28s cubic-bezier(0.4,0,0.2,1);
+      border-right: 0.5px solid var(--border);
+      display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden;
+      transition: width 0.28s cubic-bezier(0.4,0,0.2,1), opacity 0.28s cubic-bezier(0.4,0,0.2,1);
       z-index: 40;
     }
+    #sidebar.collapsed { width: 0; opacity: 0; pointer-events: none; }
 
-    #sidebar.collapsed {
-      width: 0;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    /* MOBILE: full-height drawer that slides from left */
     @media (max-width: 640px) {
       #overlay { display: block; pointer-events: none; }
       body.drawer-open #overlay { pointer-events: auto; }
 
       #sidebar {
-        position: fixed;
-        top: 0; left: 0;
+        position: fixed; top: 0; left: 0;
         width: min(var(--sidebar-w), 85vw) !important;
-        height: 100%;
-        height: 100dvh;
+        height: 100%; height: 100dvh;
         opacity: 1 !important;
         transform: translateX(-110%);
         transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-        border-right: 0.5px solid var(--sidebar-border);
         padding-top: env(safe-area-inset-top);
         padding-bottom: env(safe-area-inset-bottom);
         padding-left: env(safe-area-inset-left);
       }
-
-      body.drawer-open #sidebar {
-        transform: translateX(0);
-        pointer-events: auto;
-      }
-
-      /* hide desktop collapse state on mobile */
-      #sidebar.collapsed {
-        width: min(var(--sidebar-w), 85vw) !important;
-        opacity: 1 !important;
-        pointer-events: auto;
-      }
+      body.drawer-open #sidebar { transform: translateX(0); pointer-events: auto; }
+      #sidebar.collapsed { width: min(var(--sidebar-w), 85vw) !important; opacity: 1 !important; }
     }
 
-    /* ── SIDEBAR CONTENTS ───────────────── */
-    #sidebar-head {
-      padding: 16px 14px 8px;
-      flex-shrink: 0;
-    }
-
+    /* ─── SIDEBAR CONTENTS ──────────────────────── */
+    #sidebar-head { padding: 16px 14px 8px; flex-shrink: 0; }
     #repo-label {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      color: var(--text-tertiary);
-      margin-bottom: 3px;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 3px;
     }
+    #repo-name { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
 
-    #repo-name {
-      font-size: 12px;
-      color: var(--text-secondary);
-      line-height: 1.4;
-    }
-
-    #search-wrap {
-      padding: 6px 10px 4px;
-      flex-shrink: 0;
-    }
-
+    #search-wrap { padding: 6px 10px 4px; flex-shrink: 0; }
     #search {
-      width: 100%;
-      height: 32px;
-      border-radius: 9px;
-      border: 0.5px solid var(--border);
-      background: var(--hover-bg);
-      font-size: 13px;
-      font-family: inherit;
-      color: var(--text-primary);
-      padding: 0 10px 0 30px;
-      outline: none;
+      width: 100%; height: 32px; border-radius: 9px;
+      border: 0.5px solid var(--border); background: var(--hover-bg);
+      font-size: 13px; font-family: inherit; color: var(--text-primary);
+      padding: 0 10px 0 30px; outline: none;
       transition: border-color 0.15s, background 0.15s;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%236e6e73' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: 9px center;
+      background-repeat: no-repeat; background-position: 9px center;
       -webkit-appearance: none;
     }
     #search:focus { border-color: var(--accent); background-color: var(--bg); }
     #search::placeholder { color: var(--text-tertiary); }
 
     #file-list {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 4px 0 16px;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
+      flex: 1; overflow-y: auto; overflow-x: hidden; padding: 4px 0 16px;
+      -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
     }
     #file-list::-webkit-scrollbar { width: 0; }
 
-    /* ── FOLDER / FILE ROWS ─────────────── */
     .folder-row {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 7px 12px;
-      cursor: pointer;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
+      display: flex; align-items: center; gap: 5px; padding: 7px 12px;
+      cursor: pointer; user-select: none;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
     }
     .folder-row:active { background: var(--hover-bg); }
     @media (hover:hover) { .folder-row:hover { background: var(--hover-bg); } }
 
     .chevron {
-      width: 12px; height: 12px;
-      flex-shrink: 0;
-      transition: transform 0.18s;
-      fill: none;
-      stroke: var(--text-tertiary);
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+      width: 12px; height: 12px; flex-shrink: 0;
+      transition: transform 0.18s; fill: none;
+      stroke: var(--text-tertiary); stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round;
     }
     .folder-group.open .chevron { transform: rotate(90deg); }
 
     .folder-name {
-      font-size: 12px;
-      color: var(--text-secondary);
-      font-weight: 500;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex: 1;
+      font-size: 12px; color: var(--text-secondary); font-weight: 500;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;
     }
-
-    .folder-children {
-      display: none;
-      padding-left: 12px;
-    }
+    .folder-children { display: none; padding-left: 12px; }
     .folder-group.open .folder-children { display: block; }
 
     .file-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 12px;
-      border-radius: 8px;
-      margin: 1px 6px;
-      cursor: pointer;
-      transition: background 0.12s;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      min-height: 40px; /* comfortable touch target */
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 12px; border-radius: 8px; margin: 1px 6px;
+      cursor: pointer; transition: background 0.12s; min-height: 40px;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
     }
     .file-row:active { background: var(--hover-bg); }
     @media (hover:hover) { .file-row:hover { background: var(--hover-bg); } }
-    .file-row.active  { background: var(--active-bg); }
-
-    .root-file { padding-left: 12px; margin: 1px 6px; }
+    .file-row.active { background: var(--active-bg); }
+    .root-file { padding-left: 12px; }
 
     .file-icon-wrap {
-      width: 22px; height: 22px;
-      border-radius: 5px;
-      background: var(--accent-bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+      width: 22px; height: 22px; border-radius: 5px;
+      background: var(--accent-bg); display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0;
     }
     .file-icon-wrap svg { width: 12px; height: 12px; fill: var(--accent); }
 
     .file-row-name {
-      font-size: 13px;
-      color: var(--text-primary);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex: 1;
-      line-height: 1.3;
+      font-size: 13px; color: var(--text-primary);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      flex: 1; line-height: 1.3;
     }
+    .file-row.active .file-row-name { color: var(--accent); font-weight: 500; }
     .file-row-path {
-      font-size: 10px;
-      color: var(--text-tertiary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-      line-height: 1.2;
-      display: none;
+      font-size: 10px; color: var(--text-tertiary); display: none;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;
     }
-    /* show path only in search results (flat list) */
     .file-row.search-result .file-row-path { display: block; }
-    .file-row.search-result { flex-wrap: wrap; }
-    .file-row.search-result .file-icon-wrap { align-self: flex-start; margin-top: 2px; }
-    .file-row.search-result .file-row-name { width: calc(100% - 30px); }
 
     #sidebar-foot {
       padding: 10px 14px;
       padding-bottom: calc(10px + env(safe-area-inset-bottom));
       border-top: 0.5px solid var(--border);
-      font-size: 10px;
-      color: var(--text-tertiary);
+      font-size: 10px; color: var(--text-tertiary); flex-shrink: 0;
+    }
+
+    /* ─── VIEWER AREA ───────────────────────────── */
+    #viewer-wrap {
+      flex: 1; position: relative; overflow: hidden; min-width: 0;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.35s;
+    }
+
+    /* ─── PHONE FRAME ───────────────────────────── */
+    #viewer-frame {
+      position: absolute; inset: 0;
+      background: #fff;
+      overflow: hidden;
+      transition: inset 0.38s cubic-bezier(0.4,0,0.2,1),
+                  border-radius 0.38s cubic-bezier(0.4,0,0.2,1),
+                  box-shadow 0.38s cubic-bezier(0.4,0,0.2,1),
+                  background 0.2s;
+    }
+    @media (prefers-color-scheme: dark) { #viewer-frame { background: #111; } }
+
+    /* mobile-view: shrink to phone shape */
+    #viewer-wrap.mobile-view #viewer-frame {
+      position: relative;
+      inset: auto;
+      width: 390px;
+      height: min(844px, calc(100% - 56px));
+      border-radius: 48px;
+      box-shadow:
+        0 0 0 10px #181818,
+        0 0 0 11.5px #2c2c2c,
+        0 40px 80px rgba(0,0,0,0.32),
+        0 8px 24px rgba(0,0,0,0.18);
       flex-shrink: 0;
     }
 
-    /* ── VIEWER ─────────────────────────── */
-    #viewer-wrap {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-      min-width: 0;
-      background: #fff;
+    /* notch & home bar — only visible in mobile-view */
+    #ph-notch {
+      position: absolute; top: 0; left: 0; right: 0; height: 50px;
+      display: flex; align-items: flex-start; justify-content: center;
+      z-index: 5; pointer-events: none;
+      opacity: 0; transition: opacity 0.25s 0.15s;
     }
+    #ph-notch-pill {
+      width: 126px; height: 37px;
+      background: #111; border-radius: 0 0 24px 24px;
+    }
+    #ph-notch-cam {
+      position: absolute; top: 12px; right: 32px;
+      width: 13px; height: 13px; border-radius: 50%;
+      background: #1a1a1a; border: 2.5px solid #2e2e2e;
+    }
+    #ph-home {
+      position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+      width: 134px; height: 5px; border-radius: 3px;
+      background: rgba(0,0,0,0.16); z-index: 5; pointer-events: none;
+      opacity: 0; transition: opacity 0.25s 0.15s;
+    }
+    #viewer-wrap.mobile-view #ph-notch,
+    #viewer-wrap.mobile-view #ph-home { opacity: 1; }
     @media (prefers-color-scheme: dark) {
-      #viewer-wrap { background: #111; }
+      #ph-home { background: rgba(255,255,255,0.14); }
     }
 
     #viewer {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%; border: none; display: block;
+      transition: top 0.38s cubic-bezier(0.4,0,0.2,1),
+                  height 0.38s cubic-bezier(0.4,0,0.2,1);
+    }
+    #viewer-wrap.mobile-view #viewer {
+      top: 50px;
+      height: calc(100% - 50px - 28px);
     }
 
-    /* loading bar */
+    /* loading bar — sits on viewer-frame */
     #lbar {
-      position: absolute;
-      top: 0; left: 0;
-      height: 2px;
-      width: 0;
-      background: var(--accent);
-      z-index: 10;
-      opacity: 0;
+      position: absolute; top: 0; left: 0; height: 2px; width: 0;
+      background: var(--accent); z-index: 10; opacity: 0;
       border-radius: 0 2px 2px 0;
     }
     #lbar.go   { width: 72%; opacity: 1; transition: width 1.6s cubic-bezier(0.1,0.6,0.4,1); }
@@ -432,23 +354,16 @@
 
     /* placeholder */
     #placeholder {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      background: var(--bg);
-      pointer-events: none;
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px;
+      background: var(--bg); pointer-events: none;
     }
     #placeholder.hidden { display: none; }
-
     .ph-icon {
-      width: 52px; height: 52px;
-      border-radius: 14px;
-      background: var(--hover-bg);
-      display: flex; align-items: center; justify-content: center;
+      width: 52px; height: 52px; border-radius: 14px;
+      background: var(--hover-bg); display: flex;
+      align-items: center; justify-content: center;
     }
     .ph-icon svg { width: 26px; height: 26px; fill: var(--text-tertiary); }
     .ph-title { font-size: 15px; font-weight: 500; color: var(--text-secondary); }
@@ -456,59 +371,30 @@
 
     /* error */
     #err-banner {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      background: var(--bg);
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 10px; background: var(--bg);
     }
     #err-banner.hidden { display: none; }
-    #err-msg {
-      font-size: 13px;
-      color: var(--text-secondary);
-      text-align: center;
-      max-width: 300px;
-      line-height: 1.6;
-      white-space: pre-line;
-    }
+    #err-msg { font-size: 13px; color: var(--text-secondary); text-align: center; max-width: 300px; line-height: 1.6; white-space: pre-line; }
 
-    /* ── SPLASH ─────────────────────────── */
+    /* ─── SPLASH ────────────────────────────────── */
     #splash {
-      position: fixed; inset: 0;
-      background: var(--bg);
+      position: fixed; inset: 0; background: var(--bg);
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 20px;
-      z-index: 100;
-      transition: opacity 0.5s;
+      align-items: center; justify-content: center; gap: 20px;
+      z-index: 100; transition: opacity 0.5s;
     }
     #splash.out { opacity: 0; pointer-events: none; }
-
     .splash-icon {
-      width: 60px; height: 60px;
-      border-radius: 16px;
-      background: var(--accent);
-      display: flex; align-items: center; justify-content: center;
+      width: 60px; height: 60px; border-radius: 16px;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
     }
     .splash-icon svg { width: 30px; height: 30px; fill: #fff; }
-    .splash-title {
-      font-size: 18px; font-weight: 600;
-      color: var(--text-primary);
-      letter-spacing: -0.02em;
-    }
+    .splash-title { font-size: 18px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.02em; }
     .splash-sub { font-size: 12px; color: var(--text-tertiary); margin-top: -12px; }
-    .progress-track {
-      width: 160px; height: 3px;
-      background: var(--hover-bg);
-      border-radius: 2px; overflow: hidden;
-    }
+    .progress-track { width: 160px; height: 3px; background: var(--hover-bg); border-radius: 2px; overflow: hidden; }
     .progress-fill {
-      height: 100%; width: 0;
-      background: var(--accent);
-      border-radius: 2px;
+      height: 100%; width: 0; background: var(--accent); border-radius: 2px;
       animation: prog 1.4s cubic-bezier(0.4,0,0.2,1) forwards;
     }
     @keyframes prog { 0%{width:0} 60%{width:80%} 100%{width:100%} }
@@ -516,7 +402,6 @@
 </head>
 <body>
 
-<!-- splash -->
 <div id="splash">
   <div class="splash-icon">
     <svg viewBox="0 0 24 24"><path d="M3 7c0-1.1.9-2 2-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zm2 0v10h14V7H5zm2 2h10v2H7V9zm0 4h7v2H7v-2z"/></svg>
@@ -526,11 +411,10 @@
   <div class="progress-track"><div class="progress-fill"></div></div>
 </div>
 
-<!-- mobile overlay -->
 <div id="overlay"></div>
 
-<!-- app -->
 <div id="shell">
+
   <div id="topbar">
     <button id="toggle-btn" title="Toggle sidebar" aria-label="Toggle sidebar">
       <div class="bars">
@@ -539,9 +423,29 @@
         <span class="bar"></span>
       </div>
     </button>
+
     <div id="breadcrumb">finder &rsaquo; <strong id="cur-file">—</strong></div>
+
+    <!-- desktop / mobile view toggle -->
+    <div id="view-toggle" role="group" aria-label="Preview mode">
+      <button class="vt-btn active" id="vt-desktop" title="Desktop view" aria-pressed="true">
+        <svg viewBox="0 0 20 20">
+          <rect x="2" y="3" width="16" height="11" rx="1.5"/>
+          <path d="M7 17h6M10 14v3"/>
+        </svg>
+      </button>
+      <button class="vt-btn" id="vt-mobile" title="Mobile view" aria-pressed="false">
+        <svg viewBox="0 0 20 20">
+          <rect x="5.5" y="2" width="9" height="16" rx="2"/>
+          <line x1="10" y1="15" x2="10" y2="15.5" stroke-width="2"/>
+        </svg>
+      </button>
+    </div>
+
     <a id="open-btn" href="#" target="_blank" rel="noopener">
-      <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10L10 2M5 2h5v5"/></svg>
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 10L10 2M5 2h5v5"/>
+      </svg>
       Open
     </a>
   </div>
@@ -560,54 +464,78 @@
     </aside>
 
     <div id="viewer-wrap">
-      <div id="lbar"></div>
 
-      <div id="placeholder">
-        <div class="ph-icon">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 4h5v7h8v9H6V4z"/></svg>
+      <!-- phone chrome (visible only in mobile-view) -->
+      <div id="ph-notch">
+        <div id="ph-notch-pill"></div>
+        <div id="ph-notch-cam"></div>
+      </div>
+      <div id="ph-home"></div>
+
+      <div id="viewer-frame">
+        <div id="lbar"></div>
+
+        <div id="placeholder">
+          <div class="ph-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 4h5v7h8v9H6V4z"/></svg>
+          </div>
+          <div class="ph-title">No file selected</div>
+          <div class="ph-sub">Pick an HTML file from the sidebar</div>
         </div>
-        <div class="ph-title">No file selected</div>
-        <div class="ph-sub">Pick an HTML file from the sidebar</div>
+
+        <div id="err-banner" class="hidden">
+          <div class="ph-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 15a1 1 0 110-2 1 1 0 010 2zm1-5h-2V7h2v5z"/></svg>
+          </div>
+          <div id="err-msg">—</div>
+        </div>
+
+        <iframe id="viewer" src="about:blank"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation">
+        </iframe>
       </div>
 
-      <div id="err-banner" class="hidden">
-        <div class="ph-icon">
-          <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 15a1 1 0 110-2 1 1 0 010 2zm1-5h-2V7h2v5z"/></svg>
-        </div>
-        <div id="err-msg">—</div>
-      </div>
-
-      <iframe id="viewer" src="about:blank"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation">
-      </iframe>
     </div>
   </div>
 </div>
 
 <script>
-/* ── CONFIG ─────────────────────────────────────────────── */
+/* ── CONFIG ─────────────────────────────────────── */
 const REPO_USER   = 'decentralize-dfw';
 const REPO_NAME   = 'finder';
 const REPO_BRANCH = 'main';
 const BASE_URL    = 'https://xrweb.studio/finder';
 const API_ROOT    = `https://api.github.com/repos/${REPO_USER}/${REPO_NAME}`;
 
-/* ── UTILS ──────────────────────────────────────────────── */
+/* ── UTILS ──────────────────────────────────────── */
 const $  = id => document.getElementById(id);
 const mk = (tag, cls) => { const e = document.createElement(tag); if (cls) e.className = cls; return e; };
 const isMobile = () => window.innerWidth <= 640;
 
-/* ── STATE ──────────────────────────────────────────────── */
+/* ── STATE ──────────────────────────────────────── */
 let allFiles    = [];
 let activeRow   = null;
-let desktopOpen = true;   // desktop sidebar state
+let desktopOpen = true;
+let viewMode    = 'desktop'; // 'desktop' | 'mobile'
 
-/* ── SIDEBAR TOGGLE ─────────────────────────────────────── */
+/* ── VIEW MODE TOGGLE ───────────────────────────── */
+$('vt-desktop').addEventListener('click', () => setViewMode('desktop'));
+$('vt-mobile').addEventListener('click',  () => setViewMode('mobile'));
+
+function setViewMode(mode) {
+  viewMode = mode;
+  $('viewer-wrap').classList.toggle('mobile-view', mode === 'mobile');
+  $('vt-desktop').classList.toggle('active', mode === 'desktop');
+  $('vt-mobile').classList.toggle('active',  mode === 'mobile');
+  $('vt-desktop').setAttribute('aria-pressed', mode === 'desktop');
+  $('vt-mobile').setAttribute('aria-pressed',  mode === 'mobile');
+}
+
+/* ── SIDEBAR TOGGLE ─────────────────────────────── */
 function openDrawer() {
   document.body.classList.add('drawer-open');
   $('sidebar').classList.remove('collapsed');
 }
-
 function closeDrawer() {
   document.body.classList.remove('drawer-open');
   if (!desktopOpen) $('sidebar').classList.add('collapsed');
@@ -623,27 +551,21 @@ $('toggle-btn').addEventListener('click', () => {
 });
 
 $('overlay').addEventListener('click', closeDrawer);
+window.addEventListener('resize', () => { if (!isMobile()) closeDrawer(); });
 
-/* close drawer on resize to desktop */
-window.addEventListener('resize', () => {
-  if (!isMobile()) closeDrawer();
-});
-
-/* ── LOADING BAR ────────────────────────────────────────── */
+/* ── LOADING BAR ────────────────────────────────── */
 let lbT;
 function lbStart() {
   const b = $('lbar');
-  b.className = ''; b.style.opacity = '1'; void b.offsetWidth;
-  b.className = 'go';
+  b.className = ''; b.style.opacity = '1'; void b.offsetWidth; b.className = 'go';
 }
 function lbDone() {
   const b = $('lbar');
   b.className = 'done';
-  clearTimeout(lbT);
-  lbT = setTimeout(() => { b.className = ''; }, 700);
+  clearTimeout(lbT); lbT = setTimeout(() => { b.className = ''; }, 700);
 }
 
-/* ── LOAD FILE ──────────────────────────────────────────── */
+/* ── LOAD FILE ──────────────────────────────────── */
 function loadFile(path) {
   $('cur-file').textContent = path.split('/').pop();
   const url = `${BASE_URL}/${path}`;
@@ -653,7 +575,7 @@ function loadFile(path) {
   lbStart();
 
   const fr = $('viewer');
-  fr.src     = url;
+  fr.src    = url;
   fr.onload  = lbDone;
   fr.onerror = () => {
     lbDone();
@@ -661,13 +583,10 @@ function loadFile(path) {
     $('err-msg').textContent = `Could not load:\n${url}`;
   };
 
-  /* on mobile: close drawer after picking a file */
-  if (isMobile()) {
-    setTimeout(closeDrawer, 120);
-  }
+  if (isMobile()) setTimeout(closeDrawer, 120);
 }
 
-/* ── BUILD TREE ─────────────────────────────────────────── */
+/* ── BUILD TREE ─────────────────────────────────── */
 function buildTree(files) {
   const tree = {};
   files.forEach(f => {
@@ -677,72 +596,54 @@ function buildTree(files) {
     tree[folder].push(f);
   });
 
-  const list    = $('file-list');
+  const list = $('file-list');
   list.innerHTML = '';
 
-  const rootFiles = tree[''] || [];
-  const folders   = Object.keys(tree).filter(k => k !== '').sort();
+  (tree[''] || []).forEach(f => renderFileRow(list, f, true));
 
-  rootFiles.forEach(f => renderFileRow(list, f, true));
-
-  folders.forEach(folder => {
+  Object.keys(tree).filter(k => k !== '').sort().forEach(folder => {
     const group = mk('div', 'folder-group open');
-
-    const row = mk('div', 'folder-row');
+    const row   = mk('div', 'folder-row');
     row.setAttribute('role', 'button');
-    row.innerHTML = `
-      <svg class="chevron" viewBox="0 0 10 10"><polyline points="3,2 7,5 3,8"/></svg>
-      <span class="folder-name">${escHtml(folder)}</span>
-    `;
+    row.innerHTML = `<svg class="chevron" viewBox="0 0 10 10"><polyline points="3,2 7,5 3,8"/></svg><span class="folder-name">${esc(folder)}</span>`;
     row.addEventListener('click', () => group.classList.toggle('open'));
 
     const children = mk('div', 'folder-children');
     (tree[folder] || []).forEach(f => renderFileRow(children, f, false));
-
     group.append(row, children);
     list.appendChild(group);
   });
 
-  const total = files.length;
-  $('sidebar-foot').textContent = `${total} file${total !== 1 ? 's' : ''} · ${REPO_BRANCH}`;
+  const n = files.length;
+  $('sidebar-foot').textContent = `${n} file${n !== 1 ? 's' : ''} · ${REPO_BRANCH}`;
 }
 
 function renderFileRow(parent, f, isRoot) {
   const row = mk('div', 'file-row' + (isRoot ? ' root-file' : ''));
   row.dataset.path = f.path;
   row.setAttribute('role', 'listitem');
-
   row.innerHTML = `
     <div class="file-icon-wrap">
       <svg viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V8.414L12.586 3H5zm6 1.5L15.5 9H11V4.5z"/></svg>
     </div>
     <div style="flex:1;min-width:0;">
-      <div class="file-row-name">${escHtml(f.name)}</div>
-    </div>
-  `;
-
+      <div class="file-row-name">${esc(f.name)}</div>
+    </div>`;
   row.addEventListener('click', () => {
     if (activeRow) activeRow.classList.remove('active');
-    row.classList.add('active');
-    activeRow = row;
+    row.classList.add('active'); activeRow = row;
     loadFile(f.path);
   });
-
   parent.appendChild(row);
 }
 
-/* ── SEARCH ─────────────────────────────────────────────── */
+/* ── SEARCH ─────────────────────────────────────── */
 $('search').addEventListener('input', function () {
-  const q = this.value.trim().toLowerCase();
+  const q    = this.value.trim().toLowerCase();
   const list = $('file-list');
 
-  if (!q) {
-    /* restore tree */
-    buildTree(allFiles);
-    return;
-  }
+  if (!q) { buildTree(allFiles); return; }
 
-  /* flat filtered list */
   list.innerHTML = '';
   const matches = allFiles.filter(f => f.path.toLowerCase().includes(q));
   matches.forEach(f => {
@@ -753,63 +654,55 @@ $('search').addEventListener('input', function () {
         <svg viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V8.414L12.586 3H5zm6 1.5L15.5 9H11V4.5z"/></svg>
       </div>
       <div style="flex:1;min-width:0;">
-        <div class="file-row-name">${highlight(f.name, q)}</div>
-        <div class="file-row-path">${highlight(f.path, q)}</div>
-      </div>
-    `;
+        <div class="file-row-name">${hl(f.name, q)}</div>
+        <div class="file-row-path">${hl(f.path, q)}</div>
+      </div>`;
     row.addEventListener('click', () => {
       document.querySelectorAll('.file-row.active').forEach(r => r.classList.remove('active'));
-      row.classList.add('active');
-      activeRow = row;
-      loadFile(f.path);
+      row.classList.add('active'); activeRow = row; loadFile(f.path);
     });
     list.appendChild(row);
   });
 
   if (!matches.length) {
-    list.innerHTML = `<div style="padding:16px 14px;font-size:12px;color:var(--text-tertiary);">No results for "${escHtml(q)}"</div>`;
+    list.innerHTML = `<div style="padding:16px 14px;font-size:12px;color:var(--text-tertiary);">No results for "${esc(q)}"</div>`;
   }
 });
 
-function highlight(text, q) {
+function hl(text, q) {
   const i = text.toLowerCase().indexOf(q);
-  if (i < 0) return escHtml(text);
-  return escHtml(text.slice(0, i))
-    + `<mark style="background:var(--accent-bg);color:var(--accent);border-radius:2px;">${escHtml(text.slice(i, i+q.length))}</mark>`
-    + escHtml(text.slice(i + q.length));
+  if (i < 0) return esc(text);
+  return esc(text.slice(0,i))
+    + `<mark style="background:var(--accent-bg);color:var(--accent);border-radius:2px;">${esc(text.slice(i, i+q.length))}</mark>`
+    + esc(text.slice(i + q.length));
 }
-
-function escHtml(s) {
+function esc(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-/* ── FETCH FILES ────────────────────────────────────────── */
+/* ── FETCH FILES ─────────────────────────────────── */
 async function fetchFiles() {
   const res = await fetch(`${API_ROOT}/git/trees/${REPO_BRANCH}?recursive=1`, {
     headers: { Accept: 'application/vnd.github.v3+json' }
   });
   if (!res.ok) throw new Error(`GitHub API ${res.status}: ${res.statusText}`);
   const data = await res.json();
-  if (data.truncated) console.warn('Tree truncated — repo may have too many files.');
+  if (data.truncated) console.warn('Tree truncated.');
   return (data.tree || [])
     .filter(f => f.type === 'blob' && f.path.endsWith('.html'))
-    .map(f => {
-      const parts = f.path.split('/');
-      return { path: f.path, name: parts[parts.length - 1] };
-    });
+    .map(f => { const p = f.path.split('/'); return { path: f.path, name: p[p.length-1] }; });
 }
 
-/* ── INIT ───────────────────────────────────────────────── */
+/* ── INIT ────────────────────────────────────────── */
 async function init() {
   $('splash-sub').textContent = `${REPO_USER}/${REPO_NAME} · ${REPO_BRANCH}`;
-
   try {
     allFiles = await fetchFiles();
     setTimeout(() => $('splash').classList.add('out'), 1500);
 
     if (!allFiles.length) {
       setTimeout(() => {
-        $('file-list').innerHTML = `<div style="padding:16px 14px;font-size:12px;color:var(--text-tertiary);line-height:1.6;">No HTML files found in this repository.</div>`;
+        $('file-list').innerHTML = `<div style="padding:16px 14px;font-size:12px;color:var(--text-tertiary);line-height:1.6;">No HTML files found.</div>`;
         $('sidebar-foot').textContent = '0 files';
       }, 1600);
       return;
